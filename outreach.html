@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bidar Outreach Registration</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Load Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f9fc;
+        }
+        .container-box {
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        input[type="date"], input[type="time"], input[type="text"], input[type="tel"], select {
+            border: 1px solid #e2e8f0;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            transition: border-color 0.2s;
+            width: 100%;
+        }
+        input:focus, select:focus {
+            border-color: #4f46e5;
+            outline: none;
+        }
+        .member-card {
+            border: 1px solid #e2e8f0;
+            background-color: #ffffff;
+            transition: box-shadow 0.3s;
+        }
+        .member-card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+        /* Custom scrollbar for better aesthetics */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #9ca3af;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="p-4 sm:p-8 min-h-screen">
+    <div class="max-w-4xl mx-auto">
+
+        <!-- Header -->
+        <header class="text-center mb-8">
+            <h1 class="text-3xl sm:text-4xl font-extrabold text-indigo-700">Outreach Registration - Bidar</h1>
+            <p class="text-gray-600 mt-2">Trip Dates: Nov-16-2025 to Dec-21-2025</p>
+        </header>
+
+        <!-- Form Container -->
+        <div id="message-box" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
+            <div class="bg-white p-6 rounded-xl shadow-2xl w-full max-w-sm text-center">
+                <div id="message-icon" class="mb-4"></div>
+                <p id="message-text" class="text-lg font-medium text-gray-800"></p>
+                <button onclick="document.getElementById('message-box').classList.add('hidden')" class="mt-4 px-4 py-2 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition">Close</button>
+            </div>
+        </div>
+
+        <form id="registration-form" class="container-box p-6 sm:p-10 bg-white rounded-2xl space-y-8">
+
+            <!-- Section 2: Participants (NOW FIRST) -->
+            <section>
+                <h2 class="text-2xl font-semibold text-gray-800 mb-6 border-b pb-2 flex items-center">
+                    <i data-lucide="users" class="w-6 h-6 mr-2 text-indigo-500"></i>
+                    Participants
+                    <span id="member-count-display" class="ml-2 text-base font-normal text-indigo-600">(0)</span>
+                </h2>
+
+                <div id="members-container" class="space-y-6">
+                    <!-- Member cards will be injected here -->
+                </div>
+
+                <button type="button" id="add-member-btn" class="mt-6 w-full py-3 px-4 border border-indigo-200 text-indigo-700 font-semibold rounded-lg shadow-sm hover:bg-indigo-50 transition duration-150 flex items-center justify-center">
+                    <i data-lucide="plus-circle" class="w-5 h-5 mr-2"></i>
+                    Add Participant
+                </button>
+                <p class="text-sm text-gray-500 mt-2 text-center">You must add at least one participant.</p>
+            </section>
+
+            <!-- Section 1: Main Contact Details (NOW SECOND) -->
+            <section>
+                <h2 class="text-2xl font-semibold text-gray-800 mb-4 border-b pb-2 flex items-center">
+                    <i data-lucide="contact" class="w-6 h-6 mr-2 text-indigo-500"></i>
+                    Main Contact & Trip Details
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                    <!-- Mobile Number -->
+                    <div>
+                        <label for="mobile-number" class="block text-sm font-medium text-gray-700 mb-1">Mobile Number (Main Contact)</label>
+                        <input type="tel" id="mobile-number" name="mobileNumber" placeholder="e.g., 9876543210" required
+                               class="focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+
+                    <!-- Accommodation Required -->
+                    <div>
+                        <label for="accommodation" class="block text-sm font-medium text-gray-700 mb-1">Accommodation Required?</label>
+                        <select id="accommodation" name="accommodation" required
+                                class="focus:ring-indigo-500 focus:border-indigo-500">
+                            <option value="">Select Option</option>
+                            <option value="Yes">Yes</option>
+                            <option value="No">No</option>
+                        </select>
+                    </div>
+
+                    <!-- Arrival Date & Time -->
+                    <div>
+                        <label for="arrival-date" class="block text-sm font-medium text-gray-700 mb-1">Arrival Date</label>
+                        <input type="date" id="arrival-date" name="arrivalDate" required class="focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+                    <div>
+                        <label for="arrival-time" class="block text-sm font-medium text-gray-700 mb-1">Arrival Time</label>
+                        <!-- CHANGED to Select dropdown for better cross-browser 'selectability' -->
+                        <select id="arrival-time" name="arrivalTime" required
+                                class="focus:ring-indigo-500 focus:border-indigo-500">
+                            <!-- Time options will be populated by JavaScript -->
+                        </select>
+                    </div>
+
+                    <!-- Departure Date & Time -->
+                    <div>
+                        <label for="departure-date" class="block text-sm font-medium text-gray-700 mb-1">Departure Date</label>
+                        <input type="date" id="departure-date" name="departureDate" required class="focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+                    <div>
+                        <label for="departure-time" class="block text-sm font-medium text-gray-700 mb-1">Departure Time</label>
+                        <!-- CHANGED to Select dropdown for better cross-browser 'selectability' -->
+                        <select id="departure-time" name="departureTime" required
+                                class="focus:ring-indigo-500 focus:border-indigo-500">
+                            <!-- Time options will be populated by JavaScript -->
+                        </select>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Submission Button -->
+            <div class="pt-6 border-t">
+                <button type="submit" id="submit-button" class="w-full py-3 px-4 bg-indigo-600 text-white font-bold text-lg rounded-xl shadow-lg hover:bg-indigo-700 transition duration-200 focus:outline-none focus:ring-4 focus:ring-indigo-300 flex items-center justify-center" disabled>
+                    <i data-lucide="check-circle" class="w-6 h-6 mr-2"></i>
+                    Finalize and Submit Registration
+                </button>
+            </div>
+
+        </form>
+
+        <div id="loading-spinner" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
+            <div class="flex flex-col items-center bg-white p-6 rounded-xl shadow-2xl">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+                <p class="mt-3 text-indigo-700 font-medium">Submitting data...</p>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        // --- Configuration ---
+        const GOOGLE_APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzLoI2oWPF-D6HNdmMe6nyXB4TKm_fHldQEgdEU8k7u5I8wZXMC1kmTkvct0VH14Ndc/exec";
+        const LANGUAGES = ['English', 'Kannada', 'Marathi', 'Telugu', 'Tamil', 'Malayalam', 'Hindi'];
+
+        const form = document.getElementById('registration-form');
+        const membersContainer = document.getElementById('members-container');
+        const addMemberBtn = document.getElementById('add-member-btn');
+        const submitButton = document.getElementById('submit-button');
+        const memberCountDisplay = document.getElementById('member-count-display');
+        const loadingSpinner = document.getElementById('loading-spinner');
+
+        let memberCounter = 0; // Use a dedicated counter for unique ID generation
+
+        // --- Utility Functions ---
+
+        function showMessage(type, message) {
+            const messagebox = document.getElementById('message-box');
+            const iconContainer = document.getElementById('message-icon');
+            const messageText = document.getElementById('message-text');
+
+            let iconHtml = '';
+
+            // Access the icon function directly from the global lucide object
+            if (type === 'success' && lucide['check-circle']) {
+                iconHtml = lucide['check-circle']({ class: 'w-10 h-10 text-green-500' });
+            } else if (type === 'error' && lucide['x-octagon']) {
+                iconHtml = lucide['x-octagon']({ class: 'w-10 h-10 text-red-500' });
+            }
+
+            iconContainer.innerHTML = iconHtml;
+            messageText.textContent = message;
+            messagebox.classList.remove('hidden');
+        }
+
+        function getMemberCount() {
+            return document.querySelectorAll('.member-card').length;
+        }
+
+        function updateSubmitButtonState() {
+            const currentMemberCount = getMemberCount();
+
+            // Check validity of main form fields
+            const mainFormValid = Array.from(form.querySelectorAll('input:required, select:required'))
+                .every(input => input.checkValidity());
+
+            // Check validity of all member card fields
+            const allMembersValid = Array.from(membersContainer.querySelectorAll('.member-card')).every(card =>
+                Array.from(card.querySelectorAll('input:required, select:required'))
+                    .every(input => input.checkValidity())
+            );
+
+            submitButton.disabled = currentMemberCount === 0 || !mainFormValid || !allMembersValid;
+        }
+
+        /**
+         * Generates and populates a select element with 30-minute time intervals.
+         */
+        function generateTimeOptions(selectId) {
+            const selectElement = document.getElementById(selectId);
+            if (!selectElement) return;
+
+            // Add default option
+            selectElement.innerHTML = '<option value="">Select Time</option>'; 
+
+            for (let h = 0; h < 24; h++) {
+                for (let m = 0; m < 60; m += 30) {
+                    const hour = String(h).padStart(2, '0');
+                    const minute = String(m).padStart(2, '0');
+                    const timeValue = `${hour}:${minute}`;
+                    
+                    const option = document.createElement('option');
+                    option.value = timeValue;
+                    option.textContent = timeValue;
+                    selectElement.appendChild(option);
+                }
+            }
+        }
+
+        // --- Dynamic Member Card Logic ---
+
+        function createLanguageCheckboxes(uniqueId) {
+            let html = LANGUAGES.map(lang => `
+                <div class="flex items-center">
+                    <input type="checkbox" id="lang-${uniqueId}-${lang.replace(/\s/g, '')}" name="language-${uniqueId}-check" value="${lang}"
+                           class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                    <label for="lang-${uniqueId}-${lang.replace(/\s/g, '')}" class="ml-2 text-sm text-gray-700">${lang}</label>
+                </div>
+            `).join('');
+
+            // Add the 'Other' checkbox
+            html += `
+                <div class="flex items-center">
+                    <input type="checkbox" id="lang-${uniqueId}-Other" name="language-${uniqueId}-other-check"
+                           class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500" data-toggle-target="other-lang-field-${uniqueId}">
+                    <label for="lang-${uniqueId}-Other" class="ml-2 text-sm text-gray-700 font-medium">Other (Specify)</label>
+                </div>
+            `;
+            
+            return html;
+        }
+
+        function createMemberCard() {
+            memberCounter++;
+            const uniqueId = memberCounter; // Use the incrementing counter for unique field names/IDs
+
+            const card = document.createElement('div');
+            card.className = 'member-card p-4 rounded-lg space-y-4';
+            card.setAttribute('data-member-id', uniqueId);
+
+            card.innerHTML = `
+                <div class="flex justify-between items-center border-b pb-2 mb-3">
+                    <h3 class="text-lg font-medium text-indigo-600">Participant ${getMemberCount() + 1}</h3>
+                    <button type="button" class="remove-member-btn text-red-500 hover:text-red-700 transition" data-member-id="${uniqueId}">
+                        <i data-lucide="x-circle" class="w-5 h-5"></i>
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <!-- Name -->
+                    <div>
+                        <label for="name-${uniqueId}" class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                        <input type="text" id="name-${uniqueId}" name="name-${uniqueId}" required placeholder="e.g., John Doe"
+                               class="focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+
+                    <!-- Brother/Sister -->
+                    <div>
+                        <label for="sibling-${uniqueId}" class="block text-sm font-medium text-gray-700 mb-1">Brother or Sister?</label>
+                        <select id="sibling-${uniqueId}" name="sibling-${uniqueId}" required
+                                class="focus:ring-indigo-500 focus:border-indigo-500">
+                            <option value="">Select</option>
+                            <option value="Brother">Brother</option>
+                            <option value="Sister">Sister</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Languages -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Known Languages (Select all that apply)</label>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                        ${createLanguageCheckboxes(uniqueId)}
+                    </div>
+                    
+                    <!-- New Other Language Input Field -->
+                    <div id="other-lang-field-${uniqueId}" class="mt-3 hidden">
+                        <label for="other-language-input-${uniqueId}" class="block text-sm font-medium text-gray-700 mb-1">Specify Other Language(s) (e.g., French, German)</label>
+                        <input type="text" id="other-language-input-${uniqueId}" name="other-language-input-${uniqueId}"
+                               class="focus:ring-indigo-500 focus:border-indigo-500" disabled>
+                    </div>
+                </div>
+            `;
+
+            membersContainer.appendChild(card);
+            lucide.createIcons(); // Re-initialize icons for new content
+
+            // Add listener to the new remove button
+            card.querySelector('.remove-member-btn').addEventListener('click', removeMember);
+
+            // Add listener to all new required inputs to update button state
+            Array.from(card.querySelectorAll('input, select')).forEach(input => {
+                input.addEventListener('input', updateSubmitButtonState);
+            });
+            
+            // --- Logic for 'Other (Specify)' Input Field ---
+            const otherCheckbox = card.querySelector(`#lang-${uniqueId}-Other`);
+            const otherInputField = card.querySelector(`#other-language-input-${uniqueId}`);
+            const otherFieldContainer = card.querySelector(`#other-lang-field-${uniqueId}`);
+
+            const toggleOtherInput = () => {
+                if (otherCheckbox.checked) {
+                    otherFieldContainer.classList.remove('hidden');
+                    otherInputField.required = true;
+                    otherInputField.disabled = false;
+                } else {
+                    otherFieldContainer.classList.add('hidden');
+                    otherInputField.required = false;
+                    otherInputField.disabled = true;
+                    otherInputField.value = ''; // Clear value when hidden
+                }
+                updateSubmitButtonState();
+            };
+
+            otherCheckbox.addEventListener('change', toggleOtherInput);
+            otherInputField.addEventListener('input', updateSubmitButtonState);
+
+
+            memberCountDisplay.textContent = `(${getMemberCount()})`;
+            updateSubmitButtonState();
+        }
+
+        function removeMember(event) {
+            const btn = event.currentTarget;
+            const memberCard = btn.closest('.member-card');
+
+            if (memberCard) {
+                memberCard.remove();
+                memberCountDisplay.textContent = `(${getMemberCount()})`;
+                updateSubmitButtonState();
+
+                // Re-label remaining cards for cleaner UI
+                let currentId = 1;
+                document.querySelectorAll('.member-card').forEach(card => {
+                    const title = card.querySelector('h3');
+                    if(title) title.textContent = `Participant ${currentId}`;
+                    currentId++;
+                });
+            }
+        }
+
+        // --- Form Submission Handler ---
+
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            if (getMemberCount() === 0) {
+                showMessage('error', 'Please add at least one participant.');
+                return;
+            }
+
+            loadingSpinner.classList.remove('hidden');
+            submitButton.disabled = true;
+
+            // 1. Gather all core trip data
+            const mobileNumber = document.getElementById('mobile-number').value;
+            const arrivalDate = document.getElementById('arrival-date').value;
+            const arrivalTime = document.getElementById('arrival-time').value;
+            const departureDate = document.getElementById('departure-date').value;
+            const departureTime = document.getElementById('departure-time').value;
+            const accommodation = document.getElementById('accommodation').value;
+
+            // 2. Gather all member data
+            const membersArray = [];
+            const memberCards = document.querySelectorAll('.member-card');
+
+            memberCards.forEach(card => {
+                const uniqueId = card.getAttribute('data-member-id');
+
+                const nameInput = card.querySelector(`input[name="name-${uniqueId}"]`);
+                const siblingSelect = card.querySelector(`select[name="sibling-${uniqueId}"]`);
+
+                // Collect the fixed languages
+                let selectedLanguages = Array.from(card.querySelectorAll(`input[name="language-${uniqueId}-check"]:checked`))
+                    .map(cb => cb.value);
+                
+                // Collect the 'Other' language input if provided
+                const otherLangInput = card.querySelector(`input[name="other-language-input-${uniqueId}"]`);
+                const otherCheckbox = card.querySelector(`#lang-${uniqueId}-Other`);
+
+                if (otherCheckbox && otherCheckbox.checked && otherLangInput && otherLangInput.value.trim()) {
+                    // Split the comma-separated list from the 'Other' input and add to the array
+                    const specifiedLanguages = otherLangInput.value.split(',').map(s => s.trim()).filter(s => s.length > 0);
+                    selectedLanguages.push(...specifiedLanguages);
+                }
+
+                membersArray.push({
+                    name: nameInput ? nameInput.value : '',
+                    siblingType: siblingSelect ? siblingSelect.value : '',
+                    languages: selectedLanguages
+                });
+            });
+
+            // 3. Construct the payload using FormData
+            const formData = new FormData();
+            formData.append('mobileNumber', mobileNumber);
+            formData.append('accommodation', accommodation);
+            formData.append('arrivalDate', arrivalDate);
+            formData.append('arrivalTime', arrivalTime);
+            formData.append('departureDate', departureDate);
+            formData.append('departureTime', departureTime);
+
+            // CRITICAL: Stringify the array for the 'members' key
+            formData.append('members', JSON.stringify(membersArray));
+
+            try {
+                // Exponential backoff logic for robust submission
+                const maxRetries = 3;
+                let response = null;
+                for (let attempt = 0; attempt < maxRetries; attempt++) {
+                    response = await fetch(GOOGLE_APPS_SCRIPT_URL, {
+                        method: 'POST',
+                        body: formData,
+                    });
+
+                    if (response.ok) {
+                        break;
+                    } else if (attempt === maxRetries - 1) {
+                        throw new Error(`Failed to fetch after ${maxRetries} attempts.`);
+                    }
+                    await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 1000)); // Exponential backoff
+                }
+
+                const result = await response.json();
+
+                if (result.status === 'SUCCESS') {
+                    showMessage('success', result.message);
+                    form.reset(); // Clear form on success
+                    membersContainer.innerHTML = '';
+                    memberCounter = 0; // Reset counter
+                    memberCountDisplay.textContent = `(0)`;
+                    createMemberCard(); // Re-add the default participant after successful submission
+                } else {
+                    // Log the error details from the Apps Script
+                    console.error('Apps Script Error Details:', result.details);
+                    showMessage('error', `Submission Failed: ${result.message}`);
+                }
+
+            } catch (error) {
+                console.error('Network or fetch error:', error);
+                // The network error itself may not be the root cause, but we still display a message.
+                showMessage('error', 'A network error occurred. Please try again.');
+            } finally {
+                loadingSpinner.classList.add('hidden');
+                updateSubmitButtonState();
+            }
+        });
+
+        // --- Event Listeners and Initial Setup ---
+        addMemberBtn.addEventListener('click', createMemberCard);
+
+        // Listeners for main form inputs to update submit button status
+        Array.from(form.querySelectorAll('input:required, select:required')).forEach(input => {
+            input.addEventListener('input', updateSubmitButtonState);
+        });
+        
+        // --- Initialization ---
+
+        // Populate the time dropdowns
+        generateTimeOptions('arrival-time');
+        generateTimeOptions('departure-time');
+
+        // Load the first participant card automatically on page load
+        createMemberCard();
+
+        // Initial state update
+        updateSubmitButtonState();
+
+    </script>
+</body>
+</html>
