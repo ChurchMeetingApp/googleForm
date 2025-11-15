@@ -155,7 +155,7 @@
             <label for="language">Language *</label>
             <select id="language" name="language" required onchange="toggleOtherLanguageInput()">
                 <option value="" disabled selected>Select Language</option>
-                <option value="English">English</option><option value="Tamil">Tamil</option><option value="Telugu">Telugu</option>
+                <option value="English">English</option><option value="Hindi">Hindi</option><option value="Tamil">Tamil</option><option value="Telugu">Telugu</option>
                 <option value="Malayalam">Malayalam</option><option value="Marathi">Marathi</option><option value="Kannada">Kannada</option>
                 <option value="Others">Others</option>
             </select>
@@ -262,12 +262,12 @@
                 <input type="hidden" name="accommodation_type" id="accommodation_type_hidden"> 
                 <div id="accommodation_type_group">
                     <label>
-                        <input type="radio" name="accommodation_type_radio" value="Non-AC 1600" onclick="document.getElementById('accommodation_type_hidden').value='Non-AC 1600';" >
-                        **Non-AC** Package (₹1600) - 4 or 5 beds
+                        <input type="radio" name="accommodation_type_radio" value="Non-AC" onclick="document.getElementById('accommodation_type_hidden').value='Non-AC';" >
+                        **Non-AC** - 4 or 5 beds per room.
                     </label>
                     <label>
-                        <input type="radio" name="accommodation_type_radio" value="AC 800" onclick="document.getElementById('accommodation_type_hidden').value='AC 3200';" >
-                        **AC** Per bed (₹3200)
+                        <input type="radio" name="accommodation_type_radio" value="AC 800" onclick="document.getElementById('accommodation_type_hidden').value='AC';" >
+                        **AC** - 3 beds per room.
                     </label>
                 </div>
             </div>
@@ -590,5 +590,6 @@
 </body>
 
 </html>
+
 
 
