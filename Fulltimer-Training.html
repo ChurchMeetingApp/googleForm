@@ -67,7 +67,7 @@
             margin-left: 5px;
         }
 
-        /* Spacing for Extra Stay Dates */
+        /* Spacing for Extra Stay Dates (now Nights) */
         .extra-stay-date-group {
             margin-bottom: 20px; 
             padding: 10px; 
@@ -83,7 +83,7 @@
             color: #555;
             display: block;
         }
-        .extra-stay-date-group input[type="date"] {
+        .extra-stay-date-group select { /* Changed from input[type="date"] to select */
             margin-top: 5px; 
             margin-bottom: 0; 
         }
@@ -273,16 +273,24 @@
             </div>
 
             <div class="form-group">
-                <label>Extra Stay Nights (Dates) 🌙</label>
+                <label>Extra Stay Nights 🌙</label>
                 
                 <div class="extra-stay-date-group">
-                    <label for="extra_stay_before">**Before Training** Date (Jan 7th, 2026 or earlier):</label>
-                    <input type="date" id="extra_stay_before" name="extra_stay_before">
+                    <label for="extra_nights_before">**Before Training** Extra Nights (Max 2):</label>
+                    <select id="extra_nights_before" name="extra_nights_before">
+                        <option value="0" selected>0 Nights</option>
+                        <option value="1">1 Night (Jan 7th)</option>
+                        <option value="2">2 Nights (Jan 6th & 7th)</option>
+                    </select>
                 </div>
 
                 <div class="extra-stay-date-group">
-                    <label for="extra_stay_after">**After Training** Date (Jan 10th, 2026 or later):</label>
-                    <input type="date" id="extra_stay_after" name="extra_stay_after">
+                    <label for="extra_nights_after">**After Training** Extra Nights (Max 2):</label>
+                    <select id="extra_nights_after" name="extra_nights_after">
+                        <option value="0" selected>0 Nights</option>
+                        <option value="1">1 Night (Jan 10th)</option>
+                        <option value="2">2 Nights (Jan 10th & 11th)</option>
+                    </select>
                 </div>
             </div>
 
@@ -293,11 +301,11 @@
                 <div id="extra_stay_bed_group">
                     <label>
                         <input type="radio" name="extra_stay_bed_radio" value="Non-AC 525" onclick="document.getElementById('extra_stay_bed_hidden').value='Non-AC 525';" >
-                        **Non-AC** Bed Only (₹525)
+                        **Non-AC** Bed Only (₹525 per night)
                     </label>
                     <label>
                         <input type="radio" name="extra_stay_bed_radio" value="AC 800" onclick="document.getElementById('extra_stay_bed_hidden').value='AC 800';" >
-                        **AC** Bed Only (₹800)
+                        **AC** Bed Only (₹800 per night)
                     </label>
                     <label>
                         <input type="radio" name="extra_stay_bed_radio" value="None" onclick="document.getElementById('extra_stay_bed_hidden').value='None';" >
@@ -316,7 +324,7 @@
     const TRAINING_END = new Date('2026-01-10T00:00:00');
     let memberCount = 0; // Tracks the number of family members added
 
-    // --- Template for a New Family Member (UPDATED: Language added back) ---
+    // --- Template for a New Family Member (UPDATED: Hindi added) ---
     function getMemberFieldsTemplate(count) {
         const id = count;
         return `
@@ -348,7 +356,7 @@
                     <select id="family_language_${id}" name="family_language_${id}" data-required-family="true" onchange="toggleFamilyOtherLanguageInput(${id})">
                         <option value="" disabled selected>Select Language</option>
                         <option value="English">English</option>
-                        <option value="Tamil">Tamil</option>
+                        <option value="Hindi">Hindi</option> <option value="Tamil">Tamil</option>
                         <option value="Telugu">Telugu</option>
                         <option value="Malayalam">Malayalam</option>
                         <option value="Marathi">Marathi</option>
@@ -400,7 +408,7 @@
         
         if (isFamilySelected) {
             panel.style.display = 'block';
-            if (memberCount === 0) {
+            if (document.getElementById('family_member_list').children.length === 0) { // Check for existing members using the list children count
                  addFamilyMember(); // Automatically add the first member if none exist
             } else {
                 toggleFamilyRequired(true);
@@ -523,35 +531,31 @@
             return false;
         }
 
-        // --- EXTRA STAY VALIDATION (Existing) ---
+        // --- EXTRA STAY VALIDATION (UPDATED FOR NIGHTS DROPDOWN) ---
         const accRequired = document.getElementById('accommodation_required').value;
-        const extraStayBefore = document.getElementById('extra_stay_before').value;
-        const extraStayAfter = document.getElementById('extra_stay_after').value;
+        const extraNightsBefore = parseInt(document.getElementById('extra_nights_before').value, 10);
+        const extraNightsAfter = parseInt(document.getElementById('extra_nights_after').value, 10);
         const extraStayType = document.getElementById('extra_stay_bed_hidden').value;
-
+        
         if (accRequired === 'Yes') {
-            const hasExtraStayDate = extraStayBefore || extraStayAfter;
+            const hasExtraStay = extraNightsBefore > 0 || extraNightsAfter > 0;
             
-            if (hasExtraStayDate && extraStayType === 'None') {
-                alert("You have selected an extra stay date(s) but chose 'None' for Extra Stay Bed Type. Please select Non-AC or AC.");
+            // Check if extra stay bed type is required and not selected
+            if (!document.querySelector('input[name="accommodation_type_radio"]:checked')) {
+                alert("Please select an Accommodation Type (Non-AC or AC) for the main stay.");
+                return false;
+            }
+
+            // Check if extra stay bed type is required and set to 'None' when extra nights are selected
+            if (hasExtraStay && extraStayType === 'None') {
+                alert("You have selected extra night(s) but chose 'None' for Extra Stay Bed Type. Please select Non-AC or AC.");
                 return false;
             }
             
-            if (extraStayBefore) {
-                const dateBefore = new Date(extraStayBefore + 'T00:00:00');
-                if (dateBefore >= TRAINING_START) {
-                    alert("The 'Before Training' Date must be Jan 7th, 2026 or earlier (your last night before training begins).");
-                    document.getElementById('extra_stay_before').focus();
-                    return false;
-                }
-            }
-            if (extraStayAfter) {
-                const dateAfter = new Date(extraStayAfter + 'T00:00:00');
-                if (dateAfter <= TRAINING_END) {
-                    alert("The 'After Training' Date must be Jan 10th, 2026 or later (your last night after training ends).");
-                    document.getElementById('extra_stay_after').focus();
-                    return false;
-                }
+            // Ensure extra stay bed type is selected if accommodation is required, regardless of extra nights
+            if (extraStayType === '') {
+                alert("Please select an option for Extra Stay Bed Type.");
+                return false;
             }
         }
         
@@ -579,17 +583,13 @@
         
         // If family is checked, we add the first member and ensure the conditional inputs are checked
         if(isFamilyChecked) {
-             addFamilyMember(); 
+             toggleFamilyFields(true); // Call this to handle initial member adding/required state
         }
         
         toggleOtherLanguageInput(); 
         toggleAccommodationFields();
-        toggleFamilyFields(isFamilyChecked);
     }; 
 </script>
 </body>
 
 </html>
-
-
-
