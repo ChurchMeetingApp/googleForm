@@ -142,7 +142,7 @@
         <h2>Personal Details</h2>
         <div class="form-group"><label for="name">Full Name of Registrant *</label><input type="text" id="name" name="name" required></div>
         <div class="form-group">
-            <label for="designation">Brother's or Sister's *</label>
+            <label for="designation">Brother / Sister *</label>
             <select id="designation" name="designation" required>
                 <option value="" disabled selected>Select Designation</option>
                 <option value="Brother">Brother</option><option value="Sister">Sister</option>
@@ -211,9 +211,9 @@
             
             <button type="button" onclick="addFamilyMember()" class="add-member-button">➕ Add Another Member</button>
         </div>
-        <h2>Responsible Brother Details</h2>
-        <div class="form-group"><label for="resp_name">Responsible Brother's Name</label><input type="text" id="resp_name" name="resp_name"></div>
-        <div class="form-group"><label for="resp_mobile">Responsible Br Mobile Number</label><input type="tel" id="resp_mobile" name="resp_mobile" pattern="[0-9]{10}" placeholder="10 Digits"></div>
+        <h2>Responsible Brother Details *</h2>
+        <div class="form-group"><label for="resp_name">Responsible Brother's Name *</label><input type="text" id="resp_name" name="resp_name" required></div>
+        <div class="form-group"><label for="resp_mobile">Responsible Br Mobile Number *</label><input type="tel" id="resp_mobile" name="resp_mobile" pattern="[0-9]{10}" placeholder="10 Digits" required></div>
 
         <h2>Travel & Accommodation</h2>
         
@@ -338,7 +338,7 @@
                 </div>
                 
                 <div class="form-group">
-                    <label for="family_designation_${id}">Brother's or Sister's *</label>
+                    <label for="family_designation_${id}">Brother / Sister *</label>
                     <select id="family_designation_${id}" name="family_designation_${id}" data-required-family="true">
                         <option value="" disabled selected>Select Designation</option>
                         <option value="Brother">Brother</option>
@@ -515,8 +515,11 @@
         }
 
         const mobileResp = document.getElementById('resp_mobile');
+        // MODIFICATION: The mobileResp is now required by HTML5 validation, so we only need to check the length, 
+        // but the current JS validation for the responsible brother's mobile is now redundant for required check. 
+        // It's kept for length check if provided (though it is required now). 
         if (mobileResp.value && mobileResp.value.length !== 10) {
-            alert("Responsible Brother's Mobile Number must be exactly 10 digits if provided.");
+            alert("Responsible Brother's Mobile Number must be exactly 10 digits.");
             mobileResp.focus();
             return false;
         }
