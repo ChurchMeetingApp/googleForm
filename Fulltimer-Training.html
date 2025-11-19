@@ -15,6 +15,7 @@
             padding: 20px; 
             border-radius: 8px; 
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); 
+            position: relative; /* Needed for the loader overlay */
         }
         h1 { text-align: center; color: #007bff; } 
         h2 { text-align: center; color: #333; border-bottom: 1px solid #ddd; padding-bottom: 5px; margin-top: 20px; }
@@ -83,7 +84,7 @@
             color: #555;
             display: block;
         }
-        .extra-stay-date-group select { /* Changed from input[type="date"] to select */
+        .extra-stay-date-group select { 
             margin-top: 5px; 
             margin-bottom: 0; 
         }
@@ -131,13 +132,66 @@
             padding: 5px 10px;
             font-size: 0.8em;
         }
+
+        /* --- NEW STYLES FOR LOADER AND RESULT --- */
+
+        #loader-overlay {
+            display: none; /* Hidden by default */
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.8);
+            text-align: center;
+        }
+        .spinner {
+            border: 8px solid #f3f3f3;
+            border-top: 8px solid #007bff;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+            margin: 25% auto 15px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        #result-panel {
+            display: none; /* Hidden by default */
+            padding: 30px;
+            text-align: center;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-size: 1.1em;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
     </style>
 </head>
 <body>
 
-<div class="container">
+<div id="loader-overlay">
+    <div class="spinner"></div>
+    <p style="font-size: 1.2em; color: #007bff;">Submitting Registration...</p>
+</div>
+
+<div class="container" id="form-container">
     <h1>FullTimer's Training 8 Jan to 10 Jan 2026 Registration</h1>
-    <form id="registrationForm" onsubmit="return validateForm()" action="/submit-registration" method="POST">
+    
+    <div id="result-panel"></div>
+
+    <form id="registrationForm" onsubmit="handleFormSubmission(event)">
         
         <h2>Personal Details</h2>
         <div class="form-group"><label for="name">Full Name of Registrant *</label><input type="text" id="name" name="name" required></div>
@@ -206,6 +260,8 @@
             <h3>Additional Family Member Details</h3>
             <p style="font-size: 0.8em; font-style: italic;">Provide details for all accompanying family members.</p>
             
+            <input type="hidden" name="family_data_summary" id="family_data_summary">
+            
             <div id="family_member_list">
                 </div>
             
@@ -226,7 +282,6 @@
                     <option value="" disabled selected>Hour (00-23)</option>
                     </select>
                 <select id="arrival_minute" name="arrival_minute" required>
-                    <option value="" disabled selected>Minute (00-59)</option>
                     <option value="00">00</option><option value="15">15</option><option value="30">30</option><option value="45">45</option>
                 </select>
             </div>
@@ -241,7 +296,6 @@
                     <option value="" disabled selected>Hour (00-23)</option>
                     </select>
                 <select id="departure_minute" name="departure_minute" required>
-                    <option value="" disabled selected>Minute (00-59)</option>
                     <option value="00">00</option><option value="15">15</option><option value="30">30</option><option value="45">45</option>
                 </select>
             </div>
@@ -266,8 +320,8 @@
                         **Non-AC** - 4 or 5 beds per room.
                     </label>
                     <label>
-                        <input type="radio" name="accommodation_type_radio" value="AC 800" onclick="document.getElementById('accommodation_type_hidden').value='AC';" >
-                        **AC** - 3 beds per room.
+                        <input type="radio" name="accommodation_type_radio" value="AC 800" onclick="document.getElementById('accommodation_type_hidden').value='AC 800';" >
+                        **AC 800** - 3 beds per room.
                     </label>
                 </div>
             </div>
@@ -296,7 +350,7 @@
 
             <div class="form-group">
                 <label for="extra_stay_bed_group">Extra Stay Bed Type (Without Food) *</label>
-                <input type="hidden" name="extra_stay_bed" id="extra_stay_bed_hidden"> 
+                <input type="hidden" name="extra_stay_bed" id="extra_stay_bed_hidden" value="None"> 
 
                 <div id="extra_stay_bed_group">
                     <label>
@@ -308,53 +362,54 @@
                         **AC** Bed Only (₹800 per night)
                     </label>
                     <label>
-                        <input type="radio" name="extra_stay_bed_radio" value="None" onclick="document.getElementById('extra_stay_bed_hidden').value='None';" >
+                        <input type="radio" name="extra_stay_bed_radio" value="None" onclick="document.getElementById('extra_stay_bed_hidden').value='None';" checked>
                         **None**
                     </label>
                 </div>
             </div>
         </div>
         
-        <button type="submit" class="submit-button">Submit Registration</button>
+        <button type="submit" class="submit-button" id="submit-button">Submit Registration</button>
     </form>
 </div>
 
 <script>
-    const TRAINING_START = new Date('2026-01-08T00:00:00');
-    const TRAINING_END = new Date('2026-01-10T00:00:00');
+    // 🛑 Apps Script Web App URL
+    // NOTE: This URL must be from a deployed script with "Execute as: User accessing the web app" and "Who has access: Anyone"
+    const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx7JfCjR-uMbP0w5W85vDtjfwYGI4Si4S1jvh_IPhcS_IT-YMUV_IBHoKaekUQAZCwqnQ/exec';
+    
+    // const TRAINING_START = new Date('2026-01-08T00:00:00'); // Removed: not used
+    // const TRAINING_END = new Date('2026-01-10T00:00:00'); // Removed: not used
     let memberCount = 0; // Tracks the number of family members added
 
-    // --- Template for a New Family Member (UPDATED: Hindi added) ---
+    // --- Template for a New Family Member (Inputs only, using placeholders) ---
     function getMemberFieldsTemplate(count) {
         const id = count;
         return `
             <div class="family-member-box" id="member_box_${id}">
                 <button type="button" class="remove-member-button" onclick="removeFamilyMember(${id})">X Remove</button>
-                <h4 style="margin-top: 5px;">Family Member ${count}</h4>
+                
+                <p style="font-weight: bold; margin-bottom: 10px;">Family Member ${count}</p>
                 
                 <div class="form-group">
-                    <label for="family_name_${id}">Full Name *</label>
-                    <input type="text" id="family_name_${id}" name="family_name_${id}" data-required-family="true">
+                    <input type="text" id="family_name_${id}" name="family_name_${id}" data-required-family="true" placeholder="Full Name of Member *">
                 </div>
                 
                 <div class="form-group">
-                    <label for="family_designation_${id}">Brother / Sister *</label>
                     <select id="family_designation_${id}" name="family_designation_${id}" data-required-family="true">
-                        <option value="" disabled selected>Select Designation</option>
+                        <option value="" disabled selected>Brother / Sister *</option>
                         <option value="Brother">Brother</option>
                         <option value="Sister">Sister</option>
                     </select>
                 </div>
                 
                 <div class="form-group">
-                    <label for="family_age_${id}">Age *</label>
-                    <input type="number" id="family_age_${id}" name="family_age_${id}" min="1" max="99" data-required-family="true">
+                    <input type="number" id="family_age_${id}" name="family_age_${id}" min="1" max="99" data-required-family="true" placeholder="Age *">
                 </div>
                 
                 <div class="form-group">
-                    <label for="family_language_${id}">Language *</label>
                     <select id="family_language_${id}" name="family_language_${id}" data-required-family="true" onchange="toggleFamilyOtherLanguageInput(${id})">
-                        <option value="" disabled selected>Select Language</option>
+                        <option value="" disabled selected>Language *</option>
                         <option value="English">English</option>
                         <option value="Hindi">Hindi</option> <option value="Tamil">Tamil</option>
                         <option value="Telugu">Telugu</option>
@@ -365,8 +420,7 @@
                     </select>
                 </div>
                 <div class="form-group" id="family_other_language_group_${id}" style="display: none;">
-                    <label for="family_other_language_${id}">Please specify Language *</label>
-                    <input type="text" id="family_other_language_${id}" name="family_other_language_${id}">
+                    <input type="text" id="family_other_language_${id}" name="family_other_language_${id}" placeholder="Please specify Language *">
                 </div>
 
             </div>
@@ -474,15 +528,56 @@
             mainAcc.required = false;
             extraAcc.required = false;
             
+            // Reset values to their defaults when hidden
             mainAcc.value = '';
-            extraAcc.value = '';
+            extraAcc.value = 'None'; // Explicitly set to 'None' default
             
             document.querySelectorAll('input[name="accommodation_type_radio"]:checked').forEach(radio => radio.checked = false);
-            document.querySelectorAll('input[name="extra_stay_bed_radio"]:checked').forEach(radio => radio.checked = false);
+            // Ensure the 'None' radio is checked when hidden
+            const noneRadio = document.querySelector('input[name="extra_stay_bed_radio"][value="None"]');
+            if (noneRadio) {
+                noneRadio.checked = true;
+            }
         }
     }
+    
+    // --- NEW FUNCTION: Aggregates family member data into a single CSV string ---
+    function aggregateFamilyData() {
+        const familyDataSummary = document.getElementById('family_data_summary');
+        const memberList = document.getElementById('family_member_list').children;
+        let data = [];
+        
+        // Loop through all currently displayed family member boxes
+        Array.from(memberList).forEach(box => {
+            const idMatch = box.id.match(/member_box_(\d+)/);
+            if (idMatch) {
+                const id = idMatch[1];
+                
+                // Collect values, defaulting to 'N/A' if empty, though validation should prevent this.
+                const name = document.getElementById(`family_name_${id}`).value.trim() || 'N/A';
+                const designation = document.getElementById(`family_designation_${id}`).value.trim() || 'N/A';
+                const age = document.getElementById(`family_age_${id}`).value.trim() || 'N/A';
+                
+                let language = document.getElementById(`family_language_${id}`).value.trim();
+                const otherLangInput = document.getElementById(`family_other_language_${id}`);
+                
+                // Use the 'Other Language' input value if 'Others' is selected
+                if (language === 'Others' && otherLangInput) {
+                    language = otherLangInput.value.trim() || 'Others-Specified';
+                } else if (language === '') {
+                    language = 'N/A';
+                }
+                
+                // Format: name,designation,age,language
+                data.push(`${name},${designation},${age},${language}`);
+            }
+        });
+        
+        // Set the hidden field value in the format: "member1,data|member2,data"
+        familyDataSummary.value = data.join('|');
+    }
 
-    // Main validation function 
+    // Main validation function (now called by handleFormSubmission)
     function validateForm() {
         // 1. HTML5 Built-in Validation
         if (!document.getElementById('registrationForm').checkValidity()) {
@@ -492,7 +587,7 @@
         // 2. Custom JavaScript Validation (Age, Mobile)
         const age = document.getElementById('age').value;
         if (age < 18 || age > 99) {
-            alert("Registrant Age must be between 18 and 99.");
+            alert("Registrant Age must be between 18 and 99."); 
             document.getElementById('age').focus();
             return false;
         }
@@ -501,7 +596,7 @@
         const familyAgeFields = document.querySelectorAll('input[id^="family_age_"]');
         for (const field of familyAgeFields) {
             if (field.required && (field.value < 1 || field.value > 99)) {
-                alert(`Family Member Age (${field.value}) must be between 1 and 99.`);
+                alert(`Family Member Age (${field.value}) must be between 1 and 99.`); 
                 field.focus();
                 return false;
             }
@@ -509,17 +604,14 @@
         
         const mobileSelf = document.getElementById('mobile').value;
         if (mobileSelf.length !== 10) {
-            alert("Your Mobile Number must be exactly 10 digits.");
+            alert("Your Mobile Number must be exactly 10 digits."); 
             document.getElementById('mobile').focus();
             return false;
         }
 
         const mobileResp = document.getElementById('resp_mobile');
-        // MODIFICATION: The mobileResp is now required by HTML5 validation, so we only need to check the length, 
-        // but the current JS validation for the responsible brother's mobile is now redundant for required check. 
-        // It's kept for length check if provided (though it is required now). 
         if (mobileResp.value && mobileResp.value.length !== 10) {
-            alert("Responsible Brother's Mobile Number must be exactly 10 digits.");
+            alert("Responsible Brother's Mobile Number must be exactly 10 digits."); 
             mobileResp.focus();
             return false;
         }
@@ -529,40 +621,136 @@
         const departureDate = new Date(document.getElementById('departure_date').value);
         
         if (departureDate < arrivalDate) {
-            alert("Date of Departure cannot be before the Date of Arrival.");
+            alert("Date of Departure cannot be before the Date of Arrival."); 
             document.getElementById('departure_date').focus();
             return false;
         }
 
-        // --- EXTRA STAY VALIDATION (UPDATED FOR NIGHTS DROPDOWN) ---
+        // --- EXTRA STAY VALIDATION ---
         const accRequired = document.getElementById('accommodation_required').value;
-        const extraNightsBefore = parseInt(document.getElementById('extra_nights_before').value, 10);
-        const extraNightsAfter = parseInt(document.getElementById('extra_nights_after').value, 10);
-        const extraStayType = document.getElementById('extra_stay_bed_hidden').value;
         
         if (accRequired === 'Yes') {
-            const hasExtraStay = extraNightsBefore > 0 || extraNightsAfter > 0;
+            const extraNightsBefore = parseInt(document.getElementById('extra_nights_before').value, 10);
+            const extraNightsAfter = parseInt(document.getElementById('extra_nights_after').value, 10);
+            const totalExtraNights = extraNightsBefore + extraNightsAfter;
+            const extraStayType = document.getElementById('extra_stay_bed_hidden').value;
             
-            // Check if extra stay bed type is required and not selected
+            // Check if accommodation type (main stay) is selected
             if (!document.querySelector('input[name="accommodation_type_radio"]:checked')) {
-                alert("Please select an Accommodation Type (Non-AC or AC) for the main stay.");
+                alert("Please select an Accommodation Type (Non-AC or AC) for the main stay."); 
                 return false;
             }
 
-            // Check if extra stay bed type is required and set to 'None' when extra nights are selected
-            if (hasExtraStay && extraStayType === 'None') {
-                alert("You have selected extra night(s) but chose 'None' for Extra Stay Bed Type. Please select Non-AC or AC.");
+            // A. New Rule: If extra stay bed type is AC or Non-AC, but zero nights are selected
+            if (extraStayType !== 'None' && totalExtraNights === 0) {
+                alert("You have selected an Extra Stay Bed Type, but zero extra nights. Please select 1 or 2 nights before or after the training.");
+                return false;
+            }
+
+            // B. Previous Rule: If extra nights are selected, but bed type is 'None'
+            if (totalExtraNights > 0 && extraStayType === 'None') {
+                alert("You have selected extra night(s) but chose 'None' for Extra Stay Bed Type. Please select Non-AC or AC for your extra stay."); 
                 return false;
             }
             
-            // Ensure extra stay bed type is selected if accommodation is required, regardless of extra nights
+            // C. General check (should be covered by the radio button requirement, but good practice)
             if (extraStayType === '') {
-                alert("Please select an option for Extra Stay Bed Type.");
+                alert("Please select an option for Extra Stay Bed Type."); 
                 return false;
             }
         }
         
         return true;
+    }
+
+    // --- NEW FUNCTION: Handles the AJAX submission and UI updates ---
+    async function handleFormSubmission(event) {
+        event.preventDefault(); // Stop default form submission (redirect)
+        
+        const form = document.getElementById('registrationForm');
+        const submitButton = document.getElementById('submit-button');
+        const resultPanel = document.getElementById('result-panel');
+
+        // 1. Run form validation
+        if (!validateForm()) {
+            // Trigger browser's validation messages (for standard required fields)
+            form.reportValidity();
+            return;
+        }
+        
+        // 2. Aggregate family data into the hidden field before submission
+        aggregateFamilyData(); 
+
+        // 3. Disable button and show loader
+        submitButton.disabled = true;
+        document.getElementById('loader-overlay').style.display = 'block';
+        resultPanel.style.display = 'none';
+
+        // 4. Prepare form data
+        const formData = new FormData(form);
+
+        try {
+            // 5. Send data to Apps Script Web App
+            const response = await fetch(APPS_SCRIPT_URL, {
+                method: 'POST',
+                body: formData
+            });
+
+            // 6. Handle response
+            let result;
+            let success = response.ok; // Checks for 200-299 status code
+
+            if (success) {
+                // Try to parse JSON (expected response from updated Apps Script)
+                try {
+                    result = await response.json();
+                } catch (e) {
+                    // Fallback for old Apps Script that returns HTML/Text
+                    const text = await response.text();
+                    if (text.toLowerCase().includes('successful')) {
+                        result = { status: 'success', message: 'Registration Successful. Data has been logged.' };
+                    } else {
+                        // This indicates a bad deployment or non-JSON/non-HTML successful response
+                        result = { status: 'error', message: 'An unknown server error occurred. Please ensure your Apps Script is deployed to return JSON.' };
+                        success = false;
+                    }
+                }
+            } else {
+                // Handles 4xx or 5xx HTTP errors
+                result = { status: 'error', message: `Server returned error status: ${response.status}. Please check Apps Script deployment permissions.` };
+            }
+            
+            // 7. Display result
+            displayResult(result.status, result.message);
+
+            if (result.status === 'success') {
+                form.reset(); // Clear form on success
+                toggleFamilyFields(false); // Hide family panel
+                toggleAccommodationFields(); // Hide accommodation panel
+            }
+
+        } catch (error) {
+            // 8. Handle network errors
+            console.error('Submission error:', error);
+            displayResult('error', 'Network or Fetch error: Could not connect to the server. Check your console for details. (Commonly caused by an invalid Apps Script URL or deployment setting.)');
+        } finally {
+            // 9. Hide loader and re-enable button (regardless of outcome)
+            document.getElementById('loader-overlay').style.display = 'none';
+            submitButton.disabled = false;
+        }
+    }
+
+    function displayResult(status, message) {
+        const resultPanel = document.getElementById('result-panel');
+        const form = document.getElementById('registrationForm');
+
+        resultPanel.className = status === 'success' ? 'success' : 'error';
+        resultPanel.innerHTML = `<h2>${status === 'success' ? '✅ Success!' : '❌ Error!'}</h2><p>${message}</p>`;
+        
+        resultPanel.style.display = 'block';
+        
+        // Hide form on success, keep it visible on error
+        form.style.display = status === 'success' ? 'none' : 'block';
     }
     
     // Initial check on load 
