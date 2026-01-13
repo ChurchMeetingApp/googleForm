@@ -3,595 +3,207 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bidar Outreach Service Portal - Registration</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <title>Video Training Registration</title>
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f7f9fc;
+        :root { --primary: #2563eb; --bg: #f8fafc; --border: #cbd5e1; --error: #dc2626; --success: #16a34a; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg); padding: 20px; color: #1e293b; }
+        .form-card { max-width: 700px; margin: 0 auto; background: white; padding: 35px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        h2 { color: var(--primary); text-align: center; margin-bottom: 30px; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; font-size: 14px; font-weight: 600; color: #475569; margin-bottom: 8px; }
+        select, input { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; box-sizing: border-box; }
+        
+        #pt-container { 
+            display: none; 
+            background: #f1f5f9; 
+            padding: 20px; 
+            border-radius: 12px; 
+            margin-top: 20px; 
+            max-height: 400px; 
+            overflow-y: auto; 
+            border: 2px solid #cbd5e1;
         }
-        .container-box {
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        }
-        input[type="date"], input[type="time"], input[type="text"], input[type="tel"], select {
-            border: 1px solid #e2e8f0;
-            padding: 0.75rem;
-            border-radius: 0.5rem;
-            transition: border-color 0.2s, box-shadow 0.2s; /* Added box-shadow transition */
-            width: 100%;
-        }
-        input:focus, select:focus {
-            border-color: #4f46e5;
-            outline: none;
-        }
-        .member-card {
-            border: 1px solid #e2e8f0;
-            background-color: #ffffff;
-            transition: box-shadow 0.3s;
-        }
-        .member-card:hover {
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-        }
-        /* NEW: Invalid Field Highlight Style */
-        .is-invalid {
-            border-color: #ef4444 !important; /* Tailwind red-500 */
-            box-shadow: 0 0 0 1px #ef4444;
-        }
-        /* Custom scrollbar for better aesthetics */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #9ca3af;
-            border-radius: 10px;
-        }
+        
+        .counter-badge { background: #dbeafe; color: var(--primary); padding: 8px 16px; border-radius: 30px; font-size: 13px; font-weight: 700; margin-bottom: 15px; position: sticky; top: 0; z-index: 10; display: inline-block; }
+        .date-section { margin-bottom: 15px; background: white; padding: 10px 15px; border-radius: 8px; border-left: 5px solid var(--primary); }
+        .date-label { font-weight: 800; font-size: 15px; display: block; margin-bottom: 10px; color: var(--primary); }
+        .check-item { display: flex; align-items: center; padding: 8px 12px; cursor: pointer; border-radius: 6px; }
+        .check-item input { width: 18px; height: 18px; margin-right: 15px; }
+        
+        .error-text { background-color: #fee2e2; color: var(--error); padding: 12px; border-radius: 8px; font-size: 14px; display: none; font-weight: 700; margin-top: 20px; border: 1px solid var(--error); text-align: center; }
+        .btn-submit { width: 100%; background: var(--primary); color: white; padding: 16px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; font-size: 16px; transition: 0.3s; }
+        .btn-submit:disabled { background: #94a3b8; cursor: not-allowed; }
+        .success-msg { color: var(--success); text-align: center; display: none; margin-top: 20px; font-weight: bold; }
+        .row-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
     </style>
 </head>
-<body class="p-4 sm:p-8 min-h-screen">
-    <div class="max-w-4xl mx-auto">
+<body>
 
-        <header class="text-center mb-8">
-            <h1 class="text-3xl sm:text-4xl font-extrabold text-indigo-700">Bidar Outreach Service Portal</h1>
-            <p class="text-gray-600 mt-2">Trip Dates: Nov-16-2025 to Dec-21-2025</p>
-        </header>
+<div class="form-card">
+    <h2>Video Trainee Registration</h2>
+    <form id="traineeForm">
+        <div class="form-group">
+            <label>Trainee Name</label>
+            <select id="name" required onchange="handleNameChange()">
+                <option value="">Connecting...</option>
+            </select>
+        </div>
 
-        <div id="status-box" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
-            <div class="bg-white p-6 rounded-xl shadow-2xl w-full max-w-sm text-center">
-                <div id="status-icon" class="mb-4"></div>
-                <p id="status-text" class="text-lg font-medium text-gray-800"></p>
-                <button id="status-close-btn" onclick="hideStatus()" class="mt-4 px-4 py-2 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition">Close</button>
+        <div class="row-grid">
+            <div class="form-group"><label>Language</label><input type="text" id="language" readonly style="background:#f1f5f9;"></div>
+            <div class="form-group">
+                <label>Location</label>
+                <select id="location" required>
+                    <option value="">Select Location</option>
+                    <option value="Hebbagodi">Hebbagodi</option>
+                    <option value="Indira Nagar">Indira Nagar</option>
+                </select>
             </div>
         </div>
 
-        <div id="registration-view" class="view-content">
-            <form id="registration-form" class="container-box p-6 sm:p-10 bg-white rounded-2xl space-y-8">
-    
-                <section>
-                    <h2 class="text-2xl font-semibold text-gray-800 mb-6 border-b pb-2 flex items-center">
-                        <i data-lucide="users" class="w-6 h-6 mr-2 text-indigo-500"></i>
-                        Participants
-                        <span id="member-count-display" class="ml-2 text-base font-normal text-indigo-600">(0)</span>
-                    </h2>
-    
-                    <div id="members-container" class="space-y-6">
-                        </div>
-    
-                    <button type="button" id="add-member-btn" class="mt-6 w-full py-3 px-4 border border-indigo-200 text-indigo-700 font-semibold rounded-lg shadow-sm hover:bg-indigo-50 transition duration-150 flex items-center justify-center">
-                        <i data-lucide="plus-circle" class="w-5 h-5 mr-2"></i>
-                        Add Participant
-                    </button>
-                    <p class="text-sm text-gray-500 mt-2 text-center">You must add at least one participant.</p>
-                </section>
-    
-                <section>
-                    <h2 class="text-2xl font-semibold text-gray-800 mb-4 border-b pb-2 flex items-center">
-                        <i data-lucide="contact" class="w-6 h-6 mr-2 text-indigo-500"></i>
-                        Main Contact & Trip Details
-                    </h2>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-    
-                        <div>
-                            <label for="mobile-number" class="block text-sm font-medium text-gray-700 mb-1">Mobile Number (Main Contact)</label>
-                            <input type="tel" id="mobile-number" name="mobileNumber" placeholder="e.g., 9876543210" required
-                                class="focus:ring-indigo-500 focus:border-indigo-500">
-                        </div>
-    
-                        <div>
-                            <label for="accommodation" class="block text-sm font-medium text-gray-700 mb-1">Accommodation Required?</label>
-                            <select id="accommodation" name="accommodation" required
-                                class="focus:ring-indigo-500 focus:border-indigo-500">
-                                <option value="">Select Option</option>
-                                <option value="Outreach House">Outreach House</option>
-                                <option value="Hotel">Hotel</option>
-                                <option value="No">No</option>
-                            </select>
-                        </div>
-                        
-                        <div>
-                            <label for="location" class="block text-sm font-medium text-gray-700 mb-1">Current Location (City/State)</label>
-                            <input type="text" id="location" name="location" placeholder="e.g., Bangalore, Mysore" required
-                                class="focus:ring-indigo-500 focus:border-indigo-500">
-                        </div>
-                        <div>
-                            <label for="arrival-date" class="block text-sm font-medium text-gray-700 mb-1">Arrival Date</label>
-                            <input type="date" id="arrival-date" name="arrivalDate" required class="focus:ring-indigo-500 focus:border-indigo-500">
-                        </div>
-                        <div>
-                            <label for="arrival-time" class="block text-sm font-medium text-gray-700 mb-1">Arrival Time</label>
-                            <select id="arrival-time" name="arrivalTime" required
-                                class="focus:ring-indigo-500 focus:border-indigo-500">
-                                </select>
-                        </div>
-    
-                        <div>
-                            <label for="departure-date" class="block text-sm font-medium text-gray-700 mb-1">Departure Date</label>
-                            <input type="date" id="departure-date" name="departureDate" required class="focus:ring-indigo-500 focus:border-indigo-500">
-                        </div>
-                        <div>
-                            <label for="departure-time" class="block text-sm font-medium text-gray-700 mb-1">Departure Time</label>
-                            <select id="departure-time" name="departureTime" required
-                                class="focus:ring-indigo-500 focus:border-indigo-500">
-                                </select>
-                        </div>
-                    </div>
-                </section>
-    
-                <div class="pt-6 border-t">
-                    <button type="submit" id="submit-button" class="w-full py-3 px-4 bg-indigo-600 text-white font-bold text-lg rounded-xl shadow-lg hover:bg-indigo-700 transition duration-200 focus:outline-none focus:ring-4 focus:ring-indigo-300 flex items-center justify-center">
-                        <i data-lucide="check-circle" class="w-6 h-6 mr-2"></i>
-                        Finalize and Submit Registration
-                    </button>
-                </div>
-    
-            </form>
-        </div>
-        
-        </div>
+        <div class="form-group"><label>Training Type</label><input type="text" id="trainingType" readonly style="background:#f1f5f9;"></div>
 
-    <script>
-        // Initialize Lucide icons
-        lucide.createIcons();
-
-        // --- Configuration ---
-        //const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzLoI2oWPF-D6HNdmMe6nyXB4TKm_fHldQEgdEU8k7u5I8wZXMC1kmTkvct0VH14Ndc/exec";
-	const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby5c0_rQOOtHJQYaLOwaHZRSxaWsKEuNgozvI1AmbidOe1ziRpjouTllrwgtr1f0Xfs/exec";
-        const LANGUAGES = ['English', 'Kannada', 'Marathi', 'Telugu', 'Tamil', 'Malayalam', 'Hindi'];
-        // Removed: VIEW_IDS, attendanceTableBody, refreshBtn, dateFormatter
-
-        const form = document.getElementById('registration-form');
-        const membersContainer = document.getElementById('members-container');
-        const addMemberBtn = document.getElementById('add-member-btn');
-        const submitButton = document.getElementById('submit-button');
-        const memberCountDisplay = document.getElementById('member-count-display');
-        const statusBox = document.getElementById('status-box'); // Global status box
-
-        let memberCounter = 0; // Use a dedicated counter for unique ID generation
-
-        // --- Status Functions (Simplified) ---
-        
-        // Removed: showView function
-        
-        /**
-         * Shows a status box for success, error, or loading.
-         * @param {string} type - 'success', 'error', or 'loading'.
-         * @param {string} message - The message to display.
-         */
-        function showStatus(type, message) {
-            const iconContainer = document.getElementById('status-icon');
-            const messageText = document.getElementById('status-text');
-            const closeBtn = document.getElementById('status-close-btn');
-
-            let iconHtml = '';
+        <div id="pt-container">
+            <div class="counter-badge">Sessions Selected: <span id="count-val">0</span> / 6 Min</div>
             
-            // Handle loading status with no close button
-            if (type === 'loading') {
-                iconHtml = `<div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>`;
-                messageText.textContent = message || 'Processing request...';
-                closeBtn.classList.add('hidden');
+            <div class="date-section">
+                <span class="date-label">January 24</span>
+                <label class="check-item"><input type="checkbox" name="msg" value="1" onchange="updateCounter()"> Msg 1</label>
+                <label class="check-item"><input type="checkbox" name="msg" value="2" onchange="updateCounter()"> Msg 2</label>
+                <label class="check-item"><input type="checkbox" name="msg" value="3" onchange="updateCounter()"> Msg 3</label>
+            </div>
+            <div class="date-section">
+                <span class="date-label">January 25</span>
+                <label class="check-item"><input type="checkbox" name="msg" value="4" onchange="updateCounter()"> Msg 4</label>
+                <label class="check-item"><input type="checkbox" name="msg" value="5" onchange="updateCounter()"> Msg 5</label>
+                <label class="check-item"><input type="checkbox" name="msg" value="6" onchange="updateCounter()"> Msg 6</label>
+            </div>
+            <div class="date-section">
+                <span class="date-label">January 26</span>
+                <label class="check-item"><input type="checkbox" name="msg" value="7" onchange="updateCounter()"> Msg 7</label>
+                <label class="check-item"><input type="checkbox" name="msg" value="8" onchange="updateCounter()"> Msg 8</label>
+                <label class="check-item"><input type="checkbox" name="msg" value="9" onchange="updateCounter()"> Msg 9</label>
+            </div>
+            <div class="date-section">
+                <span class="date-label">February 1</span>
+                <label class="check-item"><input type="checkbox" name="msg" value="10" onchange="updateCounter()"> Msg 10</label>
+                <label class="check-item"><input type="checkbox" name="msg" value="11" onchange="updateCounter()"> Msg 11</label>
+                <label class="check-item"><input type="checkbox" name="msg" value="12" onchange="updateCounter()"> Msg 12</label>
+            </div>
+        </div>
+
+        <p id="error-min" class="error-text">⚠️ Warning: At least 6 sessions are mandatory for Part Time.</p>
+        <button type="submit" class="btn-submit" id="submitBtn">Update Registration</button>
+        <p class="success-msg" id="msg">🎉 Values Updated in Sheet!</p>
+    </form>
+</div>
+
+<script>
+    const scriptURL = "https://script.google.com/macros/s/AKfycbzEzxzp1gcovMEfkrBHcz6iiemQ4QIhjVM5d8set6ZCW2LWYPHjG90-mR35r-Kya2lrTw/exec";
+    let traineeMasterData = {};
+    let selectedRowId = null;
+
+    window.onload = function() {
+        const script = document.createElement('script');
+        script.src = `${scriptURL}?action=getDropdowns&callback=setupDropdowns`;
+        document.body.appendChild(script);
+    };
+
+    window.setupDropdowns = function(data) {
+        if (!data || !data.trainees) return;
+        traineeMasterData = data.trainees; 
+        const nameSelect = document.getElementById('name');
+        nameSelect.innerHTML = '<option value="">-- Choose Trainee --</option>';
+        Object.keys(traineeMasterData).sort().forEach(name => {
+            nameSelect.innerHTML += `<option value="${name}">${name}</option>`;
+        });
+    };
+
+    function handleNameChange() {
+        const selectedName = document.getElementById('name').value;
+        const locationDropdown = document.getElementById('location');
+        const checkboxes = document.querySelectorAll('input[name="msg"]');
+        
+        locationDropdown.value = "";
+        checkboxes.forEach(cb => cb.checked = false);
+
+        if (selectedName && traineeMasterData[selectedName]) {
+            const trainee = traineeMasterData[selectedName];
+            document.getElementById('language').value = trainee.language || "";
+            document.getElementById('trainingType').value = trainee.type || "";
+            selectedRowId = trainee.rowNum; 
+
+            if (trainee.location) {
+                locationDropdown.value = trainee.location.toString().trim();
+            }
+
+            const container = document.getElementById('pt-container');
+            if (trainee.type === 'PT') {
+                container.style.display = 'block';
+                if (trainee.ftMessages) {
+                    const savedValues = trainee.ftMessages.toString().split(',').map(s => s.trim());
+                    checkboxes.forEach(cb => {
+                        if (savedValues.includes(cb.value)) cb.checked = true;
+                    });
+                }
             } else {
-                // Handle success/error status
-                if (type === 'success' && lucide['check-circle']) {
-                    iconHtml = lucide['check-circle']({ class: 'w-10 h-10 text-green-500 mx-auto' });
-                } else if (type === 'error' && lucide['x-octagon']) {
-                    iconHtml = lucide['x-octagon']({ class: 'w-10 h-10 text-red-500 mx-auto' });
-                }
-                messageText.textContent = message;
-                closeBtn.classList.remove('hidden');
+                container.style.display = 'none';
             }
+            updateCounter();
+        }
+    }
 
-            iconContainer.innerHTML = iconHtml;
-            statusBox.classList.remove('hidden');
+    function updateCounter() {
+        const count = document.querySelectorAll('input[name="msg"]:checked').length;
+        document.getElementById('count-val').innerText = count;
+        if(count >= 6) document.getElementById('error-min').style.display = 'none';
+    }
+
+    document.getElementById('traineeForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const name = document.getElementById('name').value;
+        const type = document.getElementById('trainingType').value;
+        const location = document.getElementById('location').value;
+        const selectedMsgs = Array.from(document.querySelectorAll('input[name="msg"]:checked')).map(cb => cb.value);
+        const finalMsgs = (type === 'FT') ? "All" : selectedMsgs.join(', ');
+
+        if (type === 'PT' && selectedMsgs.length < 6) {
+            document.getElementById('error-min').style.display = 'block';
+            return;
         }
 
-        function hideStatus() {
-            statusBox.classList.add('hidden');
-        }
+        const btn = document.getElementById('submitBtn');
+        btn.innerText = "Updating...";
+        btn.disabled = true;
 
-        // --- Network Utility ---
+        fetch(scriptURL, { 
+            method: 'POST', 
+            mode: 'no-cors', 
+            body: JSON.stringify({
+                action: "add",
+                rowId: selectedRowId,
+                name: name,
+                location: location,
+                ftMessages: finalMsgs
+            }) 
+        })
+        .then(() => {
+            // Update the local data object so the new values "stick"
+            traineeMasterData[name].location = location;
+            traineeMasterData[name].ftMessages = finalMsgs;
 
-        /**
-         * Executes a fetch request with exponential backoff retries.
-         * @param {string} url - The URL to fetch.
-         * @param {Object} options - Fetch options (method, body, headers).
-         * @param {number} maxRetries - Maximum number of retries.
-         */
-        async function fetchWithRetry(url, options = {}, maxRetries = 3) {
-            for (let attempt = 0; attempt < maxRetries; attempt++) {
-                try {
-                    const response = await fetch(url, options);
-                    
-                    if (response.ok) {
-                        return response;
-                    }
-
-                    // Handle bad server response (e.g., 400, 500)
-                    if (attempt === maxRetries - 1) {
-                         // Read the response text for better error logging
-                        const errorText = await response.text();
-                        console.error(`Attempt ${attempt + 1}: Server responded with status ${response.status}. Body: ${errorText}`);
-                        throw new Error(`Server returned status ${response.status} after ${maxRetries} attempts.`);
-                    }
-                    
-                } catch (error) {
-                    console.warn(`Attempt ${attempt + 1}: Fetch failed. Error: ${error.message}`);
-                    if (attempt === maxRetries - 1) {
-                        throw new Error(`Network error after ${maxRetries} attempts.`);
-                    }
-                }
-                
-                // Exponential backoff wait: 1s, 2s, 4s...
-                await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 1000));
-            }
-        }
-
-
-        // --- REGISTRATION FORM FUNCTIONS ---
-
-        function getMemberCount() {
-            return document.querySelectorAll('.member-card').length;
-        }
-
-        /**
-         * Checks for participant count. Field validation is handled by the submit event.
-         */
-        function updateSubmitButtonState() {
-            const currentMemberCount = getMemberCount();
+            btn.innerText = "Saved Successfully!";
+            btn.style.background = "#16a34a";
+            document.getElementById('msg').style.display = "block";
             
-            // The button is only disabled if there are NO participants.
-            submitButton.disabled = currentMemberCount === 0;
-        }
-
-        /**
-         * Validates all required fields, highlights invalid ones, and scrolls to the first error.
-         * @returns {boolean} True if the entire form is valid, false otherwise.
-         */
-        function highlightInvalidFields() {
-            const requiredFields = Array.from(form.querySelectorAll('input:required, select:required, textarea:required'));
-            let firstInvalidField = null;
-            let isValid = true;
-
-            requiredFields.forEach(field => {
-                
-                // Special check for 'Other Language' field: skip validation if disabled
-                if (field.disabled && field.id.startsWith('other-language-input')) {
-                    field.classList.remove('is-invalid');
-                    return; 
-                }
-
-                // Check the validity of the field itself
-                if (!field.checkValidity()) {
-                    field.classList.add('is-invalid');
-                    isValid = false;
-                    if (!firstInvalidField) {
-                        firstInvalidField = field;
-                    }
-                } else {
-                    field.classList.remove('is-invalid');
-                }
-            });
-
-            // Scroll to the first invalid field for better UX
-            if (firstInvalidField) {
-                firstInvalidField.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
-
-            return isValid;
-        }
-        
-        /**
-         * Clears the invalid highlight on input/change and updates button state.
-         */
-        function clearErrorState(event) {
-            const field = event.target;
-            // Clear error state only if the field is now valid
-            if (field.checkValidity()) {
-                field.classList.remove('is-invalid');
-            }
-            updateSubmitButtonState();
-        }
-
-        /**
-         * Generates and populates a select element with 30-minute time intervals.
-         */
-        function generateTimeOptions(selectId) {
-            const selectElement = document.getElementById(selectId);
-            if (!selectElement) return;
-
-            // Add default option
-            selectElement.innerHTML = '<option value="">Select Time</option>'; 
-
-            for (let h = 0; h < 24; h++) {
-                for (let m = 0; m < 60; m += 30) {
-                    const hour = String(h).padStart(2, '0');
-                    const minute = String(m).padStart(2, '0');
-                    const timeValue = `${hour}:${minute}`;
-                    
-                    const option = document.createElement('option');
-                    option.value = timeValue;
-                    option.textContent = timeValue;
-                    selectElement.appendChild(option);
-                }
-            }
-        }
-
-        function createLanguageCheckboxes(uniqueId) {
-            let html = LANGUAGES.map(lang => `
-                <div class="flex items-center">
-                    <input type="checkbox" id="lang-${uniqueId}-${lang.replace(/\s/g, '')}" name="language-${uniqueId}-check" value="${lang}"
-                            class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                    <label for="lang-${uniqueId}-${lang.replace(/\s/g, '')}" class="ml-2 text-sm text-gray-700">${lang}</label>
-                </div>
-            `).join('');
-
-            // Add the 'Other' checkbox
-            html += `
-                <div class="flex items-center">
-                    <input type="checkbox" id="lang-${uniqueId}-Other" name="language-${uniqueId}-other-check"
-                            class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500" data-toggle-target="other-lang-field-${uniqueId}">
-                    <label for="lang-${uniqueId}-Other" class="ml-2 text-sm text-gray-700 font-medium">Other (Specify)</label>
-                </div>
-            `;
-            
-            return html;
-        }
-
-        function createMemberCard() {
-            memberCounter++;
-            const uniqueId = memberCounter; // Use the incrementing counter for unique field names/IDs
-
-            const card = document.createElement('div');
-            card.className = 'member-card p-4 rounded-lg space-y-4';
-            card.setAttribute('data-member-id', uniqueId);
-
-            card.innerHTML = `
-                <div class="flex justify-between items-center border-b pb-2 mb-3">
-                    <h3 class="text-lg font-medium text-indigo-600">Participant ${getMemberCount() + 1}</h3>
-                    <button type="button" class="remove-member-btn text-red-500 hover:text-red-700 transition" data-member-id="${uniqueId}">
-                        <i data-lucide="x-circle" class="w-5 h-5"></i>
-                    </button>
-                </div>
-
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                        <label for="name-${uniqueId}" class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-                        <input type="text" id="name-${uniqueId}" name="name-${uniqueId}" required placeholder="e.g., John Doe"
-                                class="focus:ring-indigo-500 focus:border-indigo-500">
-                    </div>
-
-                    <div>
-                        <label for="sibling-${uniqueId}" class="block text-sm font-medium text-gray-700 mb-1">Brother or Sister?</label>
-                        <select id="sibling-${uniqueId}" name="sibling-${uniqueId}" required
-                                class="focus:ring-indigo-500 focus:border-indigo-500">
-                            <option value="">Select</option>
-                            <option value="Brother">Brother</option>
-                            <option value="Sister">Sister</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Known Languages (Select all that apply)</label>
-                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                        ${createLanguageCheckboxes(uniqueId)}
-                    </div>
-                    
-                    <div id="other-lang-field-${uniqueId}" class="mt-3 hidden">
-                        <label for="other-language-input-${uniqueId}" class="block text-sm font-medium text-gray-700 mb-1">Specify Other Language(s) (e.g., French, German)</label>
-                        <input type="text" id="other-language-input-${uniqueId}" name="other-language-input-${uniqueId}"
-                                class="focus:ring-indigo-500 focus:border-indigo-500" disabled>
-                    </div>
-                </div>
-            `;
-
-            membersContainer.appendChild(card);
-            lucide.createIcons(); // Re-initialize icons for new content
-
-            // Add listener to the new remove button
-            card.querySelector('.remove-member-btn').addEventListener('click', removeMember);
-
-            // Add listener to all new required inputs to update button state and clear errors
-            Array.from(card.querySelectorAll('input, select')).forEach(input => {
-                input.addEventListener('input', clearErrorState);
-                input.addEventListener('change', clearErrorState);
-            });
-            
-            // --- Logic for 'Other (Specify)' Input Field ---
-            const otherCheckbox = card.querySelector(`#lang-${uniqueId}-Other`);
-            const otherInputField = card.querySelector(`#other-language-input-${uniqueId}`);
-            const otherFieldContainer = card.querySelector(`#other-lang-field-${uniqueId}`);
-
-            const toggleOtherInput = () => {
-                if (otherCheckbox.checked) {
-                    otherFieldContainer.classList.remove('hidden');
-                    otherInputField.required = true;
-                    otherInputField.disabled = false;
-                    otherInputField.addEventListener('input', clearErrorState); // Add listener for dynamic field
-                    otherInputField.addEventListener('change', clearErrorState);
-                } else {
-                    otherFieldContainer.classList.add('hidden');
-                    otherInputField.required = false;
-                    otherInputField.disabled = true;
-                    otherInputField.value = ''; // Clear value when hidden
-                    otherInputField.classList.remove('is-invalid'); // Clear error state on uncheck
-                }
-                updateSubmitButtonState();
-            };
-
-            otherCheckbox.addEventListener('change', toggleOtherInput);
-
-
-            memberCountDisplay.textContent = `(${getMemberCount()})`;
-            updateSubmitButtonState();
-        }
-
-        function removeMember(event) {
-            const btn = event.currentTarget;
-            const memberCard = btn.closest('.member-card');
-
-            if (memberCard) {
-                memberCard.remove();
-                memberCountDisplay.textContent = `(${getMemberCount()})`;
-                updateSubmitButtonState();
-
-                // Re-label remaining cards for cleaner UI
-                let currentId = 1;
-                document.querySelectorAll('.member-card').forEach(card => {
-                    const title = card.querySelector('h3');
-                    if(title) title.textContent = `Participant ${currentId}`;
-                    currentId++;
-                });
-            }
-        }
-
-        // --- Form Submission Handler ---
-
-        form.addEventListener('submit', async function(e) {
-            e.preventDefault();
-
-            // STEP 1: Run validation and stop submission if any field is invalid
-            if (!highlightInvalidFields()) {
-                showStatus('error', 'Please fill in all required fields marked in red.');
-                return;
-            }
-
-            if (getMemberCount() === 0) {
-                showStatus('error', 'Please add at least one participant.');
-                return;
-            }
-
-            showStatus('loading', 'Submitting data...');
-            submitButton.disabled = true;
-
-            // 1. Gather all core trip data
-            const mobileNumber = document.getElementById('mobile-number').value;
-            const accommodation = document.getElementById('accommodation').value;
-            const location = document.getElementById('location').value; // COLLECT NEW FIELD
-            const arrivalDate = document.getElementById('arrival-date').value;
-            const arrivalTime = document.getElementById('arrival-time').value;
-            const departureDate = document.getElementById('departure-date').value;
-            const departureTime = document.getElementById('departure-time').value;
-
-            // 2. Gather all member data
-            const membersArray = [];
-            const memberCards = document.querySelectorAll('.member-card');
-
-            memberCards.forEach(card => {
-                const uniqueId = card.getAttribute('data-member-id');
-
-                const nameInput = card.querySelector(`input[name="name-${uniqueId}"]`);
-                const siblingSelect = card.querySelector(`select[name="sibling-${uniqueId}"]`);
-
-                // Collect the fixed languages
-                let selectedLanguages = Array.from(card.querySelectorAll(`input[name="language-${uniqueId}-check"]:checked`))
-                    .map(cb => cb.value);
-                
-                // Collect the 'Other' language input if provided
-                const otherLangInput = card.querySelector(`input[name="other-language-input-${uniqueId}"]`);
-                const otherCheckbox = card.querySelector(`#lang-${uniqueId}-Other`);
-
-                if (otherCheckbox && otherCheckbox.checked && otherLangInput && otherLangInput.value.trim()) {
-                    // Split the comma-separated list from the 'Other' input and add to the array
-                    const specifiedLanguages = otherLangInput.value.split(',').map(s => s.trim()).filter(s => s.length > 0);
-                    selectedLanguages.push(...specifiedLanguages);
-                }
-
-                membersArray.push({
-                    name: nameInput ? nameInput.value : '',
-                    siblingType: siblingSelect ? siblingSelect.value : '',
-                    languages: selectedLanguages
-                });
-            });
-
-            // 3. Construct the payload using FormData
-            const formData = new FormData();
-            formData.append('action', 'submitRegistration'); // Action for the Apps Script
-            formData.append('mobileNumber', mobileNumber);
-            formData.append('accommodation', accommodation);
-            formData.append('location', location); // APPEND NEW FIELD
-            formData.append('arrivalDate', arrivalDate);
-            formData.append('arrivalTime', arrivalTime);
-            formData.append('departureDate', departureDate);
-            formData.append('departureTime', departureTime);
-
-            // CRITICAL: Stringify the array for the 'members' key
-            formData.append('members', JSON.stringify(membersArray));
-
-            try {
-                const response = await fetchWithRetry(APPS_SCRIPT_URL, {
-                    method: 'POST',
-                    body: formData,
-                });
-
-                const result = await response.json();
-
-                if (result.status === 'SUCCESS') {
-                    showStatus('success', result.message);
-                    form.reset(); // Clear form on success
-                    membersContainer.innerHTML = '';
-                    memberCounter = 0; // Reset counter
-                    memberCountDisplay.textContent = `(0)`;
-                    createMemberCard(); // Re-add the default participant after successful submission
-                } else {
-                    // Log the error details from the Apps Script
-                    console.error('Apps Script Error Details:', result.details);
-                    showStatus('error', `Submission Failed: ${result.message}`);
-                }
-
-            } catch (error) {
-                console.error('Network or fetch error:', error);
-                showStatus('error', 'A network error occurred. Please try again. If the issue persists, check the browser console for details.');
-            } finally {
-                updateSubmitButtonState();
-            }
+            setTimeout(() => { 
+                btn.innerText = "Update Registration";
+                btn.style.background = "#2563eb";
+                btn.disabled = false;
+                document.getElementById('msg').style.display = "none"; 
+            }, 3000);
         });
-
-
-        // --- DASHBOARD FUNCTIONS (Removed) ---
-        // Removed fetchAttendanceData() and updateDashboard()
-
-        // --- Initialization ---
-
-        // Populate the time dropdowns
-        generateTimeOptions('arrival-time');
-        generateTimeOptions('departure-time');
-
-        // Load the first participant card automatically on page load
-        createMemberCard();
-
-        // Initial state update
-        updateSubmitButtonState();
-        
-        // Removed: Initial view setup (only registration remains)
-
-        // Event Listeners for registration form (main fields)
-        addMemberBtn.addEventListener('click', createMemberCard);
-        Array.from(form.querySelectorAll('input:required, select:required')).forEach(input => {
-            input.addEventListener('input', clearErrorState);
-            input.addEventListener('change', clearErrorState);
-        });
-
-    </script>
+    });
+</script>
 </body>
-
 </html>
