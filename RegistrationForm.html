@@ -1,59 +1,54 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-   <meta http-equiv="Expires" content="0"> 
     <title>Video Training Registration</title>
     <style>
         :root { --primary: #2563eb; --bg: #f8fafc; --border: #cbd5e1; --error: #dc2626; --success: #16a34a; }
         body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg); padding: 20px; color: #1e293b; }
-        .form-card { max-width: 700px; margin: 0 auto; background: white; padding: 35px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
-        h2 { color: var(--primary); text-align: center; margin-bottom: 30px; }
-        .form-group { margin-bottom: 20px; }
-        label { display: block; font-size: 14px; font-weight: 600; color: #475569; margin-bottom: 8px; }
+        .form-card { max-width: 650px; margin: 0 auto; background: white; padding: 30px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        h2 { color: var(--primary); text-align: center; margin-bottom: 25px; }
+        .form-group { margin-bottom: 18px; }
+        label { display: block; font-size: 14px; font-weight: 600; color: #475569; margin-bottom: 6px; }
         select, input { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; box-sizing: border-box; }
+        select:disabled { background-color: #f1f5f9; cursor: not-allowed; color: #64748b; }
         
-        #pt-container { 
-            display: none; 
-            background: #f1f5f9; 
-            padding: 20px; 
-            border-radius: 12px; 
-            margin-top: 20px; 
-            max-height: 400px; 
-            overflow-y: auto; 
-            border: 2px solid #cbd5e1;
+        /* Proper Alignment for Sessions */
+        #pt-container { display: none; background: #f1f5f9; padding: 15px; border-radius: 12px; margin-top: 15px; border: 2px solid #cbd5e1; }
+        .counter-badge { background: #dbeafe; color: var(--primary); padding: 6px 12px; border-radius: 30px; font-size: 13px; font-weight: 700; margin-bottom: 15px; display: inline-block; }
+        
+        .date-row { 
+            display: grid; 
+            grid-template-columns: 100px 1fr 1fr 1fr; 
+            align-items: center; 
+            padding: 10px; 
+            background: white; 
+            margin-bottom: 6px; 
+            border-radius: 8px; 
+            border-left: 4px solid var(--primary);
         }
+        .date-label { font-weight: 700; font-size: 13px; color: #334155; }
+        .check-item { display: flex; align-items: center; font-size: 13px; cursor: pointer; justify-content: flex-start; }
+        .check-item input { width: 17px; height: 17px; margin-right: 10px; cursor: pointer; }
         
-        .counter-badge { background: #dbeafe; color: var(--primary); padding: 8px 16px; border-radius: 30px; font-size: 13px; font-weight: 700; margin-bottom: 15px; position: sticky; top: 0; z-index: 10; display: inline-block; }
-        .date-section { margin-bottom: 15px; background: white; padding: 10px 15px; border-radius: 8px; border-left: 5px solid var(--primary); }
-        .date-label { font-weight: 800; font-size: 15px; display: block; margin-bottom: 10px; color: var(--primary); }
-        .check-item { display: flex; align-items: center; padding: 8px 12px; cursor: pointer; border-radius: 6px; }
-        .check-item input { width: 18px; height: 18px; margin-right: 15px; }
-        
-        .error-text { background-color: #fee2e2; color: var(--error); padding: 12px; border-radius: 8px; font-size: 14px; display: none; font-weight: 700; margin-top: 20px; border: 1px solid var(--error); text-align: center; }
-        .btn-submit { width: 100%; background: var(--primary); color: white; padding: 16px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; font-size: 16px; transition: 0.3s; }
-        .btn-submit:disabled { background: #94a3b8; cursor: not-allowed; }
-        .success-msg { color: var(--success); text-align: center; display: none; margin-top: 20px; font-weight: bold; }
-        .row-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .btn-submit { width: 100%; background: var(--primary); color: white; padding: 16px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 15px; font-size: 16px; transition: 0.3s; }
+        .error-msg { color: var(--error); font-size: 13px; font-weight: 700; margin-top: 10px; display: none; text-align: center; }
     </style>
 </head>
 <body>
 
 <div class="form-card">
-    <h2>Video Trainee Registration</h2>
+    <h2>Video Training Registration</h2>
     <form id="traineeForm">
         <div class="form-group">
             <label>Trainee Name</label>
             <select id="name" required onchange="handleNameChange()">
-                <option value="">Connecting...</option>
+                <option value="">Fetching names...</option>
             </select>
         </div>
 
-        <div class="row-grid">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
             <div class="form-group"><label>Language</label><input type="text" id="language" readonly style="background:#f1f5f9;"></div>
             <div class="form-group">
                 <label>Location</label>
@@ -65,151 +60,142 @@
             </div>
         </div>
 
-        <div class="form-group"><label>Training Type</label><input type="text" id="trainingType" readonly style="background:#f1f5f9;"></div>
+        <div class="form-group">
+            <label>Training Type</label>
+            <select id="trainingType" required onchange="toggleSessions()">
+                <option value="">-- Choose Type --</option>
+                <option value="FT">Full Time - FT</option>
+                <option value="PT">Part Time - PT</option>
+            </select>
+        </div>
 
         <div id="pt-container">
-            <div class="counter-badge">Sessions Selected: <span id="count-val">0</span> / 6 Min</div>
+            <div class="counter-badge">Sessions: <span id="count-val">0</span> / 6 Min</div>
             
-            <div class="date-section">
-                <span class="date-label">January 24</span>
+            <div class="date-row">
+                <span class="date-label">Jan 24</span>
                 <label class="check-item"><input type="checkbox" name="msg" value="1" onchange="updateCounter()"> Msg 1</label>
                 <label class="check-item"><input type="checkbox" name="msg" value="2" onchange="updateCounter()"> Msg 2</label>
                 <label class="check-item"><input type="checkbox" name="msg" value="3" onchange="updateCounter()"> Msg 3</label>
             </div>
-            <div class="date-section">
-                <span class="date-label">January 25</span>
+            <div class="date-row">
+                <span class="date-label">Jan 25</span>
                 <label class="check-item"><input type="checkbox" name="msg" value="4" onchange="updateCounter()"> Msg 4</label>
                 <label class="check-item"><input type="checkbox" name="msg" value="5" onchange="updateCounter()"> Msg 5</label>
                 <label class="check-item"><input type="checkbox" name="msg" value="6" onchange="updateCounter()"> Msg 6</label>
             </div>
-            <div class="date-section">
-                <span class="date-label">January 26</span>
+            <div class="date-row">
+                <span class="date-label">Jan 26</span>
                 <label class="check-item"><input type="checkbox" name="msg" value="7" onchange="updateCounter()"> Msg 7</label>
                 <label class="check-item"><input type="checkbox" name="msg" value="8" onchange="updateCounter()"> Msg 8</label>
                 <label class="check-item"><input type="checkbox" name="msg" value="9" onchange="updateCounter()"> Msg 9</label>
             </div>
-            <div class="date-section">
-                <span class="date-label">February 1</span>
+            <div class="date-row">
+                <span class="date-label">Feb 01</span>
                 <label class="check-item"><input type="checkbox" name="msg" value="10" onchange="updateCounter()"> Msg 10</label>
                 <label class="check-item"><input type="checkbox" name="msg" value="11" onchange="updateCounter()"> Msg 11</label>
                 <label class="check-item"><input type="checkbox" name="msg" value="12" onchange="updateCounter()"> Msg 12</label>
             </div>
         </div>
 
-        <p id="error-min" class="error-text">⚠️ Warning: At least 6 sessions are mandatory for Part Time.</p>
-        <button type="submit" class="btn-submit" id="submitBtn">Update Registration</button>
-        <p class="success-msg" id="msg">🎉 Values Updated in Sheet!</p>
+        <p id="error-pt" class="error-msg">⚠️ Part-Time (PT) requires at least 6 sessions.</p>
+        <button type="submit" class="btn-submit" id="submitBtn">Update & Share WhatsApp</button>
     </form>
 </div>
 
 <script>
-    const scriptURL = "https://script.google.com/macros/s/AKfycbzEzxzp1gcovMEfkrBHcz6iiemQ4QIhjVM5d8set6ZCW2LWYPHjG90-mR35r-Kya2lrTw/exec";
-    let traineeMasterData = {};
-    let selectedRowId = null;
+    const scriptURL = "https://script.google.com/macros/s/AKfycbxp7er51qMlu9caFsHVN8jZa2M1MSiLJj3P6KD1yNTylFVck8hz_Q2ArAnaEQV6qTGtdg/exec";
+    let traineeData = {};
+    let selectedRow = null;
 
-    window.onload = function() {
-        const script = document.createElement('script');
-        script.src = `${scriptURL}?action=getDropdowns&callback=setupDropdowns`;
-        document.body.appendChild(script);
+    window.onload = () => {
+        const s = document.createElement('script');
+        s.src = `${scriptURL}?action=getDropdowns&callback=setup`;
+        document.body.appendChild(s);
     };
 
-    window.setupDropdowns = function(data) {
-        if (!data || !data.trainees) return;
-        traineeMasterData = data.trainees; 
-        const nameSelect = document.getElementById('name');
-        nameSelect.innerHTML = '<option value="">-- Choose Trainee --</option>';
-        Object.keys(traineeMasterData).sort().forEach(name => {
-            nameSelect.innerHTML += `<option value="${name}">${name}</option>`;
-        });
+    window.setup = (data) => {
+        traineeData = data.trainees;
+        const sel = document.getElementById('name');
+        sel.innerHTML = '<option value="">-- Select Trainee --</option>';
+        Object.keys(traineeData).sort().forEach(n => sel.innerHTML += `<option value="${n}">${n}</option>`);
     };
 
     function handleNameChange() {
-        const selectedName = document.getElementById('name').value;
-        const locationDropdown = document.getElementById('location');
+        const name = document.getElementById('name').value;
+        const typeBox = document.getElementById('trainingType');
         const checkboxes = document.querySelectorAll('input[name="msg"]');
         
-        locationDropdown.value = "";
+        typeBox.disabled = false;
         checkboxes.forEach(cb => cb.checked = false);
-
-        if (selectedName && traineeMasterData[selectedName]) {
-            const trainee = traineeMasterData[selectedName];
-            document.getElementById('language').value = trainee.language || "";
-            document.getElementById('trainingType').value = trainee.type || "";
-            selectedRowId = trainee.rowNum; 
-
-            if (trainee.location) {
-                locationDropdown.value = trainee.location.toString().trim();
-            }
-
-            const container = document.getElementById('pt-container');
-            if (trainee.type === 'PT') {
-                container.style.display = 'block';
-                if (trainee.ftMessages) {
-                    const savedValues = trainee.ftMessages.toString().split(',').map(s => s.trim());
-                    checkboxes.forEach(cb => {
-                        if (savedValues.includes(cb.value)) cb.checked = true;
-                    });
-                }
+        
+        if (name && traineeData[name]) {
+            const t = traineeData[name];
+            selectedRow = t.rowNum;
+            document.getElementById('language').value = t.language || "";
+            document.getElementById('location').value = t.location || "";
+            
+            // Logic: If t.type exists as FT or PT, select and disable
+            if (t.type && (t.type.trim() === "FT" || t.type.trim() === "PT")) {
+                typeBox.value = t.type.trim();
+                typeBox.disabled = true;
             } else {
-                container.style.display = 'none';
+                typeBox.value = "";
             }
-            updateCounter();
+
+            // Load existing sessions if PT
+            if (t.ftMessages && t.type === "PT") {
+                const saved = t.ftMessages.split(',').map(s => s.trim());
+                checkboxes.forEach(cb => { if(saved.includes(cb.value)) cb.checked = true; });
+            }
+
+            toggleSessions();
         }
+    }
+
+    function toggleSessions() {
+        const type = document.getElementById('trainingType').value;
+        document.getElementById('pt-container').style.display = (type === 'PT') ? 'block' : 'none';
+        updateCounter();
     }
 
     function updateCounter() {
         const count = document.querySelectorAll('input[name="msg"]:checked').length;
         document.getElementById('count-val').innerText = count;
-        if(count >= 6) document.getElementById('error-min').style.display = 'none';
+        document.getElementById('error-pt').style.display = 'none';
     }
 
     document.getElementById('traineeForm').addEventListener('submit', function(e) {
         e.preventDefault();
-        const name = document.getElementById('name').value;
-        const type = document.getElementById('trainingType').value;
-        const location = document.getElementById('location').value;
-        const selectedMsgs = Array.from(document.querySelectorAll('input[name="msg"]:checked')).map(cb => cb.value);
-        const finalMsgs = (type === 'FT') ? "All" : selectedMsgs.join(', ');
+        const type = document.getElementById('trainingType').value; // Sends "FT" or "PT"
+        const selected = Array.from(document.querySelectorAll('input[name="msg"]:checked')).map(c => c.value);
 
-        if (type === 'PT' && selectedMsgs.length < 6) {
-            document.getElementById('error-min').style.display = 'block';
+        if (type === 'PT' && selected.length < 6) {
+            document.getElementById('error-pt').style.display = 'block';
             return;
         }
 
         const btn = document.getElementById('submitBtn');
-        btn.innerText = "Updating...";
+        btn.innerText = "Processing...";
         btn.disabled = true;
+
+        const name = document.getElementById('name').value;
+        const lang = document.getElementById('language').value;
+        const loc = document.getElementById('location').value;
+        const sessions = type === 'FT' ? "All (1-12)" : selected.join(', ');
 
         fetch(scriptURL, { 
             method: 'POST', 
             mode: 'no-cors', 
-            body: JSON.stringify({
-                action: "add",
-                rowId: selectedRowId,
-                name: name,
-                location: location,
-                ftMessages: finalMsgs
-            }) 
+            body: JSON.stringify({ action: "add", rowId: selectedRow, name, location: loc, ftMessages: sessions, type: type }) 
         })
         .then(() => {
-            // Update the local data object so the new values "stick"
-            traineeMasterData[name].location = location;
-            traineeMasterData[name].ftMessages = finalMsgs;
-
-            btn.innerText = "Saved Successfully!";
-            btn.style.background = "#16a34a";
-            document.getElementById('msg').style.display = "block";
-            
-            setTimeout(() => { 
-                btn.innerText = "Update Registration";
-                btn.style.background = "#2563eb";
-                btn.disabled = false;
-                document.getElementById('msg').style.display = "none"; 
-            }, 3000);
+            const msg = `${name} - ${lang} - ${loc} - ${type} - ${sessions}`;
+            window.open(`https://wa.me/?text=${msg}`, '_blank');
+            btn.innerText = "Success!";
+            setTimeout(() => { btn.disabled = false; btn.innerText = "Update & Share WhatsApp"; }, 3000);
         });
     });
 </script>
 </body>
 </html>
-
-
