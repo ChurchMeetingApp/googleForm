@@ -5,36 +5,82 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Video Training Registration</title>
     <style>
-        :root { --primary: #2563eb; --bg: #f8fafc; --border: #cbd5e1; --error: #dc2626; --success: #16a34a; }
-        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg); padding: 20px; color: #1e293b; }
-        .form-card { max-width: 650px; margin: 0 auto; background: white; padding: 30px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
-        h2 { color: var(--primary); text-align: center; margin-bottom: 25px; }
-        .form-group { margin-bottom: 18px; }
-        label { display: block; font-size: 14px; font-weight: 600; color: #475569; margin-bottom: 6px; }
-        select, input { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; box-sizing: border-box; }
-        select:disabled { background-color: #f1f5f9; cursor: not-allowed; color: #64748b; }
-        
-        /* Proper Alignment for Sessions */
-        #pt-container { display: none; background: #f1f5f9; padding: 15px; border-radius: 12px; margin-top: 15px; border: 2px solid #cbd5e1; }
-        .counter-badge { background: #dbeafe; color: var(--primary); padding: 6px 12px; border-radius: 30px; font-size: 13px; font-weight: 700; margin-bottom: 15px; display: inline-block; }
-        
-        .date-row { 
-            display: grid; 
-            grid-template-columns: 100px 1fr 1fr 1fr; 
-            align-items: center; 
-            padding: 10px; 
-            background: white; 
-            margin-bottom: 6px; 
-            border-radius: 8px; 
-            border-left: 4px solid var(--primary);
-        }
-        .date-label { font-weight: 700; font-size: 13px; color: #334155; }
-        .check-item { display: flex; align-items: center; font-size: 13px; cursor: pointer; justify-content: flex-start; }
-        .check-item input { width: 17px; height: 17px; margin-right: 10px; cursor: pointer; }
-        
-        .btn-submit { width: 100%; background: var(--primary); color: white; padding: 16px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 15px; font-size: 16px; transition: 0.3s; }
-        .error-msg { color: var(--error); font-size: 13px; font-weight: 700; margin-top: 10px; display: none; text-align: center; }
-    </style>
+    :root { --primary: #2563eb; --bg: #f8fafc; --border: #cbd5e1; --error: #dc2626; --success: #16a34a; }
+    
+    /* Ensure everything stays inside the box */
+    * { box-sizing: border-box; } 
+
+    body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg); padding: 10px; color: #1e293b; }
+    
+    .form-card { 
+        width: 100%; 
+        max-width: 650px; 
+        margin: 0 auto; 
+        background: white; 
+        padding: 20px; /* Reduced padding for mobile */
+        border-radius: 16px; 
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1); 
+    }
+
+    h2 { color: var(--primary); text-align: center; font-size: 1.5rem; margin-bottom: 20px; }
+
+    /* Responsive Grid for Name/Language/Location */
+    .row-grid { 
+        display: grid; 
+        grid-template-columns: 1fr 1fr; 
+        gap: 15px; 
+    }
+
+    @media (max-width: 480px) {
+        .row-grid { grid-template-columns: 1fr; } /* Stack on small phones */
+    }
+
+    .form-group { margin-bottom: 15px; }
+    label { display: block; font-size: 14px; font-weight: 600; color: #475569; margin-bottom: 6px; }
+    select, input { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; }
+
+    /* SESSION GRID FIX */
+    #pt-container { 
+        display: none; 
+        background: #f1f5f9; 
+        padding: 10px; 
+        border-radius: 12px; 
+        margin-top: 15px; 
+        border: 2px solid #cbd5e1; 
+    }
+
+    .date-row { 
+        display: grid; 
+        /* Label gets 70px, Checkboxes split the rest equally */
+        grid-template-columns: 70px 1fr 1fr 1fr; 
+        align-items: center; 
+        padding: 8px; 
+        background: white; 
+        margin-bottom: 6px; 
+        border-radius: 8px; 
+        border-left: 4px solid var(--primary);
+        gap: 5px; /* Space between items */
+    }
+
+    .date-label { font-weight: 700; font-size: 12px; color: #334155; }
+
+    .check-item { 
+        display: flex; 
+        align-items: center; 
+        font-size: 11px; /* Smaller font for mobile */
+        cursor: pointer; 
+        white-space: nowrap; /* Prevents text from wrapping */
+    }
+
+    .check-item input { 
+        width: 16px; 
+        height: 16px; 
+        margin-right: 4px; 
+        flex-shrink: 0; /* Prevents checkbox from squishing */
+    }
+
+    .btn-submit { width: 100%; background: var(--primary); color: white; padding: 16px; border: none; border-radius: 8px; font-weight: bold; font-size: 16px; margin-top: 15px; }
+</style>
 </head>
 <body>
 
