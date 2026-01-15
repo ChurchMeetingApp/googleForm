@@ -8,19 +8,22 @@
         :root { --primary: #1a73e8; --bg: #f8f9fa; --text: #202124; }
         * { box-sizing: border-box; } 
         body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 10px; color: var(--text); }
-        .container { max-width: 500px; margin: auto; padding-bottom: 120px; }
+        .container { max-width: 500px; margin: auto; padding-bottom: 180px; }
         
         h2 { text-align: center; color: var(--primary); margin: 10px 0 20px 0; font-weight: 800; }
 
-        .setup-card { background: white; padding: 15px; border-radius: 16px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .setup-card, .text-area-card { background: white; padding: 15px; border-radius: 16px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
         .input-group { display: flex; flex-direction: column; gap: 8px; }
         .filter-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
         .full-row { grid-column: span 2; }
 
-        input, select { 
-            width: 100%; height: 42px; padding: 0 10px; border-radius: 8px; 
+        input, select, textarea { 
+            width: 100%; padding: 10px; border-radius: 8px; 
             border: 1.5px solid #dadce0; font-size: 13px; outline: none; background: white;
         }
+        
+        textarea { height: 70px; resize: none; font-family: inherit; }
+        label { font-size: 12px; font-weight: bold; color: #5f6368; margin-bottom: 4px; display: block; }
 
         .select-all-bar {
             position: sticky; top: 0; z-index: 100;
@@ -81,6 +84,16 @@
     </div>
 
     <div id="familyList">Fetching data...</div>
+
+    <div class="text-area-card">
+        <label>Missing Members (Continuous Count)</label>
+        <textarea id="missingText" placeholder="Name 1&#10;Name 2"></textarea>
+    </div>
+
+    <div class="text-area-card">
+        <label>Visiting Members (Restarts from 1)</label>
+        <textarea id="visitingText" placeholder="Visitor 1&#10;Visitor 2"></textarea>
+    </div>
 
     <div class="copy-btn-container">
         <button class="copy-btn" onclick="copyAttendance()">Copy Selected List</button>
@@ -170,55 +183,61 @@
 
     function copyAttendance() {
         const boxes = document.querySelectorAll('.indiv-check:checked');
-        if (boxes.length === 0) return alert("Select names!");
+        const missingText = document.getElementById('missingText').value.trim();
+        const visitingText = document.getElementById('visitingText').value.trim();
+        
+        if (boxes.length === 0 && missingText === "" && visitingText === "") return alert("No members selected!");
 
+        const mType = document.getElementById('meetingType').value;
+        let text = `${mType} Attendance\nDate: ${document.getElementById('attDate').value}\n\n`;
+        let count = 1;
+
+        // 1. Process Database Selected Members
         let selected = Array.from(boxes).map(cb => ({
             name: cb.getAttribute('data-name'),
             fam: cb.getAttribute('data-fam'),
             grp: (cb.getAttribute('data-grp') || "").toUpperCase()
         }));
 
-        const mType = document.getElementById('meetingType').value;
-        let text = `${mType} Attendance\nDate: ${document.getElementById('attDate').value}\n\n`;
-        let count = 1;
         let uniqueFams = [...new Set(selected.map(p => p.fam))];
-
         uniqueFams.forEach(f => {
             let members = selected.filter(p => p.fam === f);
             let kids = members.filter(p => p.grp === "CHILD");
             let head = members.find(p => p.grp === "B");
             let spouse = members.find(p => p.grp === "S");
             let others = members.filter(p => p.grp !== "S" && p.grp !== "B" && p.grp !== "CHILD");
-            
             let kidStr = kids.length > 0 ? ` + (${kids.map(k => k.name).join(" & ")})` : "";
 
-            // --- PRIORITY SORTING LOGIC ---
-            // 1. If B exists, it MUST be first.
             if (head) {
-                // If S is also there, check if children should go to S or B
-                // Per your request, if S is selected, children usually go to S, 
-                // but we must ensure B is S.No 1.
                 text += `${count++}. ${head.name}${(!spouse ? kidStr : "")}\n`;
-                if (spouse) {
-                    text += `${count++}. ${spouse.name}${kidStr}\n`;
-                }
+                if (spouse) text += `${count++}. ${spouse.name}${kidStr}\n`;
                 others.forEach(o => text += `${count++}. ${o.name}\n`);
-            } 
-            // 2. If no B, but S exists
-            else if (spouse) {
+            } else if (spouse) {
                 text += `${count++}. ${spouse.name}${kidStr}\n`;
                 others.forEach(o => text += `${count++}. ${o.name}\n`);
-            } 
-            // 3. If neither B nor S, look for any other member to take children
-            else if (others.length > 0) {
+            } else if (others.length > 0) {
                 text += `${count++}. ${others[0].name}${kidStr}\n`;
                 others.slice(1).forEach(o => text += `${count++}. ${o.name}\n`);
-            } 
-            // 4. Only kids selected
-            else {
+            } else {
                 kids.forEach(k => text += `${count++}. ${k.name}\n`);
             }
         });
+
+        // 2. Add Missing Members (Continuous Count)
+        if (missingText !== "") {
+            missingText.split('\n').forEach(line => {
+                if (line.trim()) text += `${count++}. ${line.trim()}\n`;
+            });
+        }
+
+        // 3. Add Visiting Members (Restart Count from 1)
+        if (visitingText !== "") {
+            text += `\nVisiting Members:\n`;
+            let vCount = 1;
+            visitingText.split('\n').forEach(line => {
+                if (line.trim()) text += `${vCount++}. ${line.trim()}\n`;
+            });
+        }
 
         navigator.clipboard.writeText(text).then(() => {
             const t = document.getElementById("toast");
