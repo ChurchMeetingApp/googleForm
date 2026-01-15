@@ -26,7 +26,18 @@
     }
 
     h2 { color: var(--primary); text-align: center; font-size: 1.5rem; margin-bottom: 20px; }
-
+   .usage-note {
+        background-color: var(--warning-bg);
+        color: var(--warning-text);
+        padding: 12px;
+        border-radius: 8px;
+        font-size: 13px;
+        line-height: 1.5;
+        margin-bottom: 20px;
+        border: 1px solid #fde68a;
+        text-align: center;
+        font-weight: 500;
+    }
     .row-grid { 
         display: grid; 
         grid-template-columns: 1fr 1fr; 
@@ -93,6 +104,9 @@
 
 <div class="form-card">
     <h2>Video Training Registration</h2>
+    <div class="usage-note">
+        ℹ️ This link is intended only for registered saints to view or update their own details. Do not forward.
+    </div>
     <form id="traineeForm">
         <div class="form-group">
             <label>Trainee Name</label>
