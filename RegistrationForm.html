@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
@@ -21,14 +20,13 @@
         max-width: 650px; 
         margin: 0 auto; 
         background: white; 
-        padding: 20px; /* Reduced padding for mobile */
+        padding: 20px; 
         border-radius: 16px; 
         box-shadow: 0 10px 25px rgba(0,0,0,0.1); 
     }
 
     h2 { color: var(--primary); text-align: center; font-size: 1.5rem; margin-bottom: 20px; }
 
-    /* Responsive Grid for Name/Language/Location */
     .row-grid { 
         display: grid; 
         grid-template-columns: 1fr 1fr; 
@@ -36,14 +34,13 @@
     }
 
     @media (max-width: 480px) {
-        .row-grid { grid-template-columns: 1fr; } /* Stack on small phones */
+        .row-grid { grid-template-columns: 1fr; } 
     }
 
     .form-group { margin-bottom: 15px; }
     label { display: block; font-size: 14px; font-weight: 600; color: #475569; margin-bottom: 6px; }
     select, input { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; }
 
-    /* SESSION GRID FIX */
     #pt-container { 
         display: none; 
         background: #f1f5f9; 
@@ -53,9 +50,10 @@
         border: 2px solid #cbd5e1; 
     }
 
+    .counter-badge { font-weight: bold; margin-bottom: 10px; color: var(--primary); font-size: 14px; }
+
     .date-row { 
         display: grid; 
-        /* Label gets 70px, Checkboxes split the rest equally */
         grid-template-columns: 70px 1fr 1fr 1fr; 
         align-items: center; 
         padding: 8px; 
@@ -63,7 +61,7 @@
         margin-bottom: 6px; 
         border-radius: 8px; 
         border-left: 4px solid var(--primary);
-        gap: 5px; /* Space between items */
+        gap: 5px; 
     }
 
     .date-label { font-weight: 700; font-size: 12px; color: #334155; }
@@ -71,20 +69,25 @@
     .check-item { 
         display: flex; 
         align-items: center; 
-        font-size: 11px; /* Smaller font for mobile */
+        font-size: 11px; 
         cursor: pointer; 
-        white-space: nowrap; /* Prevents text from wrapping */
+        white-space: nowrap; 
     }
 
     .check-item input { 
         width: 16px; 
         height: 16px; 
         margin-right: 4px; 
-        flex-shrink: 0; /* Prevents checkbox from squishing */
+        flex-shrink: 0; 
     }
 
-    .btn-submit { width: 100%; background: var(--primary); color: white; padding: 16px; border: none; border-radius: 8px; font-weight: bold; font-size: 16px; margin-top: 15px; }
-</style>
+    .error-msg { color: var(--error); font-size: 13px; font-weight: bold; display: none; margin-top: 10px; }
+
+    .btn-submit { width: 100%; background: var(--primary); color: white; padding: 16px; border: none; border-radius: 8px; font-weight: bold; font-size: 16px; margin-top: 15px; cursor: pointer; }
+    .btn-submit:disabled { background: #94a3b8; cursor: not-allowed; }
+
+    .contact-section { margin-top: 20px; }
+    </style>
 </head>
 <body>
 
@@ -152,21 +155,24 @@
         <button type="submit" class="btn-submit" id="submitBtn">Update</button>
     </form>
 </div>
+
 <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 30px 0;">
 
 <div class="contact-section">
     <p style="font-weight: 700; color: #475569; font-size: 14px; margin-bottom: 12px; text-align: center;">Need Help? Training Coordinators:</p>
     
-    <div style="background: #f8fafc; padding: 15px; border-radius: 10px; border: 1px solid #e2e8f0; text-align: center;">
+    <div style="background: #f8fafc; padding: 15px; border-radius: 10px; border: 1px solid #e2e8f0; text-align: center; max-width: 650px; margin: 0 auto;">
         <p style="margin: 0; font-weight: 700; font-size: 15px; color: #1e293b;">Br. Jayaseelan</p>
         <p style="margin: 8px 0 0 0; font-weight: 700; font-size: 15px; color: #1e293b;">Br. Babu</p>
     </div>
 </div>
+
 <script>
     const scriptURL = "https://script.google.com/macros/s/AKfycbxp7er51qMlu9caFsHVN8jZa2M1MSiLJj3P6KD1yNTylFVck8hz_Q2ArAnaEQV6qTGtdg/exec";
     let traineeData = {};
     let selectedRow = null;
 
+    // Initial load of names
     window.onload = () => {
         const s = document.createElement('script');
         s.src = `${scriptURL}?action=getDropdowns&callback=setup`;
@@ -194,7 +200,6 @@
             document.getElementById('language').value = t.language || "";
             document.getElementById('location').value = t.location || "";
             
-            // Logic: If t.type exists as FT or PT, select and disable
             if (t.type && (t.type.trim() === "FT" || t.type.trim() === "PT")) {
                 typeBox.value = t.type.trim();
                 typeBox.disabled = true;
@@ -202,7 +207,6 @@
                 typeBox.value = "";
             }
 
-            // Load existing sessions if PT
             if (t.ftMessages && t.type === "PT") {
                 const saved = t.ftMessages.split(',').map(s => s.trim());
                 checkboxes.forEach(cb => { if(saved.includes(cb.value)) cb.checked = true; });
@@ -226,42 +230,62 @@
 
     document.getElementById('traineeForm').addEventListener('submit', function(e) {
         e.preventDefault();
-        const type = document.getElementById('trainingType').value; // Sends "FT" or "PT"
+        
+        const name = document.getElementById('name').value;
+        const lang = document.getElementById('language').value;
+        const loc = document.getElementById('location').value;
+        const type = document.getElementById('trainingType').value;
         const selected = Array.from(document.querySelectorAll('input[name="msg"]:checked')).map(c => c.value);
+        const sessions = type === 'FT' ? "All (1-12)" : selected.join(', ');
 
+        // Validation for PT
         if (type === 'PT' && selected.length < 6) {
             document.getElementById('error-pt').style.display = 'block';
             return;
         }
 
+        // CONFIRMATION POPUP
+        const confirmation = confirm(
+            `Please confirm the following details:\n\n` +
+            `Trainee: ${name}\n` +
+            `Location: ${loc}\n` +
+            `Type: ${type}\n` +
+            `Sessions: ${sessions}\n\n` +
+            `Do you want to submit?`
+        );
+
+        if (!confirmation) return; // Stop if user clicks Cancel
+
         const btn = document.getElementById('submitBtn');
         btn.innerText = "Processing...";
         btn.disabled = true;
 
-        const name = document.getElementById('name').value;
-        const lang = document.getElementById('language').value;
-        const loc = document.getElementById('location').value;
-        const sessions = type === 'FT' ? "All (1-12)" : selected.join(', ');
-
         fetch(scriptURL, { 
             method: 'POST', 
             mode: 'no-cors', 
-            body: JSON.stringify({ action: "add", rowId: selectedRow, name, location: loc, ftMessages: sessions, type: type }) 
+            body: JSON.stringify({ 
+                action: "add", 
+                rowId: selectedRow, 
+                name: name, 
+                location: loc, 
+                ftMessages: sessions, 
+                type: type 
+            }) 
         })
         .then(() => {
-            const msg = `${name} - ${lang} - ${loc} - ${type} - ${sessions}`;
-            //window.open(`https://wa.me/?text=${msg}`, '_blank');
+            alert("Registration updated successfully!");
             btn.innerText = "Success!";
-            setTimeout(() => { btn.disabled = false; btn.innerText = "Update"; }, 3000);
+            setTimeout(() => { 
+                btn.disabled = false; 
+                btn.innerText = "Update"; 
+            }, 3000);
+        })
+        .catch(err => {
+            alert("An error occurred. Please try again.");
+            btn.innerText = "Update";
+            btn.disabled = false;
         });
     });
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
