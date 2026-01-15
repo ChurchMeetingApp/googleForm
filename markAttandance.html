@@ -2,61 +2,170 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Family Attendance</title>
     <style>
-        :root { --primary: #1a73e8; --bg: #f8f9fa; }
-        body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 10px; }
-        .container { max-width: 500px; margin: auto; }
+        :root { --primary: #1a73e8; --bg: #f8f9fa; --text: #202124; }
         
-        .setup-card { background: white; padding: 15px; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        * { box-sizing: border-box; } 
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            background: var(--bg); 
+            margin: 0; 
+            padding: 10px;
+            color: var(--text);
+        }
         
-        /* Family Card Styling */
-        .family-card { background: white; border-radius: 12px; margin-bottom: 15px; border: 1px solid #dfe1e5; overflow: hidden; }
-        .family-header { background: #f1f3f4; padding: 12px 15px; display: flex; align-items: center; border-bottom: 1px solid #ddd; font-weight: bold; color: var(--primary); }
-        .family-header input { width: 20px; height: 20px; margin-right: 12px; cursor: pointer; }
-        
-        .member-row { display: flex; align-items: center; padding: 12px 15px; border-bottom: 1px solid #f9f9f9; cursor: pointer; -webkit-tap-highlight-color: transparent; }
-        .member-row:last-child { border-bottom: none; }
-        .member-row:active { background: #f1f3f4; }
-        
-        .name-text { flex-grow: 1; font-size: 1rem; color: #202124; }
-        .sno { width: 25px; color: #888; font-size: 0.8rem; }
-        
-        .indiv-check { width: 24px; height: 24px; accent-color: var(--primary); pointer-events: none; }
-        
-        .copy-btn-container {
-    position: sticky;
-    bottom: 0;
-    background: var(--bg); /* Matches body background */
-    padding: 15px 0;
-    margin-top: 10px;
-    z-index: 1000;
-}
+        .container { max-width: 500px; margin: auto; padding-bottom: 100px; }
 
-.copy-btn { 
-    width: 100%; 
-    background: var(--primary); 
-    color: white; 
-    border: none; 
-    padding: 18px; 
-    border-radius: 12px; 
-    font-size: 1.1rem; 
-    font-weight: bold; 
-    cursor: pointer;
-    box-shadow: 0 -4px 10px rgba(0,0,0,0.1), 0 4px 10px rgba(0,0,0,0.1);
-}
+        /* Header Card */
+        .setup-card { 
+            background: white; 
+            padding: 20px; 
+            border-radius: 16px; 
+            margin-bottom: 15px; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05); 
+        }
+
+        .app-title {
+            margin: 0 0 15px 0;
+            text-align: center;
+            font-size: 1.1rem;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .input-group { display: flex; flex-direction: column; gap: 10px; }
+
+        input[type="date"], select {
+            width: 100%;
+            height: 48px;
+            padding: 0 12px;
+            border-radius: 10px;
+            border: 1.5px solid #dadce0;
+            background-color: #fff;
+            font-size: 16px;
+            appearance: none;
+            -webkit-appearance: none;
+        }
+
+        /* Family Card Styling */
+        .family-card { 
+            background: white; 
+            border-radius: 12px; 
+            margin-bottom: 15px; 
+            border: 1px solid #dfe1e5; 
+            overflow: hidden; 
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .family-header { 
+            background: #f8f9fa; 
+            padding: 12px 15px; 
+            display: flex; 
+            align-items: center; 
+            border-bottom: 1px solid #eee; 
+            font-weight: bold; 
+            color: #5f6368; 
+        }
+
+        .family-header input { width: 20px; height: 20px; margin-right: 12px; }
+
+        /* Member Row Alignment Fixed */
+        .member-row { 
+            display: flex; 
+            align-items: center; 
+            padding: 12px 15px; 
+            border-bottom: 1px solid #f1f3f4; 
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .member-row:last-child { border-bottom: none; }
+
+        .sno { width: 30px; color: #80868b; font-size: 0.85rem; flex-shrink: 0; }
+        
+        .name-container { 
+            flex-grow: 1; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center;
+        }
+
+        .name-text { font-size: 1rem; font-weight: 500; margin-bottom: 2px; }
+        
+        .info-sub { font-size: 11px; color: #70757a; font-weight: normal; }
+
+        .indiv-check { 
+            width: 24px; 
+            height: 24px; 
+            accent-color: var(--primary); 
+            flex-shrink: 0;
+            margin-left: 10px;
+            pointer-events: none; /* Allows row click to work */
+        }
+
+        /* Sticky Button */
+        .copy-btn-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            padding: 15px;
+            border-top: 1px solid #eee;
+            z-index: 1000;
+            max-width: 500px;
+            margin: auto;
+        }
+
+        .copy-btn { 
+            width: 100%; 
+            background: var(--primary); 
+            color: white; 
+            border: none; 
+            padding: 16px; 
+            border-radius: 12px; 
+            font-size: 1rem; 
+            font-weight: bold; 
+            box-shadow: 0 4px 12px rgba(26, 115, 232, 0.3);
+            cursor: pointer;
+        }
+        
+        .copy-btn:active { transform: scale(0.98); opacity: 0.9; }
+
+        #toast {
+            visibility: hidden;
+            min-width: 200px;
+            background-color: #323232;
+            color: #fff;
+            text-align: center;
+            border-radius: 8px;
+            padding: 12px;
+            position: fixed;
+            z-index: 2000;
+            left: 50%;
+            bottom: 100px;
+            transform: translateX(-50%);
+            font-size: 14px;
+        }
+
+        #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
+        @keyframes fadein { from {bottom: 80px; opacity: 0;} to {bottom: 100px; opacity: 1;} }
+        @keyframes fadeout { from {bottom: 100px; opacity: 1;} to {bottom: 80px; opacity: 0;} }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="setup-card">
-        <h3 style="margin:0 0 10px 0; text-align:center;">Meeting Roster</h3>
-        <input type="date" id="attDate" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccc; box-sizing:border-box;">
-        <select id="locDrop" onchange="renderGroupedList()" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccc; margin-top:10px;">
-            <option>Loading locations...</option>
-        </select>
+        <h3 class="app-title">Meeting Roster</h3>
+        <div class="input-group">
+            <input type="date" id="attDate">
+            <select id="locDrop" onchange="renderGroupedList()">
+                <option value="">-- Select Location --</option>
+            </select>
+        </div>
     </div>
 
     <div id="familyList"></div>
@@ -65,6 +174,8 @@
         <button class="copy-btn" onclick="copyAttendance()">Copy Selected List</button>
     </div>
 </div>
+
+<div id="toast">Copied to Clipboard!</div>
 
 <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbyg_upnTM5VS2VIcjdnkIbYQRohd3tSq0qUYqsi0FtgNJosLyLgK_yEfAUC4_zOCZNM/exec";
@@ -80,66 +191,61 @@
         });
     };
 
+    function renderGroupedList() {
+        const loc = document.getElementById('locDrop').value;
+        const area = document.getElementById('familyList');
+        area.innerHTML = "";
+        if (!loc) return;
 
-function renderGroupedList() {
-    const loc = document.getElementById('locDrop').value;
-    const area = document.getElementById('familyList');
-    area.innerHTML = "";
-    if (!loc) return;
-
-    const families = {};
-    dataStore[loc].forEach(p => {
-        const famKey = p.family || "Individual";
-        if (!families[famKey]) families[famKey] = [];
-        families[famKey].push(p);
-    });
-
-    // --- SORTING LOGIC ---
-    // Get keys and sort them so "Individual" always comes last
-    const sortedFamilyNames = Object.keys(families).sort((a, b) => {
-        if (a === "Individual") return 1;  // Move 'Individual' to the end
-        if (b === "Individual") return -1; // Keep others before 'Individual'
-        return a.localeCompare(b);         // Sort families alphabetically
-    });
-
-    sortedFamilyNames.forEach(famName => {
-        const isIndividual = famName === "Individual";
-        const safeId = famName.replace(/\s+/g, '');
-        let html = `<div class="family-card" id="card-${safeId}">`;
-        
-        if (!isIndividual) {
-            html += `
-            <div class="family-header">
-                <input type="checkbox" onchange="selectFamily('${famName}', this.checked)">
-                <span>${famName}</span>
-            </div>`;
-        } else {
-            // Optional: Add a small header for Individuals to separate them visually
-            html += `<div class="family-header" style="background:#fff; color:#888; font-size:0.8rem;">
-                        <span>Individual Members</span>
-                     </div>`;
-        }
-
-        families[famName].forEach(p => {
-            html += `
-            <div class="member-row" onclick="togglePerson(this, '${famName}')">
-                <span class="sno">${p.sno}</span>
-                <div style="flex-grow: 1; display: flex; flex-direction: column;">
-                    <span class="name-text">${p.name}</span>
-                    <span class="info-sub" style="font-size: 11px; color: #888;">${p.ageGrp ? p.ageGrp : ''}</span>
-                </div>
-                <input type="checkbox" class="indiv-check" 
-                       data-name="${p.name}" 
-                       data-fam="${famName}" 
-                       data-grp="${p.ageGrp}">
-            </div>`;
+        const families = {};
+        dataStore[loc].forEach(p => {
+            const famKey = p.family || "Individual";
+            if (!families[famKey]) families[famKey] = [];
+            families[famKey].push(p);
         });
 
-        html += `</div>`;
-        area.innerHTML += html;
-    });
-}
+        const sortedFamilyNames = Object.keys(families).sort((a, b) => {
+            if (a === "Individual") return 1;
+            if (b === "Individual") return -1;
+            return a.localeCompare(b);
+        });
 
+        sortedFamilyNames.forEach(famName => {
+            const isIndividual = famName === "Individual";
+            const safeId = famName.replace(/\s+/g, '');
+            let html = `<div class="family-card" id="card-${safeId}">`;
+            
+            if (!isIndividual) {
+                html += `
+                <div class="family-header">
+                    <input type="checkbox" onchange="selectFamily('${famName}', this.checked)">
+                    <span>${famName}</span>
+                </div>`;
+            } else {
+                html += `<div class="family-header" style="background:#fff; color:#999; font-size:0.75rem;">
+                            <span>Individual Members</span>
+                         </div>`;
+            }
+
+            families[famName].forEach(p => {
+                html += `
+                <div class="member-row" onclick="togglePerson(this, '${famName}')">
+                    <span class="sno">${p.sno}</span>
+                    <div class="name-container">
+                        <span class="name-text">${p.name}</span>
+                        <span class="info-sub">${p.ageGrp ? p.ageGrp : ''}</span>
+                    </div>
+                    <input type="checkbox" class="indiv-check" 
+                           data-name="${p.name}" 
+                           data-fam="${famName}" 
+                           data-grp="${p.ageGrp}">
+                </div>`;
+            });
+
+            html += `</div>`;
+            area.innerHTML += html;
+        });
+    }
 
     function selectFamily(famName, isChecked) {
         const checkboxes = document.querySelectorAll(`[data-fam="${famName}"]`);
@@ -149,8 +255,6 @@ function renderGroupedList() {
     function togglePerson(el, famName) {
         const cb = el.querySelector('.indiv-check');
         cb.checked = !cb.checked;
-        
-        // Uncheck family header if an individual is unchecked
         if (!cb.checked) {
             const safeId = famName.replace(/\s+/g, '');
             const master = document.querySelector(`#card-${safeId} .family-header input`);
@@ -158,71 +262,49 @@ function renderGroupedList() {
         }
     }
 
-function copyAttendance() {
-    const checkedBoxes = document.querySelectorAll('.indiv-check:checked');
-    if (checkedBoxes.length === 0) return alert("Select names first!");
+    function copyAttendance() {
+        const checkedBoxes = document.querySelectorAll('.indiv-check:checked');
+        if (checkedBoxes.length === 0) return alert("Select names first!");
 
-    // 1. Gather all selected data into an array
-    let selected = Array.from(checkedBoxes).map(cb => ({
-        name: cb.getAttribute('data-name'),
-        fam: cb.getAttribute('data-fam'),
-        grp: cb.getAttribute('data-grp') ? cb.getAttribute('data-grp').toUpperCase() : ""
-    }));
+        let selected = Array.from(checkedBoxes).map(cb => ({
+            name: cb.getAttribute('data-name'),
+            fam: cb.getAttribute('data-fam'),
+            grp: cb.getAttribute('data-grp') ? cb.getAttribute('data-grp').toUpperCase() : ""
+        }));
 
-    let finalNames = [];
-    let uniqueFamilies = [...new Set(selected.map(p => p.fam))];
+        let finalNames = [];
+        let uniqueFamilies = [...new Set(selected.map(p => p.fam))];
 
-    uniqueFamilies.forEach(familyName => {
-        let members = selected.filter(p => p.fam === familyName);
-        
-        // Separate Adults and Children
-        let children = members.filter(m => m.grp === 'CHILD' || m.grp.includes('CHILD'));
-        let adults = members.filter(m => m.grp !== 'CHILD' && !m.grp.includes('CHILD'));
-        
-        // String of child names
-        let childText = children.length > 0 ? ` + (${children.map(c => c.name).join(" & ")})` : "";
+        uniqueFamilies.forEach(familyName => {
+            let members = selected.filter(p => p.fam === familyName);
+            let children = members.filter(m => m.grp === 'CHILD' || m.grp.includes('CHILD'));
+            let adults = members.filter(m => m.grp !== 'CHILD' && !m.grp.includes('CHILD'));
+            let childText = children.length > 0 ? ` + (${children.map(c => c.name).join(" & ")})` : "";
+            let hasS = adults.find(a => a.grp === 'S');
 
-        // Check availability of S and B
-        let hasS = adults.find(a => a.grp === 'S');
-        let hasB = adults.find(a => a.grp === 'B');
+            adults.forEach(adult => {
+                let entry = adult.name;
+                if (adult.grp === 'S' && children.length > 0) entry += childText;
+                else if (adult.grp === 'B' && !hasS && children.length > 0) entry += childText;
+                finalNames.push(entry);
+            });
 
-        adults.forEach(adult => {
-            let entry = adult.name;
-
-            // Logic: Attach child to S if S is checked
-            if (adult.grp === 'S' && children.length > 0) {
-                entry += childText;
-            } 
-            // Logic: If S is NOT checked, attach child to B
-            else if (adult.grp === 'B' && !hasS && children.length > 0) {
-                entry += childText;
+            if (adults.length === 0 && children.length > 0) {
+                children.forEach(c => finalNames.push(c.name));
             }
-            
-            finalNames.push(entry);
         });
 
-        // Fallback: If children are checked but no B or S adults are checked
-        if (adults.length === 0 && children.length > 0) {
-            children.forEach(c => finalNames.push(c.name));
-        }
-    });
+        let loc = document.getElementById('locDrop').value;
+        let date = document.getElementById('attDate').value;
+        let text = `Attendance: ${loc}\nDate: ${date}\n\n`;
+        finalNames.forEach((name, i) => { text += `${i + 1}. ${name}\n`; });
 
-    // 2. Format final string for WhatsApp
-    let loc = document.getElementById('locDrop').value;
-    let date = document.getElementById('attDate').value;
-    let text = `Attendance: ${loc}\nDate: ${date}\n\n`;
-    
-    finalNames.forEach((name, i) => {
-        text += `${i + 1}. ${name}\n`;
-    });
-
-    // 3. Copy to clipboard
-    navigator.clipboard.writeText(text).then(() => {
-        alert("Copied with Smart Grouping!");
-    });
-}
-
-
+        navigator.clipboard.writeText(text).then(() => {
+            const toast = document.getElementById("toast");
+            toast.className = "show";
+            setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
+        });
+    }
 </script>
 </body>
 </html>
