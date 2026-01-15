@@ -86,12 +86,12 @@
     <div id="familyList">Fetching data...</div>
 
     <div class="text-area-card">
-        <label>Missing Members (Continuous Count)</label>
+        <label>Missing Saints</label>
         <textarea id="missingText" placeholder="Name 1&#10;Name 2"></textarea>
     </div>
 
     <div class="text-area-card">
-        <label>Visiting Members (Restarts from 1)</label>
+        <label>Visiting Saints </label>
         <textarea id="visitingText" placeholder="Visitor 1&#10;Visitor 2"></textarea>
     </div>
 
@@ -232,7 +232,7 @@
 
         // 3. Add Visiting Members (Restart Count from 1)
         if (visitingText !== "") {
-            text += `\nVisiting Members:\n`;
+            text += `\nVisiting Saints:\n`;
             let vCount = 1;
             visitingText.split('\n').forEach(line => {
                 if (line.trim()) text += `${vCount++}. ${line.trim()}\n`;
@@ -248,4 +248,5 @@
 </script>
 </body>
 </html>
+
 
