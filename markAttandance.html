@@ -69,7 +69,7 @@
                 </select>
                 <select id="locFilter" onchange="renderUI()"><option value="">All Locations</option></select>
                 <select id="areaFilter" onchange="renderUI()"><option value="">All Areas</option></select>
-                <select id="grpFilter" onchange="renderUI()" class="full-row"><option value="">All Age Groups</option></select>
+                <select id="grpFilter" onchange="renderUI()" class="full-row"><option value="">All Groups</option></select>
             </div>
             <input type="text" id="searchFilter" placeholder="Search names..." onkeyup="renderUI()">
         </div>
@@ -114,7 +114,7 @@
         const gDrop = document.getElementById('grpFilter');
         locations.forEach(l => lDrop.innerHTML += `<option value="${l}">${l}</option>`);
         areas.forEach(a => aDrop.innerHTML += `<option value="${a}">${a}</option>`);
-        groups.forEach(g => gDrop.innerHTML += `<option value="${g}">Age Group: ${g}</option>`);
+        groups.forEach(g => gDrop.innerHTML += `<option value="${g}">${g}</option>`);
     }
 
     function toggleAllVisible() {
@@ -186,26 +186,36 @@
         uniqueFams.forEach(f => {
             let members = selected.filter(p => p.fam === f);
             let kids = members.filter(p => p.grp === "CHILD");
-            let spouse = members.find(p => p.grp === "S");
             let head = members.find(p => p.grp === "B");
+            let spouse = members.find(p => p.grp === "S");
             let others = members.filter(p => p.grp !== "S" && p.grp !== "B" && p.grp !== "CHILD");
             
             let kidStr = kids.length > 0 ? ` + (${kids.map(k => k.name).join(" & ")})` : "";
 
-            // --- SMART ATTACHMENT LOGIC ---
-            if (spouse) {
+            // --- PRIORITY SORTING LOGIC ---
+            // 1. If B exists, it MUST be first.
+            if (head) {
+                // If S is also there, check if children should go to S or B
+                // Per your request, if S is selected, children usually go to S, 
+                // but we must ensure B is S.No 1.
+                text += `${count++}. ${head.name}${(!spouse ? kidStr : "")}\n`;
+                if (spouse) {
+                    text += `${count++}. ${spouse.name}${kidStr}\n`;
+                }
+                others.forEach(o => text += `${count++}. ${o.name}\n`);
+            } 
+            // 2. If no B, but S exists
+            else if (spouse) {
                 text += `${count++}. ${spouse.name}${kidStr}\n`;
-                if (head) text += `${count++}. ${head.name}\n`;
                 others.forEach(o => text += `${count++}. ${o.name}\n`);
-            } else if (head) {
-                text += `${count++}. ${head.name}${kidStr}\n`;
-                others.forEach(o => text += `${count++}. ${o.name}\n`);
-            } else if (others.length > 0) {
-                // If S and B are missing, attach to the first available member (YP, ES, etc.)
+            } 
+            // 3. If neither B nor S, look for any other member to take children
+            else if (others.length > 0) {
                 text += `${count++}. ${others[0].name}${kidStr}\n`;
                 others.slice(1).forEach(o => text += `${count++}. ${o.name}\n`);
-            } else {
-                // If only kids were selected in this family
+            } 
+            // 4. Only kids selected
+            else {
                 kids.forEach(k => text += `${count++}. ${k.name}\n`);
             }
         });
