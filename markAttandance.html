@@ -3,306 +3,217 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Family Attendance</title>
+    <title>Attendance Generator</title>
     <style>
         :root { --primary: #1a73e8; --bg: #f8f9fa; --text: #202124; }
-        
         * { box-sizing: border-box; } 
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
-            background: var(--bg); 
-            margin: 0; 
-            padding: 10px;
-            color: var(--text);
-        }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 10px; color: var(--text); }
+        .container { max-width: 500px; margin: auto; padding-bottom: 120px; }
         
-        .container { max-width: 500px; margin: auto; padding-bottom: 100px; }
+        h2 { text-align: center; color: var(--primary); margin: 10px 0 20px 0; font-weight: 800; }
 
-        /* Header Card */
-        .setup-card { 
-            background: white; 
-            padding: 20px; 
-            border-radius: 16px; 
-            margin-bottom: 15px; 
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05); 
+        .setup-card { background: white; padding: 15px; border-radius: 16px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .input-group { display: flex; flex-direction: column; gap: 8px; }
+        .filter-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .full-row { grid-column: span 2; }
+
+        input, select { 
+            width: 100%; height: 42px; padding: 0 10px; border-radius: 8px; 
+            border: 1.5px solid #dadce0; font-size: 13px; outline: none; background: white;
         }
 
-        .app-title {
-            margin: 0 0 15px 0;
-            text-align: center;
-            font-size: 1.1rem;
-            color: var(--primary);
-            text-transform: uppercase;
-            letter-spacing: 1px;
+        .select-all-bar {
+            position: sticky; top: 0; z-index: 100;
+            display: flex; align-items: center; background: #e8f0fe;
+            padding: 12px 15px; border-radius: 10px; margin-bottom: 12px;
+            font-weight: 600; color: #1967d2; font-size: 0.9rem; cursor: pointer;
         }
+        .select-all-bar input { width: 20px; height: 20px; margin-right: 12px; }
 
-        .input-group { display: flex; flex-direction: column; gap: 10px; }
+        .family-card { background: white; border-radius: 12px; margin-bottom: 15px; border: 1px solid #dfe1e5; overflow: hidden; }
+        .family-header { background: #f1f3f4; padding: 10px 15px; display: flex; align-items: center; border-bottom: 1px solid #eee; font-weight: bold; font-size: 0.85rem; }
+        .family-header input { width: 18px; height: 18px; margin-right: 12px; }
 
-        input[type="date"], select {
-            width: 100%;
-            height: 48px;
-            padding: 0 12px;
-            border-radius: 10px;
-            border: 1.5px solid #dadce0;
-            background-color: #fff;
-            font-size: 16px;
-            appearance: none;
-            -webkit-appearance: none;
-        }
-
-        /* Family Card Styling */
-        .family-card { 
-            background: white; 
-            border-radius: 12px; 
-            margin-bottom: 15px; 
-            border: 1px solid #dfe1e5; 
-            overflow: hidden; 
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-        }
-
-        .family-header { 
-            background: #f8f9fa; 
-            padding: 12px 15px; 
-            display: flex; 
-            align-items: center; 
-            border-bottom: 1px solid #eee; 
-            font-weight: bold; 
-            color: #5f6368; 
-        }
-
-        .family-header input { width: 20px; height: 20px; margin-right: 12px; }
-
-        /* Member Row Alignment Fixed */
         .member-row { 
-            display: flex; 
-            align-items: center; 
-            padding: 12px 15px; 
-            border-bottom: 1px solid #f1f3f4; 
-            cursor: pointer;
-            -webkit-tap-highlight-color: transparent;
+            display: flex; align-items: center; justify-content: space-between; 
+            padding: 12px 15px; border-bottom: 1px solid #f1f3f4; cursor: pointer; 
         }
-        .member-row:last-child { border-bottom: none; }
+        .name-container { flex-grow: 1; text-align: left; }
+        .name-text { font-size: 1rem; font-weight: 500; display: block; }
+        .age-sub { font-size: 11px; color: #70757a; font-weight: bold; }
 
-        .sno { width: 30px; color: #80868b; font-size: 0.85rem; flex-shrink: 0; }
-        
-        .name-container { 
-            flex-grow: 1; 
-            display: flex; 
-            flex-direction: column; 
-            justify-content: center;
-        }
+        .indiv-check { width: 22px; height: 22px; accent-color: var(--primary); margin-left: 15px; pointer-events: none; flex-shrink: 0; }
 
-        .name-text { font-size: 1rem; font-weight: 500; margin-bottom: 2px; }
-        
-        .info-sub { font-size: 11px; color: #70757a; font-weight: normal; }
-
-        .indiv-check { 
-            width: 24px; 
-            height: 24px; 
-            accent-color: var(--primary); 
-            flex-shrink: 0;
-            margin-left: 10px;
-            pointer-events: none; /* Allows row click to work */
-        }
-
-        /* Sticky Button */
-        .copy-btn-container {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: white;
-            padding: 15px;
-            border-top: 1px solid #eee;
-            z-index: 1000;
-            max-width: 500px;
-            margin: auto;
-        }
-
-        .copy-btn { 
-            width: 100%; 
-            background: var(--primary); 
-            color: white; 
-            border: none; 
-            padding: 16px; 
-            border-radius: 12px; 
-            font-size: 1rem; 
-            font-weight: bold; 
-            box-shadow: 0 4px 12px rgba(26, 115, 232, 0.3);
-            cursor: pointer;
-        }
-        
-        .copy-btn:active { transform: scale(0.98); opacity: 0.9; }
-
-        #toast {
-            visibility: hidden;
-            min-width: 200px;
-            background-color: #323232;
-            color: #fff;
-            text-align: center;
-            border-radius: 8px;
-            padding: 12px;
-            position: fixed;
-            z-index: 2000;
-            left: 50%;
-            bottom: 100px;
-            transform: translateX(-50%);
-            font-size: 14px;
-        }
-
-        #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
-        @keyframes fadein { from {bottom: 80px; opacity: 0;} to {bottom: 100px; opacity: 1;} }
-        @keyframes fadeout { from {bottom: 100px; opacity: 1;} to {bottom: 80px; opacity: 0;} }
+        .copy-btn-container { position: fixed; bottom: 0; left: 0; right: 0; background: white; padding: 15px; border-top: 1px solid #eee; z-index: 1000; max-width: 500px; margin: auto; }
+        .copy-btn { width: 100%; background: var(--primary); color: white; border: none; padding: 16px; border-radius: 12px; font-weight: bold; cursor: pointer; }
+        #toast { visibility: hidden; min-width: 200px; background: #323232; color: #fff; text-align: center; border-radius: 8px; padding: 12px; position: fixed; left: 50%; bottom: 90px; transform: translateX(-50%); z-index: 2000; }
+        #toast.show { visibility: visible; }
     </style>
 </head>
 <body>
 
 <div class="container">
+    <h2>Attendance Generator</h2>
+
     <div class="setup-card">
-        <h3 class="app-title">Meeting Roster</h3>
         <div class="input-group">
-            <input type="date" id="attDate">
-            <select id="locDrop" onchange="renderGroupedList()">
-                <option value="">-- Select Location --</option>
-            </select>
+            <div class="filter-grid">
+                <input type="date" id="attDate">
+                <select id="meetingType">
+                    <option value="LTM">LTM</option>
+                    <option value="CLTM">CLTM</option>
+                    <option value="Prayer Meeting">Prayer Meeting</option>
+                    <option value="Sisters Meeting">Sisters Meeting</option>
+                    <option value="SGM">SGM</option>
+                    <option value="Ministry Meeting">Ministry Meeting</option>
+                </select>
+                <select id="locFilter" onchange="renderUI()"><option value="">All Locations</option></select>
+                <select id="areaFilter" onchange="renderUI()"><option value="">All Areas</option></select>
+                <select id="grpFilter" onchange="renderUI()" class="full-row"><option value="">All Age Groups</option></select>
+            </div>
+            <input type="text" id="searchFilter" placeholder="Search names..." onkeyup="renderUI()">
         </div>
     </div>
 
-    <div id="familyList"></div>
+    <div class="select-all-bar" onclick="toggleAllVisible()">
+        <input type="checkbox" id="globalSelectAll">
+        <span>Select All Visible Members</span>
+    </div>
+
+    <div id="familyList">Fetching data...</div>
 
     <div class="copy-btn-container">
         <button class="copy-btn" onclick="copyAttendance()">Copy Selected List</button>
     </div>
 </div>
-
 <div id="toast">Copied to Clipboard!</div>
 
 <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbyg_upnTM5VS2VIcjdnkIbYQRohd3tSq0qUYqsi0FtgNJosLyLgK_yEfAUC4_zOCZNM/exec";
-    let dataStore = {};
+    const API_URL = "https://script.google.com/macros/s/AKfycbyg_upnTM5VS2VIcjdnkIbYQRohd3tSq0qUYqsi0FtgNJosLyLgK_yEfAUC4_zOCZNM/exec"; 
+    let masterData = [];
 
     window.onload = () => {
         document.getElementById('attDate').valueAsDate = new Date();
-        fetch(API_URL).then(r => r.json()).then(data => {
-            dataStore = data;
-            const d = document.getElementById('locDrop');
-            d.innerHTML = '<option value="">-- Choose Location --</option>';
-            Object.keys(data).forEach(l => d.innerHTML += `<option value="${l}">${l}</option>`);
-        });
+        fetchData();
     };
 
-    function renderGroupedList() {
-        const loc = document.getElementById('locDrop').value;
-        const area = document.getElementById('familyList');
-        area.innerHTML = "";
-        if (!loc) return;
+    function fetchData() {
+        fetch(API_URL).then(r => r.json()).then(data => {
+            masterData = data;
+            populateFilters();
+            renderUI();
+        });
+    }
+
+    function populateFilters() {
+        const locations = [...new Set(masterData.map(p => p.location))].sort();
+        const areas = [...new Set(masterData.map(p => p.area))].sort();
+        const groups = [...new Set(masterData.map(p => p.ageGrp))].sort();
+        const lDrop = document.getElementById('locFilter');
+        const aDrop = document.getElementById('areaFilter');
+        const gDrop = document.getElementById('grpFilter');
+        locations.forEach(l => lDrop.innerHTML += `<option value="${l}">${l}</option>`);
+        areas.forEach(a => aDrop.innerHTML += `<option value="${a}">${a}</option>`);
+        groups.forEach(g => gDrop.innerHTML += `<option value="${g}">Age Group: ${g}</option>`);
+    }
+
+    function toggleAllVisible() {
+        const mainCb = document.getElementById('globalSelectAll');
+        if(event.target.type !== 'checkbox') mainCb.checked = !mainCb.checked;
+        document.querySelectorAll('.indiv-check').forEach(cb => cb.checked = mainCb.checked);
+        document.querySelectorAll('.family-header input').forEach(cb => cb.checked = mainCb.checked);
+    }
+
+    function renderUI() {
+        const container = document.getElementById('familyList');
+        const locVal = document.getElementById('locFilter').value;
+        const areaVal = document.getElementById('areaFilter').value;
+        const grpVal = document.getElementById('grpFilter').value;
+        const search = document.getElementById('searchFilter').value.toLowerCase();
+        document.getElementById('globalSelectAll').checked = false;
+        container.innerHTML = "";
+
+        const filtered = masterData.filter(p => {
+            return (!locVal || p.location === locVal) && 
+                   (!areaVal || p.area === areaVal) && 
+                   (!grpVal || p.ageGrp === grpVal) && 
+                   (p.name.toLowerCase().includes(search) || p.family.toLowerCase().includes(search));
+        });
 
         const families = {};
-        dataStore[loc].forEach(p => {
-            const famKey = p.family || "Individual";
-            if (!families[famKey]) families[famKey] = [];
-            families[famKey].push(p);
+        filtered.forEach(p => {
+            const f = p.family || "Individual";
+            if (!families[f]) families[f] = [];
+            families[f].push(p);
         });
 
-        const sortedFamilyNames = Object.keys(families).sort((a, b) => {
-            if (a === "Individual") return 1;
-            if (b === "Individual") return -1;
-            return a.localeCompare(b);
-        });
-
-        sortedFamilyNames.forEach(famName => {
-            const isIndividual = famName === "Individual";
-            const safeId = famName.replace(/\s+/g, '');
-            let html = `<div class="family-card" id="card-${safeId}">`;
-            
-            if (!isIndividual) {
+        Object.keys(families).sort((a,b) => (a==="Individual") ? 1 : (b==="Individual") ? -1 : a.localeCompare(b)).forEach(fam => {
+            let html = `<div class="family-card">`;
+            if (fam !== "Individual") html += `<div class="family-header"><input type="checkbox" onchange="selectFamily(this)"><span>${fam}</span></div>`;
+            families[fam].forEach(p => {
                 html += `
-                <div class="family-header">
-                    <input type="checkbox" onchange="selectFamily('${famName}', this.checked)">
-                    <span>${famName}</span>
-                </div>`;
-            } else {
-                html += `<div class="family-header" style="background:#fff; color:#999; font-size:0.75rem;">
-                            <span>Individual Members</span>
-                         </div>`;
-            }
-
-            families[famName].forEach(p => {
-                html += `
-                <div class="member-row" onclick="togglePerson(this, '${famName}')">
-                    <span class="sno">${p.sno}</span>
+                <div class="member-row" onclick="togglePerson(this)">
                     <div class="name-container">
                         <span class="name-text">${p.name}</span>
-                        <span class="info-sub">${p.ageGrp ? p.ageGrp : ''}</span>
+                        <span class="age-sub">Group: ${p.ageGrp}</span>
                     </div>
-                    <input type="checkbox" class="indiv-check" 
-                           data-name="${p.name}" 
-                           data-fam="${famName}" 
-                           data-grp="${p.ageGrp}">
+                    <input type="checkbox" class="indiv-check" data-name="${p.name}" data-fam="${fam}" data-grp="${p.ageGrp}">
                 </div>`;
             });
-
             html += `</div>`;
-            area.innerHTML += html;
+            container.innerHTML += html;
         });
     }
 
-    function selectFamily(famName, isChecked) {
-        const checkboxes = document.querySelectorAll(`[data-fam="${famName}"]`);
-        checkboxes.forEach(cb => cb.checked = isChecked);
-    }
-
-    function togglePerson(el, famName) {
-        const cb = el.querySelector('.indiv-check');
-        cb.checked = !cb.checked;
-        if (!cb.checked) {
-            const safeId = famName.replace(/\s+/g, '');
-            const master = document.querySelector(`#card-${safeId} .family-header input`);
-            if (master) master.checked = false;
-        }
-    }
+    function togglePerson(row) { row.querySelector('.indiv-check').checked = !row.querySelector('.indiv-check').checked; }
+    function selectFamily(headerCb) { headerCb.closest('.family-card').querySelectorAll('.indiv-check').forEach(cb => cb.checked = headerCb.checked); }
 
     function copyAttendance() {
-        const checkedBoxes = document.querySelectorAll('.indiv-check:checked');
-        if (checkedBoxes.length === 0) return alert("Select names first!");
+        const boxes = document.querySelectorAll('.indiv-check:checked');
+        if (boxes.length === 0) return alert("Select names!");
 
-        let selected = Array.from(checkedBoxes).map(cb => ({
+        let selected = Array.from(boxes).map(cb => ({
             name: cb.getAttribute('data-name'),
             fam: cb.getAttribute('data-fam'),
-            grp: cb.getAttribute('data-grp') ? cb.getAttribute('data-grp').toUpperCase() : ""
+            grp: (cb.getAttribute('data-grp') || "").toUpperCase()
         }));
 
-        let finalNames = [];
-        let uniqueFamilies = [...new Set(selected.map(p => p.fam))];
+        const mType = document.getElementById('meetingType').value;
+        let text = `${mType} Attendance\nDate: ${document.getElementById('attDate').value}\n\n`;
+        let count = 1;
+        let uniqueFams = [...new Set(selected.map(p => p.fam))];
 
-        uniqueFamilies.forEach(familyName => {
-            let members = selected.filter(p => p.fam === familyName);
-            let children = members.filter(m => m.grp === 'CHILD' || m.grp.includes('CHILD'));
-            let adults = members.filter(m => m.grp !== 'CHILD' && !m.grp.includes('CHILD'));
-            let childText = children.length > 0 ? ` + (${children.map(c => c.name).join(" & ")})` : "";
-            let hasS = adults.find(a => a.grp === 'S');
+        uniqueFams.forEach(f => {
+            let members = selected.filter(p => p.fam === f);
+            let kids = members.filter(p => p.grp === "CHILD");
+            let spouse = members.find(p => p.grp === "S");
+            let head = members.find(p => p.grp === "B");
+            let others = members.filter(p => p.grp !== "S" && p.grp !== "B" && p.grp !== "CHILD");
+            
+            let kidStr = kids.length > 0 ? ` + (${kids.map(k => k.name).join(" & ")})` : "";
 
-            adults.forEach(adult => {
-                let entry = adult.name;
-                if (adult.grp === 'S' && children.length > 0) entry += childText;
-                else if (adult.grp === 'B' && !hasS && children.length > 0) entry += childText;
-                finalNames.push(entry);
-            });
-
-            if (adults.length === 0 && children.length > 0) {
-                children.forEach(c => finalNames.push(c.name));
+            // --- SMART ATTACHMENT LOGIC ---
+            if (spouse) {
+                text += `${count++}. ${spouse.name}${kidStr}\n`;
+                if (head) text += `${count++}. ${head.name}\n`;
+                others.forEach(o => text += `${count++}. ${o.name}\n`);
+            } else if (head) {
+                text += `${count++}. ${head.name}${kidStr}\n`;
+                others.forEach(o => text += `${count++}. ${o.name}\n`);
+            } else if (others.length > 0) {
+                // If S and B are missing, attach to the first available member (YP, ES, etc.)
+                text += `${count++}. ${others[0].name}${kidStr}\n`;
+                others.slice(1).forEach(o => text += `${count++}. ${o.name}\n`);
+            } else {
+                // If only kids were selected in this family
+                kids.forEach(k => text += `${count++}. ${k.name}\n`);
             }
         });
 
-        let loc = document.getElementById('locDrop').value;
-        let date = document.getElementById('attDate').value;
-        let text = `Attendance: ${loc}\nDate: ${date}\n\n`;
-        finalNames.forEach((name, i) => { text += `${i + 1}. ${name}\n`; });
-
         navigator.clipboard.writeText(text).then(() => {
-            const toast = document.getElementById("toast");
-            toast.className = "show";
-            setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
+            const t = document.getElementById("toast");
+            t.className = "show";
+            setTimeout(() => t.className = "", 3000);
         });
     }
 </script>
