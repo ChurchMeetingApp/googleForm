@@ -287,12 +287,33 @@
             }) 
         })
         .then(() => {
+ 
+            // Logic to update local JSON so changes reflect immediately in the UI
+ 
+            if (traineeData[name]) {
+ 
+                traineeData[name].location = loc;
+ 
+                traineeData[name].type = type;
+ 
+                traineeData[name].ftMessages = sessions;
+ 
+            }
+ 
+ 
             alert("Registration updated successfully!");
             btn.innerText = "Success!";
+            btn.innerText = "Success!";
+            setTimeout(() => { 
             setTimeout(() => { 
                 btn.disabled = false; 
+                btn.disabled = false; 
+                btn.innerText = "Update"; 
                 btn.innerText = "Update"; 
             }, 3000);
+                handleNameChange(); // Re-trigger to lock fields if now FT/PT
+ 
+            }, 2000);
         })
         .catch(err => {
             alert("An error occurred. Please try again.");
