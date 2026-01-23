@@ -8,30 +8,46 @@
         :root { --primary: #003366; --accent: #d4af37; --bg: #f8fafc; --border: #e2e8f0; --text: #1e293b; }
         body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 0; }
         
-        header { background: var(--primary); color: white; padding: 50px 20px; text-align: center; }
-        header h1 { margin: 0; font-size: 28px; letter-spacing: 0.5px; }
-        header p { margin: 10px 0 0; font-size: 18px; opacity: 0.9; font-weight: 300; line-height: 1.4; }
+        header { background: var(--primary); color: white; padding: 30px 15px; text-align: center; }
+        header h1 { margin: 0; font-size: 24px; letter-spacing: 0.5px; }
+        header p { margin: 8px 0 0; font-size: 15px; opacity: 0.9; font-weight: 300; line-height: 1.4; }
         
-        .status-pill { display: inline-block; background: #f1f5f9; color: #475569; padding: 6px 16px; border-radius: 20px; font-weight: 600; font-size: 13px; margin-top: 15px; border: 1px solid var(--border); }
+        .status-pill { display: inline-block; background: #f1f5f9; color: #475569; padding: 6px 16px; border-radius: 20px; font-weight: 600; font-size: 12px; margin-top: 15px; border: 1px solid var(--border); }
         
-        .container { max-width: 1100px; margin: -30px auto 50px; padding: 0 20px; }
-        .card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border: 1px solid var(--border); }
+        .container { max-width: 1100px; margin: -20px auto 50px; padding: 0 10px; }
+        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border: 1px solid var(--border); }
         
-        .search-area { position: relative; margin-bottom: 25px; }
-        .search-bar { width: 100%; padding: 14px 20px; border: 1px solid var(--border); border-radius: 8px; font-size: 16px; box-sizing: border-box; transition: all 0.2s; background: #fff; }
+        .search-area { margin-bottom: 20px; }
+        .search-bar { width: 100%; padding: 12px 16px; border: 1px solid var(--border); border-radius: 8px; font-size: 16px; box-sizing: border-box; transition: all 0.2s; background: #fff; -webkit-appearance: none; }
         .search-bar:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(0, 51, 102, 0.1); }
 
-        table { width: 100%; border-collapse: collapse; }
-        th { background: #f1f5f9; color: var(--primary); font-weight: 700; text-align: left; padding: 16px; border-bottom: 2px solid var(--border); font-size: 14px; }
-        td { padding: 16px; border-bottom: 1px solid var(--border); font-size: 14px; }
-        tr:last-child td { border-bottom: none; }
-        tr:hover { background-color: #f8fafc; }
+        /* Mobile Table Transformation */
+        @media screen and (max-width: 768px) {
+            table, thead, tbody, th, td, tr { display: block; }
+            thead tr { position: absolute; top: -9999px; left: -9999px; }
+            tr { border: 1px solid var(--border); border-radius: 8px; margin-bottom: 15px; padding: 10px; background: #fff; position: relative; }
+            td { border: none; padding: 8px 5px 8px 120px !important; position: relative; min-height: 20px; text-align: left; font-size: 14px; border-bottom: 1px solid #f1f5f9; }
+            td:last-child { border-bottom: none; }
+            td:before { position: absolute; left: 10px; width: 100px; padding-right: 10px; white-space: nowrap; font-weight: 700; color: var(--primary); content: attr(data-label); font-size: 12px; text-transform: uppercase; }
+            
+            /* Specific styling for name in card view */
+            td[data-label="#"] { display: none; }
+            td[data-label="Trainee Name 🔠"] { font-size: 16px; padding-left: 10px !important; background: #f8fafc; border-radius: 5px; margin-bottom: 5px; }
+            td[data-label="Trainee Name 🔠"]:before { content: ""; }
+        }
+
+        /* Desktop Table Styling */
+        @media screen and (min-width: 769px) {
+            table { width: 100%; border-collapse: collapse; }
+            th { background: #f1f5f9; color: var(--primary); font-weight: 700; text-align: left; padding: 16px; border-bottom: 2px solid var(--border); font-size: 14px; }
+            td { padding: 16px; border-bottom: 1px solid var(--border); font-size: 14px; }
+            tr:hover { background-color: #f8fafc; }
+        }
 
         .tag { display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; margin: 2px; }
         .tag-all { background: #dcfce7; color: #166534; }
         .tag-msg { background: #f1f5f9; color: #475569; border: 1px solid var(--border); }
         .lang-text { font-style: italic; color: #64748b; }
-        
         #loading-state { text-align: center; padding: 60px; color: #64748b; }
     </style>
 </head>
@@ -46,25 +62,23 @@
 <div class="container">
     <div class="card">
         <div class="search-area">
-            <input type="text" id="searchInput" class="search-bar" placeholder="Search by trainee name, language, or location..." onkeyup="filterData()">
+            <input type="text" id="searchInput" class="search-bar" placeholder="🔍 Search name, language, or location..." onkeyup="filterData()">
         </div>
         
         <div id="loading-state">Syncing fresh registry data...</div>
         
-        <div style="overflow-x: auto;">
-            <table id="summaryTable" style="display: none;">
-                <thead>
-                    <tr>
-                        <th style="width: 40px;">#</th>
-                        <th>Trainee Name 🔠</th>
-                        <th>Language</th>
-                        <th>Location</th>
-                        <th>Messages</th>
-                    </tr>
-                </thead>
-                <tbody id="tableBody"></tbody>
-            </table>
-        </div>
+        <table id="summaryTable" style="display: none;">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Trainee Name 🔠</th>
+                    <th>Language</th>
+                    <th>Location</th>
+                    <th>Messages</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+        </table>
     </div>
 </div>
 
@@ -75,11 +89,9 @@
         const freshTimestamp = new Date().getTime();
         const scriptTag = document.createElement('script');
         scriptTag.src = `${scriptURL}?callback=renderRegistry&t=${freshTimestamp}`;
-        
         scriptTag.onerror = () => {
-            document.getElementById('loading-state').innerHTML = "❌ Error fetching fresh data. Please check your connection.";
+            document.getElementById('loading-state').innerHTML = "❌ Error fetching fresh data.";
         };
-        
         document.body.appendChild(scriptTag);
     })();
 
@@ -92,9 +104,8 @@
         const nIdx = headers.indexOf("NAMES");
         const lIdx = headers.indexOf("LOCATION");
         const pIdx = headers.indexOf("PT MESSAGES");
-        const langIdx = headers.indexOf("LANGUAGE"); // Looking for LANGUAGE column
+        const langIdx = headers.indexOf("LANGUAGE");
 
-        // Alphabetical Sort (A-Z) by Name
         entries.sort((a, b) => {
             let nameA = String(a[nIdx] || "").trim().toUpperCase();
             let nameB = String(b[nIdx] || "").trim().toUpperCase();
@@ -121,11 +132,11 @@
 
             const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td style="color: #cbd5e1;">${idx + 1}</td>
-                <td><strong>${name}</strong></td>
-                <td class="lang-text">${language}</td>
-                <td>${location}</td>
-                <td>${tags}</td>
+                <td data-label="#">${idx + 1}</td>
+                <td data-label="Trainee Name 🔠"><strong>${name}</strong></td>
+                <td data-label="Language" class="lang-text">${language}</td>
+                <td data-label="Location">${location}</td>
+                <td data-label="Messages">${tags}</td>
             `;
             tbody.appendChild(tr);
         });
@@ -137,7 +148,6 @@
     function filterData() {
         const query = document.getElementById("searchInput").value.toUpperCase();
         const rows = document.getElementById("tableBody").getElementsByTagName("tr");
-
         for (let i = 0; i < rows.length; i++) {
             const rowText = rows[i].textContent.toUpperCase();
             rows[i].style.display = rowText.includes(query) ? "" : "none";
