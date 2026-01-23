@@ -3,333 +3,147 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
-    <title>Video Training Registration</title>
+    <title>Registration Summary - BVT</title>
     <style>
-    :root { 
-        --primary: #2563eb; 
-        --bg: #f8fafc; 
-        --border: #cbd5e1; 
-        --error: #dc2626; 
-        --success: #16a34a; 
-        --warning-bg: #fffbeb; 
-        --warning-text: #92400e; 
-    }
-    
-    * { box-sizing: border-box; } 
+        :root { --primary: #003366; --accent: #d4af37; --bg: #f8fafc; --border: #e2e8f0; --text: #1e293b; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 0; }
+        
+        header { background: var(--primary); color: white; padding: 50px 20px; text-align: center; }
+        header h1 { margin: 0; font-size: 28px; letter-spacing: 0.5px; }
+        header p { margin: 10px 0 0; font-size: 18px; opacity: 0.9; font-weight: 300; line-height: 1.4; }
+        
+        .status-pill { display: inline-block; background: #f1f5f9; color: #475569; padding: 6px 16px; border-radius: 20px; font-weight: 600; font-size: 13px; margin-top: 15px; border: 1px solid var(--border); }
+        
+        .container { max-width: 1100px; margin: -30px auto 50px; padding: 0 20px; }
+        .card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border: 1px solid var(--border); }
+        
+        .search-area { position: relative; margin-bottom: 25px; }
+        .search-bar { width: 100%; padding: 14px 20px; border: 1px solid var(--border); border-radius: 8px; font-size: 16px; box-sizing: border-box; transition: all 0.2s; background: #fff; }
+        .search-bar:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(0, 51, 102, 0.1); }
 
-    body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg); padding: 10px; color: #1e293b; }
-    
-    .form-card { 
-        width: 100%; 
-        max-width: 650px; 
-        margin: 0 auto; 
-        background: white; 
-        padding: 20px; 
-        border-radius: 16px; 
-        box-shadow: 0 10px 25px rgba(0,0,0,0.1); 
-    }
+        table { width: 100%; border-collapse: collapse; }
+        th { background: #f1f5f9; color: var(--primary); font-weight: 700; text-align: left; padding: 16px; border-bottom: 2px solid var(--border); font-size: 14px; }
+        td { padding: 16px; border-bottom: 1px solid var(--border); font-size: 14px; }
+        tr:last-child td { border-bottom: none; }
+        tr:hover { background-color: #f8fafc; }
 
-    h2 { color: var(--primary); text-align: center; font-size: 1.5rem; margin-bottom: 20px; }
-
-    .usage-note {
-        background-color: var(--warning-bg);
-        color: var(--warning-text);
-        padding: 12px;
-        border-radius: 8px;
-        font-size: 13px;
-        line-height: 1.5;
-        margin-bottom: 20px;
-        border: 1px solid #fde68a;
-        text-align: center;
-        font-weight: 500;
-    }
-
-    .form-group { margin-bottom: 15px; }
-    label { display: block; font-size: 14px; font-weight: 600; color: #475569; margin-bottom: 6px; }
-    select, input { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; }
-
-    #pt-container { 
-        display: none; 
-        background: #f1f5f9; 
-        padding: 10px; 
-        border-radius: 12px; 
-        margin-top: 15px; 
-        border: 2px solid #cbd5e1; 
-    }
-
-    .counter-badge { font-weight: bold; margin-bottom: 10px; color: var(--primary); font-size: 14px; }
-
-    .date-row { 
-        display: grid; 
-        grid-template-columns: 70px 1fr 1fr 1fr; 
-        align-items: center; 
-        padding: 8px; 
-        background: white; 
-        margin-bottom: 6px; 
-        border-radius: 8px; 
-        border-left: 4px solid var(--primary);
-        gap: 5px; 
-    }
-
-    .date-label { font-weight: 700; font-size: 12px; color: #334155; }
-
-    .check-item { 
-        display: flex; 
-        align-items: center; 
-        font-size: 11px; 
-        cursor: pointer; 
-        white-space: nowrap; 
-    }
-
-    .check-item input { 
-        width: 16px; 
-        height: 16px; 
-        margin-right: 4px; 
-        flex-shrink: 0; 
-    }
-
-    .error-msg { color: var(--error); font-size: 13px; font-weight: bold; display: none; margin-top: 10px; }
-
-    .btn-submit { width: 100%; background: var(--primary); color: white; padding: 16px; border: none; border-radius: 8px; font-weight: bold; font-size: 16px; margin-top: 15px; cursor: pointer; }
-    .btn-submit:disabled { background: #94a3b8; cursor: not-allowed; }
-
-    .contact-section { margin-top: 20px; }
+        .tag { display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; margin: 2px; }
+        .tag-all { background: #dcfce7; color: #166534; }
+        .tag-msg { background: #f1f5f9; color: #475569; border: 1px solid var(--border); }
+        .lang-text { font-style: italic; color: #64748b; }
+        
+        #loading-state { text-align: center; padding: 60px; color: #64748b; }
     </style>
 </head>
 <body>
 
-<div class="form-card">
-    <h2>Video Training Registration</h2>
-    
-    <div class="usage-note">
-        ℹ️ This link is intended only for registered saints to view or update their own details. Do not forward.
-    </div>
+<header>
+    <h1>Registration Summary</h1>
+    <p>2025 December Semiannual Training - <br>Experiencing, Enjoying, and Expressing Christ (4)</p>
+    <div class="status-pill">Registration Completed</div>
+</header>
 
-    <div style="margin-bottom: 20px; text-align: center; background: #f1f5f9; padding: 15px; border-radius: 12px;">
-        <div style="font-size: 13px; font-weight: 600; color: #64748b; margin-bottom: 5px;">
-            Registration Progress: <span id="reg-percent">0</span>% 
-            (<span id="reg-count">0</span>/<span id="total-count">0</span>)
+<div class="container">
+    <div class="card">
+        <div class="search-area">
+            <input type="text" id="searchInput" class="search-bar" placeholder="Search by trainee name, language, or location..." onkeyup="filterData()">
         </div>
-        <div style="background: #e2e8f0; height: 8px; border-radius: 4px; overflow: hidden; width: 100%;">
-            <div id="progress-fill" style="background: #16a34a; height: 100%; width: 0%; transition: width 0.8s ease-in-out;"></div>
+        
+        <div id="loading-state">Syncing fresh registry data...</div>
+        
+        <div style="overflow-x: auto;">
+            <table id="summaryTable" style="display: none;">
+                <thead>
+                    <tr>
+                        <th style="width: 40px;">#</th>
+                        <th>Trainee Name 🔠</th>
+                        <th>Language</th>
+                        <th>Location</th>
+                        <th>Messages</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+            </table>
         </div>
-    </div>
-
-    <form id="traineeForm">
-        <div class="form-group">
-            <label>Trainee Name</label>
-            <select id="name" required onchange="handleNameChange()">
-                <option value="">Fetching names...</option>
-            </select>
-        </div>
-
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-            <div class="form-group"><label>Language</label><input type="text" id="language" readonly style="background:#f1f5f9;"></div>
-            <div class="form-group">
-                <label>Location</label>
-                <select id="location" required>
-                    <option value="">Select Location</option>
-                    <option value="Hebbagodi">Hebbagodi</option>
-                    <option value="Indira Nagar">Indira Nagar</option>
-                </select>
-            </div>
-        </div>
-
-        <div class="form-group">
-            <label>Training Type</label>
-            <select id="trainingType" required onchange="toggleSessions()">
-                <option value="">-- Choose Type --</option>
-                <option value="FT">Full Time - FT</option>
-                <option value="PT">Part Time - PT</option>
-            </select>
-        </div>
-
-        <div id="pt-container">
-            <div class="counter-badge">Sessions: <span id="count-val">0</span> / 6 Min</div>
-            <div class="date-row">
-                <span class="date-label">Jan 24</span>
-                <label class="check-item"><input type="checkbox" name="msg" value="1" onchange="updateCounter()"> Msg 1</label>
-                <label class="check-item"><input type="checkbox" name="msg" value="2" onchange="updateCounter()"> Msg 2</label>
-                <label class="check-item"><input type="checkbox" name="msg" value="3" onchange="updateCounter()"> Msg 3</label>
-            </div>
-            <div class="date-row">
-                <span class="date-label">Jan 25</span>
-                <label class="check-item"><input type="checkbox" name="msg" value="4" onchange="updateCounter()"> Msg 4</label>
-                <label class="check-item"><input type="checkbox" name="msg" value="5" onchange="updateCounter()"> Msg 5</label>
-                <label class="check-item"><input type="checkbox" name="msg" value="6" onchange="updateCounter()"> Msg 6</label>
-            </div>
-            <div class="date-row">
-                <span class="date-label">Jan 26</span>
-                <label class="check-item"><input type="checkbox" name="msg" value="7" onchange="updateCounter()"> Msg 7</label>
-                <label class="check-item"><input type="checkbox" name="msg" value="8" onchange="updateCounter()"> Msg 8</label>
-                <label class="check-item"><input type="checkbox" name="msg" value="9" onchange="updateCounter()"> Msg 9</label>
-            </div>
-            <div class="date-row">
-                <span class="date-label">Feb 01</span>
-                <label class="check-item"><input type="checkbox" name="msg" value="10" onchange="updateCounter()"> Msg 10</label>
-                <label class="check-item"><input type="checkbox" name="msg" value="11" onchange="updateCounter()"> Msg 11</label>
-                <label class="check-item"><input type="checkbox" name="msg" value="12" onchange="updateCounter()"> Msg 12</label>
-            </div>
-        </div>
-
-        <p id="error-pt" class="error-msg">⚠️ Part-Time (PT) requires at least 6 sessions.</p>
-        <button type="submit" class="btn-submit" id="submitBtn">Update</button>
-    </form>
-</div>
-
-<hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 30px 0;">
-
-<div class="contact-section">
-    <p style="font-weight: 700; color: #475569; font-size: 14px; margin-bottom: 12px; text-align: center;">Need Help? Training Coordinators:</p>
-    <div style="background: #f8fafc; padding: 15px; border-radius: 10px; border: 1px solid #e2e8f0; text-align: center; max-width: 650px; margin: 0 auto;">
-        <p style="margin: 0; font-weight: 700; font-size: 15px; color: #1e293b;">Br. Jayaseelan</p>
-        <p style="margin: 8px 0 0 0; font-weight: 700; font-size: 15px; color: #1e293b;">Br. Babu</p>
     </div>
 </div>
 
 <script>
-    const scriptURL = "https://script.google.com/macros/s/AKfycbxp7er51qMlu9caFsHVN8jZa2M1MSiLJj3P6KD1yNTylFVck8hz_Q2ArAnaEQV6qTGtdg/exec";
-    let traineeData = {};
-    let selectedRow = null;
+    const scriptURL = "https://script.google.com/macros/s/AKfycbyfKmVxslXo3mQttEIfbXPIkPH9nPAiqEqoihuu_tIQa7xGQih-jgBkJqZywB8UXxM37A/exec";
 
-    window.onload = () => {
-        const s = document.createElement('script');
-        s.src = `${scriptURL}?action=getDropdowns&callback=setup`;
-        document.body.appendChild(s);
-    };
-
-    window.setup = (data) => {
-        traineeData = data.trainees;
-        const sel = document.getElementById('name');
-        sel.innerHTML = '<option value="">-- Select Trainee --</option>';
-        Object.keys(traineeData).sort().forEach(n => sel.innerHTML += `<option value="${n}">${n}</option>`);
-        calculateStats();
-    };
-
-    function calculateStats() {
-        const trainees = Object.values(traineeData);
-        const total = trainees.length;
-        const filled = trainees.filter(t => t.type && t.type.toString().trim() !== "").length;
-        const percentage = total > 0 ? Math.round((filled / total) * 100) : 0;
-
-        document.getElementById('reg-percent').innerText = percentage;
-        document.getElementById('reg-count').innerText = filled;
-        document.getElementById('total-count').innerText = total;
-        document.getElementById('progress-fill').style.width = percentage + "%";
-    }
-
-    function handleNameChange() {
-        const name = document.getElementById('name').value;
-        const typeBox = document.getElementById('trainingType');
-        const checkboxes = document.querySelectorAll('input[name="msg"]');
+    (function fetchRegistry() {
+        const freshTimestamp = new Date().getTime();
+        const scriptTag = document.createElement('script');
+        scriptTag.src = `${scriptURL}?callback=renderRegistry&t=${freshTimestamp}`;
         
-        typeBox.disabled = false;
-        checkboxes.forEach(cb => cb.checked = false);
+        scriptTag.onerror = () => {
+            document.getElementById('loading-state').innerHTML = "❌ Error fetching fresh data. Please check your connection.";
+        };
         
-        if (name && traineeData[name]) {
-            const t = traineeData[name];
-            selectedRow = t.rowNum;
-            document.getElementById('language').value = t.language || "";
-            document.getElementById('location').value = t.location || "";
-            
-            if (t.type && (t.type.toString().trim() === "FT" || t.type.toString().trim() === "PT")) {
-                typeBox.value = t.type.toString().trim();
-                typeBox.disabled = true;
-            } else {
-                typeBox.value = "";
-            }
+        document.body.appendChild(scriptTag);
+    })();
 
-            if (t.ftMessages && t.type.toString().trim() === "PT") {
-                const saved = t.ftMessages.toString().split(',').map(s => s.trim());
-                checkboxes.forEach(cb => { if(saved.includes(cb.value)) cb.checked = true; });
-            }
-            toggleSessions();
-        }
-    }
-
-    function toggleSessions() {
-        const type = document.getElementById('trainingType').value;
-        document.getElementById('pt-container').style.display = (type === 'PT') ? 'block' : 'none';
-        updateCounter();
-    }
-
-    function updateCounter() {
-        const count = document.querySelectorAll('input[name="msg"]:checked').length;
-        document.getElementById('count-val').innerText = count;
-        document.getElementById('error-pt').style.display = 'none';
-    }
-
-    document.getElementById('traineeForm').addEventListener('submit', function(e) {
-        e.preventDefault();
+    window.renderRegistry = function(data) {
+        if (!data || data.length === 0) return;
         
-        const name = document.getElementById('name').value;
-        const loc = document.getElementById('location').value;
-        const type = document.getElementById('trainingType').value;
-        const selected = Array.from(document.querySelectorAll('input[name="msg"]:checked')).map(c => c.value);
-        const sessions = type === 'FT' ? "All (1-12)" : selected.join(', ');
+        const headers = data[0].map(h => String(h).trim().toUpperCase());
+        let entries = data.slice(1);
+        
+        const nIdx = headers.indexOf("NAMES");
+        const lIdx = headers.indexOf("LOCATION");
+        const pIdx = headers.indexOf("PT MESSAGES");
+        const langIdx = headers.indexOf("LANGUAGE"); // Looking for LANGUAGE column
 
-        if (type === 'PT' && selected.length < 6) {
-            document.getElementById('error-pt').style.display = 'block';
-            return;
-        }
-
-        // DETAILED CONFIRMATION POPUP (YOUR PREVIOUS VERSION)
-        const confirmation = confirm(
-            `Please confirm the following details:\n\n` +
-            `Trainee: ${name}\n` +
-            `Location: ${loc}\n` +
-            `Type: ${type}\n` +
-            `Sessions: ${sessions}\n\n` +
-            `Do you want to submit?`
-        );
-
-        if (!confirmation) return;
-
-        const btn = document.getElementById('submitBtn');
-        btn.innerText = "Processing...";
-        btn.disabled = true;
-
-        fetch(scriptURL, { 
-            method: 'POST', 
-            mode: 'no-cors', 
-            body: JSON.stringify({ 
-                action: "add", 
-                rowId: selectedRow, 
-                name: name, 
-                location: loc, 
-                ftMessages: sessions, 
-                type: type 
-            }) 
-        })
-        .then(() => {
-            // Update local memory
-            if (traineeData[name]) {
-                traineeData[name].location = loc;
-                traineeData[name].type = type;
-                traineeData[name].ftMessages = sessions;
-            }
-            
-            // Immediately refresh the percentage display
-            calculateStats(); 
-
-            alert("Registration updated successfully!");
-            btn.innerText = "Success!";
-            
-            setTimeout(() => { 
-                btn.disabled = false; 
-                btn.innerText = "Update"; 
-                handleNameChange();
-            }, 2000);
-        })
-        .catch(err => {
-            alert("An error occurred. Please try again.");
-            btn.innerText = "Update";
-            btn.disabled = false;
+        // Alphabetical Sort (A-Z) by Name
+        entries.sort((a, b) => {
+            let nameA = String(a[nIdx] || "").trim().toUpperCase();
+            let nameB = String(b[nIdx] || "").trim().toUpperCase();
+            return nameA.localeCompare(nameB);
         });
-    });
+
+        const tbody = document.getElementById('tableBody');
+        tbody.innerHTML = '';
+
+        entries.forEach((row, idx) => {
+            const name = row[nIdx];
+            if (!name) return;
+
+            const language = row[langIdx] || "English";
+            const location = row[lIdx] || "---";
+            const ptData = String(row[pIdx] || "");
+            
+            let tags = '';
+            if (ptData.toUpperCase().includes("ALL")) {
+                tags = '<span class="tag tag-all">ALL (1-12)</span>';
+            } else {
+                tags = ptData.split(',').map(m => `<span class="tag tag-msg">M${m.trim()}</span>`).join('');
+            }
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td style="color: #cbd5e1;">${idx + 1}</td>
+                <td><strong>${name}</strong></td>
+                <td class="lang-text">${language}</td>
+                <td>${location}</td>
+                <td>${tags}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        document.getElementById('loading-state').style.display = 'none';
+        document.getElementById('summaryTable').style.display = 'table';
+    };
+
+    function filterData() {
+        const query = document.getElementById("searchInput").value.toUpperCase();
+        const rows = document.getElementById("tableBody").getElementsByTagName("tr");
+
+        for (let i = 0; i < rows.length; i++) {
+            const rowText = rows[i].textContent.toUpperCase();
+            rows[i].style.display = rowText.includes(query) ? "" : "none";
+        }
+    }
 </script>
+
 </body>
 </html>
