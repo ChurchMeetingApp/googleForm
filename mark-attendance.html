@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BVT Marking Panel - Persistence</title>
+    <style>
+        :root { --primary: #003366; --bg: #f8fafc; --border: #e2e8f0; --success: #22c55e; --warning: #eab308; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); margin: 0; padding-bottom: 120px; color: #1e293b; }
+        header { background: var(--primary); color: white; padding: 25px 20px; text-align: center; }
+        .container { max-width: 850px; margin: -20px auto 0; padding: 0 20px; }
+        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border: 1px solid var(--border); }
+        .controls { display: flex; gap: 10px; margin-bottom: 20px; }
+        select, .search-bar { padding: 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; background: white; }
+        select { flex: 1; cursor: pointer; }
+        .search-bar { width: 100%; box-sizing: border-box; margin-bottom: 15px; }
+        
+        table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+        th { text-align: left; padding: 12px; background: #f1f5f9; color: var(--primary); border-bottom: 2px solid var(--border); font-size: 13px; }
+        td { padding: 12px; border-bottom: 1px solid var(--border); font-size: 14px; }
+        
+        .section-header { 
+            display: flex; justify-content: space-between; align-items: center;
+            background: #e0e7ff; color: #3730a3; padding: 10px 15px; 
+            font-weight: 800; font-size: 13px; text-transform: uppercase; 
+            border-radius: 6px; margin: 25px 0 10px 0; 
+        }
+        .section-header.secondary { background: #f1f5f9; color: #475569; }
+        .count-badge { background: white; padding: 2px 8px; border-radius: 10px; font-size: 11px; border: 1px solid #c7d2fe; }
+
+        .btn-group { display: flex; gap: 8px; justify-content: flex-end; }
+        .mark-btn { border: 1px solid #cbd5e1; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-weight: 700; background: white; color: #64748b; font-size: 12px; }
+        .btn-p.active { background: var(--success) !important; color: white !important; border-color: var(--success); }
+        .btn-l.active { background: var(--warning) !important; color: white !important; border-color: var(--warning); }
+        
+        .footer { position: fixed; bottom: 0; width: 100%; background: white; padding: 25px; box-shadow: 0 -4px 15px rgba(0,0,0,0.08); text-align: center; z-index: 100; }
+        .submit-btn { background: var(--primary); color: white; padding: 14px 70px; border: none; border-radius: 30px; font-weight: bold; cursor: pointer; font-size: 16px; }
+        #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9); display: flex; justify-content: center; align-items: center; z-index: 1000; font-weight: bold; color: var(--primary); }
+    </style>
+</head>
+<body>
+
+<div id="loading">📡 Pulling Data...</div>
+
+<header>
+    <h1>Attendance Marking</h1>
+    <p>Hebahodi & Other Localities</p>
+</header>
+
+<div class="container">
+    <div class="card">
+        <div class="controls">
+            <select id="msgFilter" onchange="saveSelection(); render();">
+                <option value="">-- Message --</option>
+                <script>for(let i=1; i<=12; i++) document.write(`<option value="${i}">Message ${i}</option>`)</script>
+            </select>
+            <select id="locFilter" onchange="saveSelection(); render();">
+                <option value="">-- Location --</option>
+            </select>
+        </div>
+        
+        <input type="text" id="search" class="search-bar" placeholder="🔍 Search trainees..." onkeyup="filter()">
+        
+        <div id="dynamicContent">
+            <p style="text-align:center; color:#94a3b8; padding:40px;">Select Message and Location to begin.</p>
+        </div>
+    </div>
+</div>
+
+<div class="footer">
+    <button id="submitBtn" class="submit-btn" onclick="submit()">Final Submit to Sheet</button>
+</div>
+
+<script>
+    const scriptURL = "https://script.google.com/macros/s/AKfycbyfKmVxslXo3mQttEIfbXPIkPH9nPAiqEqoihuu_tIQa7xGQih-jgBkJqZywB8UXxM37A/exec";
+    let sheetData = [], headers = [], localChanges = {};
+
+    (function init() {
+        const s = document.createElement('script');
+        s.src = `${scriptURL}?callback=handle&t=${Date.now()}`;
+        document.body.appendChild(s);
+    })();
+
+    window.handle = function(data) {
+        headers = data[0].map(h => String(h).trim().toUpperCase());
+        sheetData = data.slice(1);
+        const nIdx = headers.indexOf("NAMES");
+        sheetData.sort((a, b) => String(a[nIdx]).localeCompare(String(b[nIdx])));
+        
+        const locIdx = headers.indexOf("LOCATION");
+        const locs = [...new Set(sheetData.map(r => r[locIdx]).filter(l => l))].sort();
+        const drop = document.getElementById('locFilter');
+        locs.forEach(l => drop.innerHTML += `<option value="${l}">${l}</option>`);
+
+        // --- RESTORE SELECTIONS ---
+        const savedMsg = sessionStorage.getItem('lastMsg');
+        const savedLoc = sessionStorage.getItem('lastLoc');
+        if(savedMsg) document.getElementById('msgFilter').value = savedMsg;
+        if(savedLoc) document.getElementById('locFilter').value = savedLoc;
+        
+        document.getElementById('loading').style.display = 'none';
+        if(savedMsg && savedLoc) render();
+    };
+
+    function saveSelection() {
+        sessionStorage.setItem('lastMsg', document.getElementById('msgFilter').value);
+        sessionStorage.setItem('lastLoc', document.getElementById('locFilter').value);
+    }
+
+    function render() {
+        const msgNum = document.getElementById('msgFilter').value;
+        const loc = document.getElementById('locFilter').value;
+        const container = document.getElementById('dynamicContent');
+        if (!loc || !msgNum) return;
+
+        const nIdx = headers.indexOf("NAMES"), lIdx = headers.indexOf("LOCATION"), 
+              pIdx = headers.indexOf("PT MESSAGES"), mIdx = headers.indexOf("M" + msgNum);
+
+        const groupExpected = [], groupOthers = [];
+
+        sheetData.forEach(row => {
+            if (String(row[lIdx]) === loc) {
+                const ptMsgs = String(row[pIdx] || "").toUpperCase();
+                const isOpted = ptMsgs.includes("ALL") || ptMsgs.split(',').map(s => s.trim()).includes(msgNum);
+                if (isOpted) groupExpected.push(row);
+                else groupOthers.push(row);
+            }
+        });
+
+        container.innerHTML = `
+            <div class="section-header">
+                <span>🎯 Opted for Message ${msgNum}</span>
+                <span class="count-badge">${groupExpected.length}</span>
+            </div>
+            ${generateTable(groupExpected, nIdx, mIdx)}
+            <div class="section-header secondary">
+                <span>🏠 Other Trainees in ${loc}</span>
+                <span class="count-badge">${groupOthers.length}</span>
+            </div>
+            ${generateTable(groupOthers, nIdx, mIdx)}
+        `;
+    }
+
+    function generateTable(dataArray, nIdx, mIdx) {
+        if (dataArray.length === 0) return '<p style="padding:15px; color:#94a3b8; font-size:13px;">No trainees found.</p>';
+        let html = '<table><thead><tr><th>Trainee Name</th><th style="text-align:right">Status</th></tr></thead><tbody>';
+        dataArray.forEach(row => {
+            const name = row[nIdx];
+            const val = localChanges[name] !== undefined ? localChanges[name] : String(row[mIdx] || "").trim().toUpperCase();
+            html += `<tr>
+                <td><strong>${name}</strong></td>
+                <td style="text-align:right">
+                    <div class="btn-group">
+                        <button class="mark-btn btn-p ${val==='1'?'active':''}" onclick="mark('${name}','1',this)">P</button>
+                        <button class="mark-btn btn-l ${val==='L'?'active':''}" onclick="mark('${name}','L',this)">L</button>
+                    </div>
+                </td>
+            </tr>`;
+        });
+        return html + '</tbody></table>';
+    }
+
+    function mark(name, code, btn) {
+        const isActive = btn.classList.contains('active');
+        btn.parentElement.querySelectorAll('.mark-btn').forEach(b => b.classList.remove('active'));
+        if (isActive) localChanges[name] = ""; 
+        else { btn.classList.add('active'); localChanges[name] = code; }
+    }
+
+    function filter() {
+        const q = document.getElementById('search').value.toUpperCase();
+        document.querySelectorAll('tbody tr').forEach(tr => {
+            tr.style.display = tr.innerText.toUpperCase().includes(q) ? "" : "none";
+        });
+    }
+
+    function submit() {
+        const keys = Object.keys(localChanges);
+        const loc = document.getElementById('locFilter').value;
+        const msg = document.getElementById('msgFilter').value;
+
+        if (keys.length === 0) return alert("No changes to save.");
+        
+        // --- DETAILED CONFIRMATION ALERT ---
+        const confirmMsg = `Are you sure you want to submit?\n\n📍 Location: ${loc}\n✉️ Message: ${msg}\n👥 Total Updates: ${keys.length} trainees`;
+        if (!confirm(confirmMsg)) return;
+
+        const btn = document.getElementById('submitBtn');
+        btn.disabled = true;
+        btn.innerText = "⏳ Saving...";
+
+        const payload = {
+            action: "update",
+            msg: msg,
+            trainees: keys.map(k => ({ name: k, status: localChanges[k] }))
+        };
+
+        const xhr = new XMLHttpRequest();
+        xhr.open("POST", scriptURL, true);
+        xhr.setRequestHeader("Content-Type", "text/plain");
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === 4) {
+                alert(`✅ Successfully updated ${keys.length} trainees in ${loc} for Message ${msg}.`);
+                location.reload(); // Page reloads, and handle() restores the filters!
+            }
+        };
+        xhr.send(JSON.stringify(payload));
+    }
+</script>
+</body>
+</html>
