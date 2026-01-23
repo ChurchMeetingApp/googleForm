@@ -50,12 +50,13 @@
 <div class="container">
     <div class="card">
         <div class="controls">
+            <select id="locFilter" onchange="saveSelection(); render();">
+                <option value="">-- Location --</option>
+            </select>
+
             <select id="msgFilter" onchange="saveSelection(); render();">
                 <option value="">-- Message --</option>
                 <script>for(let i=1; i<=12; i++) document.write(`<option value="${i}">Message ${i}</option>`)</script>
-            </select>
-            <select id="locFilter" onchange="saveSelection(); render();">
-                <option value="">-- Location --</option>
             </select>
         </div>
         
