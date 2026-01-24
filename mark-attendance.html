@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BVT Marking Panel - Persistence</title>
+    <title>BVT Marking Panel - Sorted & Scoped</title>
     <style>
         :root { --primary: #003366; --bg: #f8fafc; --border: #e2e8f0; --success: #22c55e; --warning: #eab308; --danger: #ef4444; }
         body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); margin: 0; padding-bottom: 140px; color: #1e293b; }
@@ -14,51 +14,22 @@
         select, .search-bar { padding: 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; background: white; }
         select { flex: 1; cursor: pointer; }
         .search-bar { width: 100%; box-sizing: border-box; margin-bottom: 15px; }
-
-        /* Bulk Actions Styling */
-        .bulk-actions { 
-            display: flex; gap: 8px; margin-bottom: 15px; background: #f1f5f9; 
-            padding: 10px; border-radius: 8px; border: 1px dashed #cbd5e1;
-        }
-        .btn-bulk { 
-            flex: 1; padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1; 
-            font-size: 11px; font-weight: bold; cursor: pointer; background: white; 
-            text-transform: uppercase; transition: 0.2s;
-        }
-        .btn-bulk:hover { background: #f8fafc; }
-        .btn-bulk.all-p { color: var(--success); border-color: var(--success); }
-        .btn-bulk.all-l { color: var(--warning); border-color: var(--warning); }
-        .btn-bulk.clear { color: var(--danger); border-color: var(--danger); }
-        
+        .bulk-actions { display: flex; gap: 8px; margin-bottom: 15px; background: #f1f5f9; padding: 10px; border-radius: 8px; border: 1px dashed #cbd5e1; }
+        .btn-bulk { flex: 1; padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 11px; font-weight: bold; cursor: pointer; background: white; text-transform: uppercase; }
         table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
         th { text-align: left; padding: 12px; background: #f1f5f9; color: var(--primary); border-bottom: 2px solid var(--border); font-size: 13px; }
         td { padding: 12px; border-bottom: 1px solid var(--border); font-size: 14px; }
-        
-        .section-header { 
-            display: flex; justify-content: space-between; align-items: center;
-            background: #e0e7ff; color: #3730a3; padding: 10px 15px; 
-            font-weight: 800; font-size: 13px; text-transform: uppercase; 
-            border-radius: 6px; margin: 25px 0 10px 0; 
-        }
+        .section-header { display: flex; justify-content: space-between; align-items: center; background: #e0e7ff; color: #3730a3; padding: 10px 15px; font-weight: 800; font-size: 13px; text-transform: uppercase; border-radius: 6px; margin: 25px 0 10px 0; }
         .count-badge { background: white; padding: 2px 8px; border-radius: 10px; font-size: 11px; border: 1px solid #c7d2fe; }
-
         .btn-group { display: flex; gap: 8px; justify-content: flex-end; }
         .mark-btn { border: 1px solid #cbd5e1; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-weight: 700; background: white; color: #64748b; font-size: 12px; }
         .btn-p.active { background: var(--success) !important; color: white !important; border-color: var(--success); }
         .btn-l.active { background: var(--warning) !important; color: white !important; border-color: var(--warning); }
-        
         .footer { position: fixed; bottom: 0; width: 100%; background: white; padding: 20px; box-shadow: 0 -4px 15px rgba(0,0,0,0.08); text-align: center; z-index: 100; box-sizing: border-box;}
         .submit-btn { background: var(--primary); color: white; padding: 14px 60px; border: none; border-radius: 30px; font-weight: bold; cursor: pointer; font-size: 16px; }
-        
-        /* Modal */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 2000; padding: 20px; box-sizing: border-box;}
         .modal-card { background: white; padding: 30px; border-radius: 15px; max-width: 400px; width: 100%; text-align: center; }
         .modal-details { background: #f8fafc; padding: 15px; border-radius: 8px; margin: 20px 0; text-align: left; border: 1px solid var(--border); font-size: 14px; }
-        .modal-btns { display: flex; gap: 10px; }
-        .modal-btns button { flex: 1; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; border: none; }
-        .btn-cancel { background: #e2e8f0; color: #475569; }
-        .btn-confirm { background: var(--primary); color: white; }
-
         #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9); display: flex; justify-content: center; align-items: center; z-index: 1000; font-weight: bold; color: var(--primary); }
     </style>
 </head>
@@ -70,9 +41,9 @@
     <div class="modal-card">
         <h3>Confirm Submission</h3>
         <div class="modal-details" id="modalData"></div>
-        <div class="modal-btns">
-            <button class="btn-cancel" onclick="closeModal()">Go Back</button>
-            <button class="btn-confirm" id="finalSubmitBtn" onclick="executeSubmit()">Yes, Submit</button>
+        <div class="modal-btns" style="display:flex; gap:10px;">
+            <button onclick="closeModal()" style="flex:1; padding:12px; border-radius:8px; cursor:pointer; border:none; background:#e2e8f0;">Go Back</button>
+            <button id="finalSubmitBtn" onclick="executeSubmit()" style="flex:1; padding:12px; border-radius:8px; cursor:pointer; border:none; background:var(--primary); color:white; font-weight:bold;">Yes, Submit</button>
         </div>
     </div>
 </div>
@@ -97,9 +68,9 @@
         <input type="text" id="search" class="search-bar" placeholder="🔍 Search by name..." onkeyup="filter()">
         
         <div id="bulkBar" class="bulk-actions" style="display:none;">
-            <button class="btn-bulk all-p" onclick="bulkMark('1')">Mark All P</button>
-            <button class="btn-bulk all-l" onclick="bulkMark('L')">Mark All L</button>
-            <button class="btn-bulk clear" onclick="bulkMark('')">Clear Selection</button>
+            <button class="btn-bulk" style="color:var(--success)" onclick="bulkMark('1')">Mark All P</button>
+            <button class="btn-bulk" style="color:var(--warning)" onclick="bulkMark('L')">Mark All L</button>
+            <button class="btn-bulk" style="color:var(--danger)" onclick="bulkMark('')">Clear Selection</button>
         </div>
 
         <div id="dynamicContent">
@@ -114,7 +85,7 @@
 
 <script>
     const scriptURL = "https://script.google.com/macros/s/AKfycbyfKmVxslXo3mQttEIfbXPIkPH9nPAiqEqoihuu_tIQa7xGQih-jgBkJqZywB8UXxM37A/exec";
-    let sheetData = [], headers = [], localChanges = {};
+    let sheetData = [], headers = [], localChanges = {}; 
 
     (function init() {
         const s = document.createElement('script');
@@ -124,10 +95,15 @@
 
     window.handle = function(data) {
         headers = data[0].map(h => String(h).trim().toUpperCase());
-        sheetData = data.slice(1);
         const nIdx = headers.indexOf("NAMES");
-        sheetData.sort((a, b) => String(a[nIdx]).localeCompare(String(b[nIdx])));
         
+        // --- ALPHABETICAL SORTING ---
+        sheetData = data.slice(1).sort((a, b) => {
+            const nameA = String(a[nIdx] || "").toUpperCase();
+            const nameB = String(b[nIdx] || "").toUpperCase();
+            return nameA.localeCompare(nameB);
+        });
+
         const locIdx = headers.indexOf("LOCATION");
         const locs = [...new Set(sheetData.map(r => r[locIdx]).filter(l => l))].sort();
         const drop = document.getElementById('locFilter');
@@ -173,18 +149,23 @@
 
         container.innerHTML = `
             <div class="section-header"><span>🎯 Opted for M${msgNum}</span><span class="count-badge">${groupExpected.length}</span></div>
-            ${generateTable(groupExpected, nIdx, mIdx)}
+            ${generateTable(groupExpected, nIdx, mIdx, msgNum, loc)}
             <div class="section-header" style="background:#f1f5f9; color:#475569;"><span>🏠 Other Trainees</span><span class="count-badge">${groupOthers.length}</span></div>
-            ${generateTable(groupOthers, nIdx, mIdx)}
+            ${generateTable(groupOthers, nIdx, mIdx, msgNum, loc)}
         `;
     }
 
-    function generateTable(dataArray, nIdx, mIdx) {
+    function generateTable(dataArray, nIdx, mIdx, msgNum, loc) {
         if (dataArray.length === 0) return '<p style="padding:15px; color:#94a3b8; font-size:13px;">No trainees found.</p>';
         let html = '<table><thead><tr><th>Trainee Name</th><th style="text-align:right">Status</th></tr></thead><tbody>';
+        
         dataArray.forEach(row => {
             const name = row[nIdx];
-            const val = localChanges[name] !== undefined ? localChanges[name] : String(row[mIdx] || "").trim().toUpperCase();
+            const uniqueKey = `${msgNum}_${loc}_${name}`;
+            const val = (localChanges[uniqueKey] !== undefined) 
+                        ? localChanges[uniqueKey] 
+                        : String(row[mIdx] || "").trim().toUpperCase();
+
             html += `<tr data-name="${name}">
                 <td><strong>${name}</strong></td>
                 <td style="text-align:right">
@@ -199,30 +180,29 @@
     }
 
     function mark(name, code, btn) {
+        const msgNum = document.getElementById('msgFilter').value;
+        const loc = document.getElementById('locFilter').value;
+        const uniqueKey = `${msgNum}_${loc}_${name}`;
         const isActive = btn.classList.contains('active');
         btn.parentElement.querySelectorAll('.mark-btn').forEach(b => b.classList.remove('active'));
-        if (isActive) localChanges[name] = ""; 
-        else { btn.classList.add('active'); localChanges[name] = code; }
+        if (isActive) localChanges[uniqueKey] = ""; 
+        else { btn.classList.add('active'); localChanges[uniqueKey] = code; }
     }
 
-    // --- NEW BULK MARK FUNCTION ---
     function bulkMark(code) {
-        const visibleRows = document.querySelectorAll('tbody tr[style=""]');
-        const rowsToProcess = visibleRows.length > 0 ? visibleRows : document.querySelectorAll('tbody tr');
-        
-        rowsToProcess.forEach(tr => {
+        const msgNum = document.getElementById('msgFilter').value;
+        const loc = document.getElementById('locFilter').value;
+        const visibleRows = Array.from(document.querySelectorAll('tbody tr')).filter(tr => tr.style.display !== "none");
+        visibleRows.forEach(tr => {
             const name = tr.getAttribute('data-name');
+            const uniqueKey = `${msgNum}_${loc}_${name}`;
             const btnP = tr.querySelector('.btn-p');
             const btnL = tr.querySelector('.btn-l');
-            
-            // Remove active from both
             btnP.classList.remove('active');
             btnL.classList.remove('active');
-            
             if (code === '1') btnP.classList.add('active');
             if (code === 'L') btnL.classList.add('active');
-            
-            localChanges[name] = code;
+            localChanges[uniqueKey] = code;
         });
     }
 
@@ -234,32 +214,46 @@
     }
 
     function openConfirm() {
-        const keys = Object.keys(localChanges).filter(k => localChanges[k] !== undefined);
-        if (keys.length === 0) return alert("No changes to save.");
-        document.getElementById('modalData').innerHTML = `
-            <b>📍 Location:</b> ${document.getElementById('locFilter').value}<br>
-            <b>✉️ Message:</b> ${document.getElementById('msgFilter').value}<br>
-            <b>👥 Updates:</b> ${keys.length} trainees
-        `;
+        const msgNum = document.getElementById('msgFilter').value;
+        const loc = document.getElementById('locFilter').value;
+        const mIdx = headers.indexOf("M" + msgNum);
+        const nIdx = headers.indexOf("NAMES");
+        const finalUpdates = Object.keys(localChanges).filter(key => {
+            const [m, l, name] = key.split('_');
+            if (m !== msgNum || l !== loc) return false;
+            const traineeRow = sheetData.find(r => r[nIdx] === name);
+            const originalVal = String(traineeRow[mIdx] || "").trim().toUpperCase();
+            return localChanges[key] !== originalVal;
+        });
+        if (finalUpdates.length === 0) return alert("No new changes for this view.");
+        document.getElementById('modalData').innerHTML = `<b>📍 Location:</b> ${loc}<br><b>✉️ Message:</b> ${msgNum}<br><b>👥 Updates:</b> ${finalUpdates.length}`;
         document.getElementById('confirmModal').style.display = 'flex';
     }
 
     function closeModal() { document.getElementById('confirmModal').style.display = 'none'; }
 
     function executeSubmit() {
-        const keys = Object.keys(localChanges);
-        const msg = document.getElementById('msgFilter').value;
+        const msgNum = document.getElementById('msgFilter').value;
+        const loc = document.getElementById('locFilter').value;
+        const mIdx = headers.indexOf("M" + msgNum);
+        const nIdx = headers.indexOf("NAMES");
+        const finalUpdates = Object.keys(localChanges).filter(key => {
+            const [m, l, name] = key.split('_');
+            if (m !== msgNum || l !== loc) return false;
+            const traineeRow = sheetData.find(r => r[nIdx] === name);
+            const originalVal = String(traineeRow[mIdx] || "").trim().toUpperCase();
+            return localChanges[key] !== originalVal;
+        }).map(key => ({ name: key.split('_')[2], status: localChanges[key] }));
+
         const btn = document.getElementById('finalSubmitBtn');
         btn.disabled = true; btn.innerText = "⏳ Saving...";
-
-        const payload = { action: "update", msg: msg, trainees: keys.map(k => ({ name: k, status: localChanges[k] })) };
         const xhr = new XMLHttpRequest();
         xhr.open("POST", scriptURL, true);
         xhr.setRequestHeader("Content-Type", "text/plain");
         xhr.onreadystatechange = function() {
-            if (xhr.readyState === 4) { alert(`✅ Success!`); location.reload(); }
+            if (xhr.readyState === 4) { alert(`✅ Saved ${loc}!`); location.reload(); }
         };
-        xhr.send(JSON.stringify(payload));
+        xhr.send(JSON.stringify({ action: "update", msg: msgNum, trainees: finalUpdates }));
     }
 </script>
 </body>
