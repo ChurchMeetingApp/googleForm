@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Payment Tracker</title>
+  <style>
+    :root { --primary: #2c3e50; --success: #27ae60; --error: #e74c3c; --bg: #f8f9fa; --accent: #3498db; }
+    * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    
+    body { background: var(--bg); margin: 0; padding: 0; color: var(--primary); }
+
+    .sticky-top {
+      position: sticky; top: 0; background: white; z-index: 100;
+      padding: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .summary-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
+    .stat { background: #fff; padding: 10px 5px; border-radius: 10px; text-align: center; border: 1px solid #eee; }
+    .stat small { font-size: 10px; color: #7f8c8d; text-transform: uppercase; font-weight: bold; display: block; }
+    .stat b { font-size: 16px; display: block; margin-top: 2px; }
+
+    .header-card { 
+      background: #ffffff; padding: 15px; border-radius: 12px; margin: 10px; 
+      border: 2px solid var(--accent);
+    }
+    .rate-title { font-size: 14px; font-weight: bold; margin-bottom: 12px; display: block; color: var(--accent); }
+    
+    .price-grid { display: flex; overflow-x: auto; gap: 12px; padding-bottom: 10px; }
+    .price-box { min-width: 110px; flex-shrink: 0; border: 1px solid #ddd; padding: 10px; border-radius: 8px; background: #fdfdfd; }
+    .price-box label { font-size: 11px; color: #555; display: block; font-weight: bold; }
+    .price-box input { width: 100%; border: 1px solid #eee; font-weight: 800; font-size: 18px; outline: none; border-radius: 4px; }
+
+    .controls { padding: 0 10px; display: grid; grid-template-columns: 1fr; gap: 8px; }
+    .filter-row { display: grid; grid-template-columns: 2fr 1.2fr; gap: 8px; }
+    
+    #searchInput, #statusFilter, #titleID { 
+        padding: 12px; border-radius: 10px; border: 1px solid #ddd; font-size: 15px; width: 100%; outline: none;
+    }
+    #titleID { background: #fffbe6; font-weight: bold; }
+    #statusFilter { background: #fff; font-weight: 500; border-color: #cbd5e0; }
+
+    .list-container { padding: 10px; padding-bottom: 40px; }
+    .member-row { 
+      background: white; padding: 14px; margin-bottom: 8px; border-radius: 12px; 
+      display: flex; justify-content: space-between; align-items: center;
+      border-left: 5px solid transparent;
+    }
+    .row-modified { border-left-color: #e67e22; }
+    
+    .member-info b { font-size: 15px; }
+    .member-info small { color: #7f8c8d; font-size: 12px; display: block; }
+
+    .qty-diff { 
+      font-size: 9px; background: #fff5eb; color: #e67e22; 
+      padding: 2px 6px; border-radius: 4px; border: 1px solid #ffe0b2;
+      margin-left: 5px; vertical-align: middle; font-weight: bold;
+    }
+
+    .amt-display { text-align: right; }
+    .amt-val { font-weight: 800; font-size: 17px; }
+    .badge { font-size: 10px; font-weight: bold; padding: 4px 8px; border-radius: 6px; text-transform: uppercase; margin-top: 5px; display: inline-block; }
+    .badge-paid { background: #e8f5e9; color: var(--success); }
+    .badge-pending { background: #ffebee; color: var(--error); }
+
+    #loading { position: fixed; inset: 0; background: white; z-index: 1000; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+  </style>
+</head>
+<body>
+
+<div id="loading">Updating Data...</div>
+
+<div class="sticky-top">
+  <div class="summary-bar">
+    <div class="stat"><small>Expected</small><b id="totalExpected">₹0</b></div>
+    <div class="stat"><small>Collected</small><b id="totalCollected" style="color:var(--success)">₹0</b></div>
+    <div class="stat"><small>Balance</small><b id="totalPending" style="color:var(--error)">₹0</b></div>
+  </div>
+  
+  <div class="controls">
+    <select id="titleID" onchange="renderFinance()"></select>
+    <div class="filter-row">
+        <input type="text" id="searchInput" placeholder="🔍 Search member..." onkeyup="renderFinance()">
+        <select id="statusFilter" onchange="renderFinance()">
+            <option value="ALL">All Status</option>
+            <option value="PAID">Paid Only</option>
+            <option value="PENDING">Pending Only</option>
+        </select>
+    </div>
+  </div>
+</div>
+
+<div class="header-card">
+  <span class="rate-title">💰 STEP 1: Set Price Per Language</span>
+  <div id="languagePrices" class="price-grid"></div>
+</div>
+
+<div id="collectionList" class="list-container"></div>
+
+<script>
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbydslJzEe_4tiZD7UDJ8FxLo2r7JIk78H3bOoJnUlIyTcOAOwy7N4hp8Pyye4SpZ66j2g/exec";
+  let db = { settings: [], orders: [] };
+  let prices = JSON.parse(localStorage.getItem('bookPrices') || '{}');
+
+  window.onload = async () => {
+    try {
+      const resp = await fetch(SCRIPT_URL);
+      db = await resp.json();
+      const tSelect = document.getElementById('titleID');
+      db.settings.filter(s => s[6] === "Yes").forEach(s => {
+        tSelect.innerHTML += `<option value="${s[2]}">${s[1]}</option>`;
+      });
+      renderFinance();
+      document.getElementById('loading').style.display = 'none';
+    } catch (e) { alert("Data fetch failed."); }
+  };
+
+  function renderFinance() {
+    const tid = document.getElementById('titleID').value;
+    const search = document.getElementById('searchInput').value.toLowerCase();
+    const statusFilter = document.getElementById('statusFilter').value;
+    const headers = db.orders[0];
+    
+    const qIdx = headers.indexOf(tid + "-Qty");
+    const baseQIdx = headers.indexOf("Base-Qty");
+    const sIdx = headers.indexOf(tid + "-Status");
+
+    const allPossibleLangs = new Set();
+    db.orders.slice(1).forEach(r => { if(r[4]) allPossibleLangs.add(r[4]); });
+
+    let html = "";
+    let tExp = 0, tPaid = 0;
+    
+    db.orders.slice(1).forEach(row => {
+      const name = row[1] || "";
+      const titleQty = parseInt(row[qIdx]) || 0;
+      const baseQty = parseInt(row[baseQIdx]) || 0;
+      const isPaid = parseInt(row[sIdx]) === 2;
+
+      // Status Filter Logic
+      let matchesStatus = true;
+      if (statusFilter === "PAID") matchesStatus = isPaid;
+      if (statusFilter === "PENDING") matchesStatus = !isPaid;
+      
+      if (titleQty > 0 && name.toLowerCase().includes(search) && matchesStatus) {
+        const lang = row[4];
+        const price = prices[lang] || 0;
+        const totalAmount = titleQty * price;
+        
+        tExp += totalAmount;
+        if (isPaid) tPaid += totalAmount;
+
+        const isDiff = titleQty !== baseQty;
+        const diffBadge = isDiff ? `<span class="qty-diff">Changed from ${baseQty}</span>` : '';
+        const rowClass = isDiff ? 'member-row row-modified' : 'member-row';
+
+        html += `
+          <div class="${rowClass}">
+            <div class="member-info">
+              <b>${name}</b>${diffBadge}<br>
+              <small>${titleQty} × ${lang} (@ ₹${price})</small>
+            </div>
+            <div class="amt-display">
+              <span class="amt-val">₹${totalAmount}</span><br>
+              <span class="badge ${isPaid ? 'badge-paid' : 'badge-pending'}">
+                ${isPaid ? 'Paid' : 'Pending'}
+              </span>
+            </div>
+          </div>`;
+      }
+    });
+
+    let priceHtml = "";
+    Array.from(allPossibleLangs).sort().forEach(lang => {
+      priceHtml += `
+        <div class="price-box">
+          <label>${lang}</label>
+          <input type="number" inputmode="numeric" value="${prices[lang] || 0}" 
+            onfocus="this.select()" onchange="updatePrice('${lang}', this.value)">
+        </div>`;
+    });
+
+    document.getElementById('languagePrices').innerHTML = priceHtml;
+    document.getElementById('collectionList').innerHTML = html || "<p style='text-align:center; padding:20px;'>No matching orders found.</p>";
+    
+    document.getElementById('totalExpected').innerText = "₹" + tExp;
+    document.getElementById('totalCollected').innerText = "₹" + tPaid;
+    document.getElementById('totalPending').innerText = "₹" + (tExp - tPaid);
+  }
+
+  function updatePrice(lang, val) {
+    prices[lang] = parseFloat(val) || 0;
+    localStorage.setItem('bookPrices', JSON.stringify(prices));
+    renderFinance();
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>Order Manager Pro</title>
+  <style>
+    :root { --primary: #2c3e50; --success: #27ae60; --warning: #f39c12; --error: #e74c3c; --bg: #f2f4f7; --accent: #3498db; --locked: #7f8c8d; }
+    * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background: var(--bg); margin: 0; padding: 12px; padding-bottom: 90px; }
+    
+    @media print {
+      body { background: white; padding: 0; }
+      .sticky-header, .action-bar, .order-timer, .status-summary, .badge, #statusIndicator, button, .qty-input { display: none !important; }
+      #dashboard { box-shadow: none; padding: 0; border: none; display: block !important; }
+      .member-row { display: none !important; } /* Hide mobile rows */
+      .print-table { display: table !important; width: 100%; border-collapse: collapse; margin-top: 10px; }
+      .print-table th, .print-table td { border: 1px solid #000; padding: 8px; text-align: left; font-size: 12px; }
+      .print-header { display: block !important; border-bottom: 2px solid #000; margin-bottom: 15px; padding-bottom: 10px; }
+    }
+
+    .print-table { display: none; }
+    .print-header { display: none; }
+    .sticky-header { position: sticky; top: 0; background: var(--bg); z-index: 90; padding-top: 5px; margin-bottom: 10px; border-bottom: 1px solid #ddd; }
+    .order-timer { background: #fff; padding: 12px; border-radius: 12px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; border-left: 5px solid var(--accent); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+    .timer-info { display: flex; flex-direction: column; }
+    .timer-label { font-size: 11px; color: #666; text-transform: uppercase; letter-spacing: 0.5px; }
+    .timer-date { font-weight: 800; color: var(--primary); font-size: 15px; margin-top: 2px; }
+    .days-left { font-weight: bold; padding: 4px 8px; border-radius: 6px; font-size: 13px; }
+    
+    #loading-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:white; z-index:1000; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+    .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 15px; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    
+    .status-summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 10px; }
+    .sum-pill { background: white; padding: 8px; border-radius: 10px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); cursor: pointer; }
+    .sum-pill b { font-size: 16px; display: block; }
+    
+    .filter-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+    #searchInput { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ccc; margin-bottom: 10px; font-size: 16px; outline: none; }
+    select { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ccc; background: white; font-size: 14px; }
+    
+    .dashboard { background: white; border-radius: 15px; padding: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.08); }
+    .member-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f1f1f1; }
+    
+    .qty-diff { font-size: 9px; background: #fff5eb; color: #e67e22; padding: 2px 6px; border-radius: 4px; border: 1px solid #ffe0b2; margin-left: 5px; font-weight: bold; }
+    .qty-input { width: 60px; padding: 8px; border: 2px solid #ddd; border-radius: 8px; text-align: center; font-weight: bold; font-size: 16px; }
+    .action-bar { position: fixed; bottom: 0; left: 0; right: 0; background: white; padding: 12px; box-shadow: 0 -4px 10px rgba(0,0,0,0.1); display: flex; z-index: 100; gap: 10px; }
+    
+    .btn-submit { background: var(--success); color: white; border: none; flex: 2; padding: 14px; border-radius: 10px; font-weight: bold; cursor:pointer; }
+    .btn-place { background: var(--error); color: white; border: none; flex: 2; padding: 14px; border-radius: 10px; font-weight: bold; cursor:pointer; }
+    .btn-print { background: var(--primary); color: white; border: none; flex: 1; padding: 14px; border-radius: 10px; font-size: 20px; cursor:pointer; }
+    
+    .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; z-index: 200; align-items: center; justify-content: center; }
+    .modal { background: white; width: 95%; max-width: 400px; border-radius: 15px; padding: 20px; }
+  </style>
+</head>
+<body>
+
+<div id="loading-overlay"><div class="spinner"></div><b>Syncing Data...</b></div>
+
+<div class="print-header" id="printHeader">
+  <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+    <div>
+      <h1 id="printTitleName" style="margin:0;"></h1>
+      <h3 id="printCityName" style="margin:5px 0; color: #555;"></h3>
+      <p id="printTimestamp" style="color:#888; font-size:11px; margin:0;"></p>
+    </div>
+    <div id="printGrandTotal" style="text-align: right; border: 1px solid #000; padding: 5px 10px;"></div>
+  </div>
+  <div id="printLangSplit"></div>
+</div>
+
+<div class="sticky-header">
+  <div id="timerContainer" class="order-timer" style="display:none;">
+    <div class="timer-info"><span class="timer-label">Next Deadline:</span><span id="targetDateDisplay" class="timer-date"></span></div>
+    <div id="countdown" class="days-left"></div>
+  </div>
+  <div class="status-summary">
+    <div class="sum-pill" style="border-bottom: 3px solid var(--error)" onclick="setStatusFilter('0')"><small>UNRECEIVED</small><b id="sum0">0</b></div>
+    <div class="sum-pill" style="border-bottom: 3px solid var(--warning)" onclick="setStatusFilter('1')"><small>UNPAID</small><b id="sum1">0</b></div>
+    <div class="sum-pill" style="border-bottom: 3px solid var(--success)" onclick="setStatusFilter('2')"><small>COMPLETE</small><b id="sum2">0</b></div>
+  </div>
+  <input type="text" id="searchInput" placeholder="🔍 Search member names..." onkeyup="loadView()">
+  <div class="filter-grid">
+    <select id="cat" onchange="handleFilterChange('cat')"><option value="">Category</option><option value="MR">MR</option></select>
+    <select id="titleID" onchange="handleFilterChange('title')" disabled><option value="">Title</option></select>
+    <select id="city" onchange="handleFilterChange('city')"><option value="ALL">All Cities</option></select>
+    <select id="loc" onchange="handleFilterChange('loc')"><option value="ALL">All Halls</option></select>
+    <select id="statusFilter" onchange="loadView()" style="grid-column: span 2; background: #fffbe6; border-color: var(--warning);">
+        <option value="ALL">All Statuses</option>
+        <option value="0">Show: Unreceived ❌</option>
+        <option value="1">Show: Unpaid ⌛</option>
+        <option value="2">Show: Complete ✅</option>
+    </select>
+  </div>
+</div>
+
+<div id="dashboard" class="dashboard" style="display:none;">
+  <div id="listBody"></div>
+  <table id="printTable" class="print-table">
+    <thead>
+      <tr><th>Name</th><th>Language</th><th>Hall</th><th>Qty</th><th>Status</th></tr>
+    </thead>
+    <tbody id="printTableBody"></tbody>
+  </table>
+</div>
+
+<div class="action-bar" id="actionBar">
+  <button class="btn-print" onclick="window.print()">🖨️</button>
+  <button id="mainActionBtn" class="btn-submit">Submit Updates</button>
+</div>
+
+<div id="overlay" class="overlay">
+  <div class="modal">
+    <h3 id="modalTitle">Confirm Submission</h3>
+    <div id="confirmList" style="max-height: 40vh; overflow-y: auto; font-size: 14px;"></div>
+    <div style="display:flex; gap:10px; margin-top:20px;">
+      <button onclick="closeModal()" style="flex:1; padding:12px; border:1px solid #ccc; border-radius:8px; background:#fff;">Cancel</button>
+      <button id="finalConfirmBtn" style="flex:2; padding:12px; border:none; border-radius:8px; background:var(--success); color:white; font-weight:bold;">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbydslJzEe_4tiZD7UDJ8FxLo2r7JIk78H3bOoJnUlIyTcOAOwy7N4hp8Pyye4SpZ66j2g/exec";
+  const icons = ["❌", "⌛", "✅"];
+  let db = { settings: [], orders: [] }, pendingChanges = {}, draftQuantities = {}, currentActiveTitle = "";
+
+  window.onload = async () => {
+    try {
+      const resp = await fetch(SCRIPT_URL);
+      db = await resp.json();
+      const cities = [...new Set(db.orders.slice(1).map(r => r[2]))].filter(Boolean);
+      cities.forEach(c => document.getElementById('city').innerHTML += `<option value="${c}">${c}</option>`);
+      restoreSelections();
+      document.getElementById('loading-overlay').style.display = 'none';
+    } catch (e) { alert("Error fetching data."); }
+  };
+
+  // --- PRINT LOGIC ---
+  window.onbeforeprint = () => {
+    const tid = document.getElementById('titleID').value;
+    if(!tid) return;
+    const titleMeta = db.settings.find(s => s[2] === tid);
+    const selCity = document.getElementById('city').value;
+    const selLoc = document.getElementById('loc').value;
+    const isPlaced = titleMeta[6] === "Yes";
+    const headers = db.orders[0];
+    const qIdx = isPlaced ? headers.indexOf(tid + "-Qty") : headers.indexOf("Base-Qty");
+    const sIdx = isPlaced ? headers.indexOf(tid + "-Status") : -1;
+
+    document.getElementById('printTitleName').innerText = titleMeta[1];
+    document.getElementById('printCityName').innerText = `${selCity === 'ALL' ? 'Bangalore' : selCity}`;
+    document.getElementById('printTimestamp').innerText = "Order Date: " + new Date().toLocaleString();
+
+    let grandTotal = 0, langMap = {}, tableHtml = "";
+
+    db.orders.slice(1).forEach(row => {
+      if ((selCity === "ALL" || row[2] === selCity) && (selLoc === "ALL" || row[3] === selLoc)) {
+        const q = parseInt(draftQuantities[row[0]] ?? row[qIdx]) || 0;
+        if (q > 0) {
+          grandTotal += q;
+          const lang = row[4] || "Unknown";
+          langMap[lang] = (langMap[lang] || 0) + q;
+          const statusTxt = isPlaced ? (row[sIdx] == 2 ? "PAID" : "DUE") : "-";
+          tableHtml += `<tr><td>${row[1]}</td><td>${lang}</td><td>${row[3]}</td><td><b>${q}</b></td><td>${statusTxt}</td></tr>`;
+        }
+      }
+    });
+
+    document.getElementById('printTableBody').innerHTML = tableHtml;
+    document.getElementById('printGrandTotal').innerHTML = `<small>TOTAL</small><br><b style="font-size:18px;">${grandTotal}</b>`;
+    
+    let langHtml = `<table style="width: 100%; margin-top:10px; border:1px solid #000;"><tr>`;
+    Object.keys(langMap).forEach(lang => {
+      langHtml += `<td style="padding:5px; text-align:center; border:1px solid #000;"><b>${lang}:</b> ${langMap[lang]}</td>`;
+    });
+    langHtml += `</tr></table>`;
+    document.getElementById('printLangSplit').innerHTML = langHtml;
+  };
+
+  function loadView() {
+    const tid = document.getElementById('titleID').value;
+    if(!tid) { document.getElementById('dashboard').style.display='none'; return; }
+    
+    const titleMeta = db.settings.find(s => s[2] === tid);
+    const isPlaced = titleMeta[6] === "Yes", isCompleted = titleMeta[7] === "Yes";
+    const headers = db.orders[0];
+    const qIdx = isPlaced ? headers.indexOf(tid + "-Qty") : headers.indexOf("Base-Qty");
+    const baseQIdx = headers.indexOf("Base-Qty");
+    const sIdx = headers.indexOf(tid + "-Status");
+    
+    let html = "", counts = [0,0,0];
+    const search = document.getElementById('searchInput').value.toLowerCase();
+    const selCity = document.getElementById('city').value;
+    const selLoc = document.getElementById('loc').value;
+    const selStat = document.getElementById('statusFilter').value;
+
+    db.orders.slice(1).forEach((row) => {
+      const q = draftQuantities[row[0]] ?? (row[qIdx] || 0);
+      const baseQ = parseInt(row[baseQIdx]) || 0;
+      const status = isPlaced ? (pendingChanges[row[0]] ?? row[sIdx]) : 0;
+      
+      if (row[1].toLowerCase().includes(search) && (selCity === "ALL" || row[2] === selCity) && (selLoc === "ALL" || row[3] === selLoc)) {
+        if (q > 0 || !isPlaced) {
+            if(isPlaced) counts[status]++;
+            if (selStat === "ALL" || status.toString() === selStat) {
+                const diffBadge = (q != baseQ) ? `<span class="qty-diff">Changed from ${baseQ}</span>` : '';
+                const control = isCompleted ? `<span>${icons[status]}</span>` : (isPlaced ? `<button onclick="stageChange(${row[0]}, ${status})" style="background:${pendingChanges[row[0]]!==undefined?'#e8f5e9':'none'}; border:1px solid #ddd; width:44px; height:44px; border-radius:8px;">${icons[status]}</button>` : `<input type="number" min="0" class="qty-input" value="${q}" onchange="updateQty(${row[0]}, this.value)">`);
+                html += `<div class="member-row"><div><b>${row[1]}</b>${diffBadge}<br><small>${row[4]} • ${row[3]}</small></div><div>${isPlaced ? `<b style="margin-right:15px">${q}</b>` : ''}${control}</div></div>`;
+            }
+        }
+      }
+    });
+    
+    document.getElementById('listBody').innerHTML = html || "<p style='text-align:center'>No matches</p>";
+    document.getElementById('dashboard').style.display = 'block';
+    [0,1,2].forEach(i => document.getElementById(`sum${i}`).innerText = isPlaced ? counts[i] : "-");
+    
+    const btn = document.getElementById('mainActionBtn');
+    const hasUnsaved = Object.keys(pendingChanges).length > 0 || Object.keys(draftQuantities).length > 0;
+    
+    if (isPlaced) { 
+      btn.className = "btn-submit"; 
+      btn.innerText = hasUnsaved ? "💾 SAVE ALL CHANGES" : "Submit Updates"; 
+      btn.onclick = showStatusConfirm; 
+    } else { 
+      btn.className = "btn-place"; 
+      btn.innerText = "🚀 PLACE FINAL ORDER"; 
+      btn.onclick = showOrderConfirm; 
+    }
+  }
+
+  // --- CONFIRMATION MODALS ---
+  function showOrderConfirm() {
+    const tid = document.getElementById('titleID').value;
+    const headers = db.orders[0];
+    const baseQIdx = headers.indexOf("Base-Qty");
+    
+    let h = "<b>The following quantities were changed:</b><br><br>";
+    let changedCount = 0;
+
+    for(let sno in draftQuantities) {
+      const row = db.orders.find(r => r[0] == sno);
+      const baseQ = row[baseQIdx] || 0;
+      h += `<div style="padding:5px 0; border-bottom:1px solid #eee;">${row[1]}: <span style="color:var(--error)">${baseQ} ➔ ${draftQuantities[sno]}</span></div>`;
+      changedCount++;
+    }
+
+    if(changedCount === 0) h = "No manual changes made. All members will receive their <b>Base Quantities</b>.";
+
+    document.getElementById('modalTitle').innerText = "Confirm New Order";
+    document.getElementById('confirmList').innerHTML = h;
+    document.getElementById('overlay').style.display = 'flex';
+    document.getElementById('finalConfirmBtn').onclick = () => {
+      postToScript({ action: "placeOrder", titleId: tid, draft: draftQuantities });
+    };
+  }
+
+  function showStatusConfirm() {
+    if (!Object.keys(pendingChanges).length) return alert("No changes to submit.");
+    const tid = document.getElementById('titleID').value;
+    let h = "<b>Status Updates:</b><br><br>";
+    for(let sno in pendingChanges) {
+      const row = db.orders.find(r => r[0] == sno);
+      h += `<div style="padding:8px 0; border-bottom:1px solid #eee; display:flex; justify-content:space-between;"><span>${row[1]}</span><b>${icons[pendingChanges[sno]]}</b></div>`;
+    }
+    document.getElementById('modalTitle').innerText = "Save Status Changes";
+    document.getElementById('confirmList').innerHTML = h;
+    document.getElementById('overlay').style.display = 'flex';
+    document.getElementById('finalConfirmBtn').onclick = () => {
+      postToScript({ action: "updateStatus", titleId: tid, changes: pendingChanges });
+    };
+  }
+
+async function postToScript(payload) {
+    const btn = document.getElementById('finalConfirmBtn');
+    const originalText = btn.innerText;
+    
+    btn.disabled = true;
+    btn.innerText = "⌛ Sending...";
+    
+    try {
+      await fetch(SCRIPT_URL, { 
+        method: 'POST', 
+        mode: 'no-cors', 
+        body: JSON.stringify(payload) 
+      });
+
+      // Since we can't read the response in no-cors mode, 
+      // we trigger our own success UI immediately.
+      showSuccessUI();
+
+    } catch (e) {
+      console.error(e);
+      alert("Connection error. Please check your internet and try again.");
+      btn.disabled = false;
+      btn.innerText = originalText;
+    }
+  }
+
+  function showSuccessUI() {
+    // Update the modal to show a success state instead of just an alert
+    const modal = document.querySelector('.modal');
+    modal.innerHTML = `
+      <div style="text-align:center; padding: 20px;">
+        <div style="font-size: 50px; margin-bottom: 10px;">✅</div>
+        <h3 style="margin:0;">Update Successful!</h3>
+        <p style="color: #666; font-size: 14px;">The spreadsheet has been updated.</p>
+        <button onclick="location.reload()" style="width:100%; padding:12px; border:none; border-radius:8px; background:var(--primary); color:white; font-weight:bold; cursor:pointer;">Got it</button>
+      </div>
+    `;
+  }
+
+  // --- UTILITY ---
+  function updateQty(sno, val) {
+    const tid = document.getElementById('titleID').value;
+    const isPlaced = db.settings.find(s => s[2] === tid)[6] === "Yes";
+    const qIdx = db.orders[0].indexOf(isPlaced ? tid + "-Qty" : "Base-Qty");
+    const originalQty = parseInt(db.orders.find(r => r[0] == sno)[qIdx]) || 0;
+    let newQty = parseInt(val) || 0;
+    if (newQty === originalQty) delete draftQuantities[sno];
+    else draftQuantities[sno] = newQty;
+    loadView();
+  }
+
+  function stageChange(sno, cur) {
+    const tid = document.getElementById('titleID').value, sIdx = db.orders[0].indexOf(tid + "-Status"), original = db.orders.find(r => r[0] == sno)[sIdx], next = (cur + 1) % 3;
+    if (next === original) delete pendingChanges[sno]; else pendingChanges[sno] = next;
+    loadView();
+  }
+
+  function syncTitles() {
+    const cat = document.getElementById('cat').value, t = document.getElementById('titleID');
+    t.innerHTML = '<option value="">Title</option>'; db.settings.filter(s => s[0] === cat).forEach(s => t.innerHTML += `<option value="${s[2]}">${s[1]}</option>`);
+    t.disabled = false;
+  }
+
+  function syncLocations() {
+    const city = document.getElementById('city').value, locSelect = document.getElementById('loc');
+    locSelect.innerHTML = '<option value="ALL">All Halls</option>';
+    const locs = [...new Set(db.orders.slice(1).filter(r => city === "ALL" || r[2] === city).map(r => r[3]))].filter(Boolean);
+    locs.forEach(l => locSelect.innerHTML += `<option value="${l}">${l}</option>`);
+  }
+
+  function handleFilterChange(type) {
+    if (type === 'cat' || type === 'title') {
+        const hasChanges = Object.keys(pendingChanges).length > 0 || Object.keys(draftQuantities).length > 0;
+        if (hasChanges && !confirm("Discard unsaved changes?")) {
+            if(type === 'title') document.getElementById('titleID').value = currentActiveTitle;
+            return;
+        }
+        pendingChanges = {}; draftQuantities = {};
+    }
+    if (type === 'cat') { syncTitles(); calculateLatestDeadline(); }
+    else if (type === 'city') syncLocations();
+    else if (type === 'title') currentActiveTitle = document.getElementById('titleID').value;
+    saveSelections(); loadView();
+  }
+
+  function calculateLatestDeadline() {
+    const selCat = document.getElementById('cat').value; 
+    if (!selCat) { document.getElementById('timerContainer').style.display = 'none'; return; }
+    const catRows = db.settings.filter(r => r[0] === selCat); 
+    if (!catRows.length) return;
+    const latest = catRows.reduce((p, c) => (new Date(p[3]) > new Date(c[3])) ? p : c);
+    const target = new Date(latest[3]); 
+    target.setDate(target.getDate() + ((parseInt(latest[5]) || 0) * 7));
+    document.getElementById('timerContainer').style.display = 'flex'; 
+    document.getElementById('targetDateDisplay').innerText = target.toDateString();
+    const diff = Math.ceil((target - new Date()) / 86400000); 
+    const countEl = document.getElementById('countdown');
+    countEl.innerText = diff < 0 ? "EXPIRED" : diff + " Days Left"; 
+    countEl.style.color = diff <= 3 ? "var(--error)" : "var(--success)";
+  }
+
+  function saveSelections() { localStorage.setItem('orderPrefs', JSON.stringify({ cat: document.getElementById('cat').value, titleID: document.getElementById('titleID').value, city: document.getElementById('city').value, loc: document.getElementById('loc').value })); }
+  function restoreSelections() {
+    const p = JSON.parse(localStorage.getItem('orderPrefs') || '{}');
+    if (p.cat) { document.getElementById('cat').value = p.cat; syncTitles(); calculateLatestDeadline(); }
+    if (p.titleID) { document.getElementById('titleID').value = p.titleID; currentActiveTitle = p.titleID; }
+    if (p.city) { document.getElementById('city').value = p.city; syncLocations(); if (p.loc) document.getElementById('loc').value = p.loc; }
+    loadView();
+  }
+  function setStatusFilter(val) { document.getElementById('statusFilter').value = val; loadView(); }
+  function closeModal() { document.getElementById('overlay').style.display = 'none'; }
+</script>
+</body>
+</html>
