@@ -77,9 +77,9 @@
     <div id="countdown" class="days-left"></div>
   </div>
   <div class="status-summary">
-    <div class="sum-pill" style="border-bottom: 3px solid var(--error)" onclick="setStatusFilter('0')"><small>UNRECEIVED</small><b id="sum0">0</b></div>
-    <div class="sum-pill" style="border-bottom: 3px solid var(--warning)" onclick="setStatusFilter('1')"><small>UNPAID</small><b id="sum1">0</b></div>
-    <div class="sum-pill" style="border-bottom: 3px solid var(--success)" onclick="setStatusFilter('2')"><small>COMPLETE</small><b id="sum2">0</b></div>
+    <div class="sum-pill" style="border-bottom: 3px solid var(--error)" onclick="setStatusFilter('0')"><small>❌ UNRECEIVED</small><b id="sum0">0</b></div>
+    <div class="sum-pill" style="border-bottom: 3px solid var(--warning)" onclick="setStatusFilter('1')"><small>⌛ UNPAID</small><b id="sum1">0</b></div>
+    <div class="sum-pill" style="border-bottom: 3px solid var(--success)" onclick="setStatusFilter('2')"><small>✅ COMPLETE</small><b id="sum2">0</b></div>
   </div>
   <input type="text" id="searchInput" placeholder="🔍 Search member names..." onkeyup="loadView()">
   <div class="filter-grid">
@@ -387,4 +387,5 @@ async function postToScript(payload) {
   function closeModal() { document.getElementById('overlay').style.display = 'none'; }
 </script>
 </body>
+
 </html>
