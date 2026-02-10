@@ -3,8 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bidar Outreach Service Portal - Registration</title>
+    <title>Bidar Outreach Registration & Dashboard</title>
+    <!-- Load Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Load Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         body {
@@ -18,7 +20,7 @@
             border: 1px solid #e2e8f0;
             padding: 0.75rem;
             border-radius: 0.5rem;
-            transition: border-color 0.2s, box-shadow 0.2s; /* Added box-shadow transition */
+            transition: border-color 0.2s;
             width: 100%;
         }
         input:focus, select:focus {
@@ -33,11 +35,6 @@
         .member-card:hover {
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
         }
-        /* NEW: Invalid Field Highlight Style */
-        .is-invalid {
-            border-color: #ef4444 !important; /* Tailwind red-500 */
-            box-shadow: 0 0 0 1px #ef4444;
-        }
         /* Custom scrollbar for better aesthetics */
         ::-webkit-scrollbar {
             width: 8px;
@@ -46,57 +43,97 @@
             background: #9ca3af;
             border-radius: 10px;
         }
+
+        .tab-button.active {
+            border-color: #4f46e5;
+            color: #4f46e5;
+            background-color: #eef2ff;
+        }
     </style>
 </head>
 <body class="p-4 sm:p-8 min-h-screen">
-    <div class="max-w-4xl mx-auto">
+    <div class="max-w-6xl mx-auto">
 
+        <!-- Header -->
         <header class="text-center mb-8">
-            <h1 class="text-3xl sm:text-4xl font-extrabold text-indigo-700">Bidar Outreach Service Portal</h1>
-            <p class="text-gray-600 mt-2">Trip Dates: Nov-16-2025 to Dec-21-2025</p>
+            <h1 class="text-3xl sm:text-4xl font-extrabold text-indigo-700">Bidar Outreach Management</h1>
+            <p class="text-gray-600 mt-2">Trip Dates: Mar-08-2026 to Mar-29-2026</p>
         </header>
 
-        <div id="status-box" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
-            <div class="bg-white p-6 rounded-xl shadow-2xl w-full max-w-sm text-center">
-                <div id="status-icon" class="mb-4"></div>
-                <p id="status-text" class="text-lg font-medium text-gray-800"></p>
-                <button id="status-close-btn" onclick="hideStatus()" class="mt-4 px-4 py-2 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition">Close</button>
-            </div>
+        <!-- Tab Navigation -->
+        <div class="flex border-b border-gray-200 mb-6">
+            <button id="tab-registration" onclick="showView('registration')" class="tab-button active flex items-center px-4 py-3 text-sm font-semibold rounded-t-lg border-b-2 border-transparent transition duration-150 mr-2">
+                <i data-lucide="user-plus" class="w-5 h-5 mr-2"></i> New Registration
+            </button>
+            <button id="tab-dashboard" onclick="showView('dashboard')" class="tab-button flex items-center px-4 py-3 text-sm font-semibold text-gray-600 hover:text-indigo-600 rounded-t-lg border-b-2 border-transparent hover:border-indigo-300 transition duration-150">
+                <i data-lucide="layout-dashboard" class="w-5 h-5 mr-2"></i> View Dashboard
+            </button>
         </div>
 
-        <div id="registration-view" class="view-content">
+        <!-- Message Box Modal -->
+        <div id="message-box" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
+            <div class="bg-white p-6 rounded-xl shadow-2xl w-full max-w-sm text-center">
+                <div id="message-icon" class="mb-4"></div>
+                <p id="message-text" class="text-lg font-medium text-gray-800"></p>
+                <button onclick="document.getElementById('message-box').classList.add('hidden')" class="mt-4 px-4 py-2 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition">Close</button>
+            </div>
+        </div>
+        
+        <!-- Registration View -->
+        <div id="view-registration" class="view-content">
             <form id="registration-form" class="container-box p-6 sm:p-10 bg-white rounded-2xl space-y-8">
-    
+
+                <!-- Section 2: Participants (NOW FIRST) -->
                 <section>
                     <h2 class="text-2xl font-semibold text-gray-800 mb-6 border-b pb-2 flex items-center">
                         <i data-lucide="users" class="w-6 h-6 mr-2 text-indigo-500"></i>
                         Participants
                         <span id="member-count-display" class="ml-2 text-base font-normal text-indigo-600">(0)</span>
                     </h2>
-    
+
                     <div id="members-container" class="space-y-6">
-                        </div>
-    
+                        <!-- Member cards will be injected here -->
+                    </div>
+
                     <button type="button" id="add-member-btn" class="mt-6 w-full py-3 px-4 border border-indigo-200 text-indigo-700 font-semibold rounded-lg shadow-sm hover:bg-indigo-50 transition duration-150 flex items-center justify-center">
                         <i data-lucide="plus-circle" class="w-5 h-5 mr-2"></i>
                         Add Participant
                     </button>
                     <p class="text-sm text-gray-500 mt-2 text-center">You must add at least one participant.</p>
                 </section>
-    
+
+                <!-- Section 1: Main Contact Details (NOW SECOND) -->
                 <section>
                     <h2 class="text-2xl font-semibold text-gray-800 mb-4 border-b pb-2 flex items-center">
                         <i data-lucide="contact" class="w-6 h-6 mr-2 text-indigo-500"></i>
                         Main Contact & Trip Details
                     </h2>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-    
+
+                        <!-- Mobile Number -->
                         <div>
                             <label for="mobile-number" class="block text-sm font-medium text-gray-700 mb-1">Mobile Number (Main Contact)</label>
                             <input type="tel" id="mobile-number" name="mobileNumber" placeholder="e.g., 9876543210" required
                                 class="focus:ring-indigo-500 focus:border-indigo-500">
                         </div>
-    
+
+                        <!-- Accommodation Required -->
+			<div>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <div>
+        <label for="location" class="block text-sm font-medium text-gray-700 mb-1">Location (City, State)</label>
+        <div class="relative">
+            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+                <i data-lucide="map-pin" class="w-4 h-4"></i>
+            </span>
+            <input type="text" id="location" name="location" required 
+                   placeholder="e.g., Bangalore, Karnataka"
+                   class="pl-10 w-full border rounded-lg p-2 focus:ring-indigo-500 focus:border-indigo-500">
+        </div>
+    </div>
+</div>
+
+			
                         <div>
                             <label for="accommodation" class="block text-sm font-medium text-gray-700 mb-1">Accommodation Required?</label>
                             <select id="accommodation" name="accommodation" required
@@ -107,12 +144,9 @@
                                 <option value="No">No</option>
                             </select>
                         </div>
-                        
-                        <div>
-                            <label for="location" class="block text-sm font-medium text-gray-700 mb-1">Current Location (City/State)</label>
-                            <input type="text" id="location" name="location" placeholder="e.g., Bangalore, Mysore" required
-                                class="focus:ring-indigo-500 focus:border-indigo-500">
-                        </div>
+</div>
+
+                        <!-- Arrival Date & Time -->
                         <div>
                             <label for="arrival-date" class="block text-sm font-medium text-gray-700 mb-1">Arrival Date</label>
                             <input type="date" id="arrival-date" name="arrivalDate" required class="focus:ring-indigo-500 focus:border-indigo-500">
@@ -121,9 +155,11 @@
                             <label for="arrival-time" class="block text-sm font-medium text-gray-700 mb-1">Arrival Time</label>
                             <select id="arrival-time" name="arrivalTime" required
                                 class="focus:ring-indigo-500 focus:border-indigo-500">
-                                </select>
+                                <!-- Time options will be populated by JavaScript -->
+                            </select>
                         </div>
-    
+
+                        <!-- Departure Date & Time -->
                         <div>
                             <label for="departure-date" class="block text-sm font-medium text-gray-700 mb-1">Departure Date</label>
                             <input type="date" id="departure-date" name="departureDate" required class="focus:ring-indigo-500 focus:border-indigo-500">
@@ -132,466 +168,554 @@
                             <label for="departure-time" class="block text-sm font-medium text-gray-700 mb-1">Departure Time</label>
                             <select id="departure-time" name="departureTime" required
                                 class="focus:ring-indigo-500 focus:border-indigo-500">
-                                </select>
+                                <!-- Time options will be populated by JavaScript -->
+                            </select>
                         </div>
                     </div>
                 </section>
-    
+
+                <!-- Submission Button -->
                 <div class="pt-6 border-t">
-                    <button type="submit" id="submit-button" class="w-full py-3 px-4 bg-indigo-600 text-white font-bold text-lg rounded-xl shadow-lg hover:bg-indigo-700 transition duration-200 focus:outline-none focus:ring-4 focus:ring-indigo-300 flex items-center justify-center">
+                    <button type="submit" id="submit-button" class="w-full py-3 px-4 bg-indigo-600 text-white font-bold text-lg rounded-xl shadow-lg hover:bg-indigo-700 transition duration-200 focus:outline-none focus:ring-4 focus:ring-indigo-300 flex items-center justify-center" disabled>
                         <i data-lucide="check-circle" class="w-6 h-6 mr-2"></i>
                         Finalize and Submit Registration
                     </button>
                 </div>
-    
+
             </form>
         </div>
         
+        <!-- Dashboard View -->
+        <div id="view-dashboard" class="view-content hidden">
+            <div class="container-box p-6 sm:p-10 bg-white rounded-2xl space-y-6">
+                <h2 class="text-2xl font-semibold text-gray-800 border-b pb-2 flex items-center mb-6">
+                    <i data-lucide="list-collapse" class="w-6 h-6 mr-2 text-indigo-500"></i>
+                    Outreach Dashboard - Aggregated Summary
+                </h2>
+
+                <div id="dashboard-loading" class="text-center py-12 text-gray-500">
+                    <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600 mx-auto mb-3"></div>
+                    <p class="mt-3 font-medium">Loading summary data...</p>
+                </div>
+
+                <div id="dashboard-content" class="overflow-x-auto hidden">
+                    <!-- Summary table will be generated here -->
+                </div>
+
+                <div id="dashboard-error" class="hidden bg-red-50 border border-red-200 p-4 rounded-lg text-red-700">
+                    <p class="font-medium">Error loading data.</p>
+                    <p id="dashboard-error-text" class="text-sm mt-1"></p>
+                    <p class="text-xs mt-2 font-normal">Ensure your Apps Script is deployed with the 'Anyone' access setting and is returning the aggregated JSON object.</p>
+                </div>
+            </div>
         </div>
 
+        <!-- Global Loading Spinner -->
+        <div id="loading-spinner" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
+            <div class="flex flex-col items-center bg-white p-6 rounded-xl shadow-2xl">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+                <p class="mt-3 text-indigo-700 font-medium">Processing request...</p>
+            </div>
+        </div>
+    </div>
+<div id="confirm-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+        <div class="p-6 border-b bg-indigo-600 text-white">
+            <h3 class="text-xl font-bold">Review Registration Summary</h3>
+            <p class="text-indigo-100 text-sm">Please verify the details before final submission.</p>
+        </div>
+        <div id="summary-content" class="p-6 overflow-y-auto text-gray-700 space-y-4">
+            </div>
+        <div class="p-4 border-t bg-gray-50 flex justify-end gap-3">
+            <button id="cancel-submit" class="px-6 py-2 border rounded-lg hover:bg-gray-100 transition">Edit Details</button>
+            <button id="final-confirm" class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 shadow-md transition">Confirm & Submit</button>
+        </div>
+    </div>
+</div>
     <script>
-        // Initialize Lucide icons
-        lucide.createIcons();
+// Initialize Lucide icons
+lucide.createIcons();
 
-        // --- Configuration ---
-        //const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzLoI2oWPF-D6HNdmMe6nyXB4TKm_fHldQEgdEU8k7u5I8wZXMC1kmTkvct0VH14Ndc/exec";
-	const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby5c0_rQOOtHJQYaLOwaHZRSxaWsKEuNgozvI1AmbidOe1ziRpjouTllrwgtr1f0Xfs/exec";
-        const LANGUAGES = ['English', 'Kannada', 'Marathi', 'Telugu', 'Tamil', 'Malayalam', 'Hindi'];
-        // Removed: VIEW_IDS, attendanceTableBody, refreshBtn, dateFormatter
+// --- Configuration ---
+const GOOGLE_APPS_SCRIPT_ENDPOINT = "https://script.google.com/macros/s/AKfycby4V1kBtUpMRoE1kKxWGXSW2B-3Tv6tlrk3s-DT1YWnP_7ujna6HkGA9r5v04O80lOh/exec";
+const LANGUAGES = ['English', 'Kannada', 'Marathi', 'Telugu', 'Tamil', 'Malayalam', 'Hindi'];
 
-        const form = document.getElementById('registration-form');
-        const membersContainer = document.getElementById('members-container');
-        const addMemberBtn = document.getElementById('add-member-btn');
-        const submitButton = document.getElementById('submit-button');
-        const memberCountDisplay = document.getElementById('member-count-display');
-        const statusBox = document.getElementById('status-box'); // Global status box
+const form = document.getElementById('registration-form');
+const membersContainer = document.getElementById('members-container');
+const addMemberBtn = document.getElementById('add-member-btn');
+const submitButton = document.getElementById('submit-button');
+const memberCountDisplay = document.getElementById('member-count-display');
+const loadingSpinner = document.getElementById('loading-spinner');
 
-        let memberCounter = 0; // Use a dedicated counter for unique ID generation
+const dashboardLoading = document.getElementById('dashboard-loading');
+const dashboardContent = document.getElementById('dashboard-content');
+const dashboardError = document.getElementById('dashboard-error');
+const dashboardErrorText = document.getElementById('dashboard-error-text');
 
-        // --- Status Functions (Simplified) ---
+let memberCounter = 0;
+
+// --- View Switching Logic ---
+function showView(viewId) {
+    document.querySelectorAll('.view-content').forEach(view => view.classList.add('hidden'));
+    document.getElementById(`view-${viewId}`).classList.remove('hidden');
+
+    document.querySelectorAll('.tab-button').forEach(btn => {
+        btn.classList.remove('active', 'text-indigo-600', 'bg-indigo-50', 'border-indigo-500');
+        btn.classList.add('text-gray-600', 'hover:text-indigo-600');
+    });
+    document.getElementById(`tab-${viewId}`).classList.add('active', 'text-indigo-600', 'bg-indigo-50', 'border-indigo-500');
+
+    if (viewId === 'dashboard') fetchDataAndRenderDashboard();
+}
+
+// --- DASHBOARD DATA FETCHING & RENDERING ---
+async function fetchDataAndRenderDashboard() {
+    // Show loading, hide others
+    dashboardContent.classList.add('hidden');
+    dashboardError.classList.add('hidden');
+    dashboardLoading.classList.remove('hidden');
+
+    try {
+        // We add a cache-buster timestamp to ensure we get fresh data
+        const dashboardUrl = `${GOOGLE_APPS_SCRIPT_ENDPOINT}?action=get_attendance&_=${new Date().getTime()}`;
+        const response = await fetch(dashboardUrl);
         
-        // Removed: showView function
+        if (!response.ok) throw new Error('Network response was not ok');
         
-        /**
-         * Shows a status box for success, error, or loading.
-         * @param {string} type - 'success', 'error', or 'loading'.
-         * @param {string} message - The message to display.
-         */
-        function showStatus(type, message) {
-            const iconContainer = document.getElementById('status-icon');
-            const messageText = document.getElementById('status-text');
-            const closeBtn = document.getElementById('status-close-btn');
+        const result = await response.json();
 
-            let iconHtml = '';
-            
-            // Handle loading status with no close button
-            if (type === 'loading') {
-                iconHtml = `<div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>`;
-                messageText.textContent = message || 'Processing request...';
-                closeBtn.classList.add('hidden');
-            } else {
-                // Handle success/error status
-                if (type === 'success' && lucide['check-circle']) {
-                    iconHtml = lucide['check-circle']({ class: 'w-10 h-10 text-green-500 mx-auto' });
-                } else if (type === 'error' && lucide['x-octagon']) {
-                    iconHtml = lucide['x-octagon']({ class: 'w-10 h-10 text-red-500 mx-auto' });
-                }
-                messageText.textContent = message;
-                closeBtn.classList.remove('hidden');
-            }
-
-            iconContainer.innerHTML = iconHtml;
-            statusBox.classList.remove('hidden');
+        if (result.status === 'ERROR') {
+            throw new Error(result.message || 'Failed to fetch dashboard data');
         }
 
-        function hideStatus() {
-            statusBox.classList.add('hidden');
-        }
-
-        // --- Network Utility ---
-
-        /**
-         * Executes a fetch request with exponential backoff retries.
-         * @param {string} url - The URL to fetch.
-         * @param {Object} options - Fetch options (method, body, headers).
-         * @param {number} maxRetries - Maximum number of retries.
-         */
-        async function fetchWithRetry(url, options = {}, maxRetries = 3) {
-            for (let attempt = 0; attempt < maxRetries; attempt++) {
-                try {
-                    const response = await fetch(url, options);
-                    
-                    if (response.ok) {
-                        return response;
-                    }
-
-                    // Handle bad server response (e.g., 400, 500)
-                    if (attempt === maxRetries - 1) {
-                         // Read the response text for better error logging
-                        const errorText = await response.text();
-                        console.error(`Attempt ${attempt + 1}: Server responded with status ${response.status}. Body: ${errorText}`);
-                        throw new Error(`Server returned status ${response.status} after ${maxRetries} attempts.`);
-                    }
-                    
-                } catch (error) {
-                    console.warn(`Attempt ${attempt + 1}: Fetch failed. Error: ${error.message}`);
-                    if (attempt === maxRetries - 1) {
-                        throw new Error(`Network error after ${maxRetries} attempts.`);
-                    }
-                }
-                
-                // Exponential backoff wait: 1s, 2s, 4s...
-                await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 1000));
-            }
-        }
-
-
-        // --- REGISTRATION FORM FUNCTIONS ---
-
-        function getMemberCount() {
-            return document.querySelectorAll('.member-card').length;
-        }
-
-        /**
-         * Checks for participant count. Field validation is handled by the submit event.
-         */
-        function updateSubmitButtonState() {
-            const currentMemberCount = getMemberCount();
-            
-            // The button is only disabled if there are NO participants.
-            submitButton.disabled = currentMemberCount === 0;
-        }
-
-        /**
-         * Validates all required fields, highlights invalid ones, and scrolls to the first error.
-         * @returns {boolean} True if the entire form is valid, false otherwise.
-         */
-        function highlightInvalidFields() {
-            const requiredFields = Array.from(form.querySelectorAll('input:required, select:required, textarea:required'));
-            let firstInvalidField = null;
-            let isValid = true;
-
-            requiredFields.forEach(field => {
-                
-                // Special check for 'Other Language' field: skip validation if disabled
-                if (field.disabled && field.id.startsWith('other-language-input')) {
-                    field.classList.remove('is-invalid');
-                    return; 
-                }
-
-                // Check the validity of the field itself
-                if (!field.checkValidity()) {
-                    field.classList.add('is-invalid');
-                    isValid = false;
-                    if (!firstInvalidField) {
-                        firstInvalidField = field;
-                    }
-                } else {
-                    field.classList.remove('is-invalid');
-                }
-            });
-
-            // Scroll to the first invalid field for better UX
-            if (firstInvalidField) {
-                firstInvalidField.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
-
-            return isValid;
+        const aggregatedData = result.counts;
+        
+        if (!aggregatedData || Object.keys(aggregatedData).length === 0) {
+            dashboardContent.innerHTML = `
+                <div class="text-center p-12 bg-white rounded-xl border border-dashed border-gray-300">
+                    <p class="text-gray-500">No registration data found yet.</p>
+                </div>`;
+        } else {
+            renderDashboard(aggregatedData);
         }
         
-        /**
-         * Clears the invalid highlight on input/change and updates button state.
-         */
-        function clearErrorState(event) {
-            const field = event.target;
-            // Clear error state only if the field is now valid
-            if (field.checkValidity()) {
-                field.classList.remove('is-invalid');
-            }
-            updateSubmitButtonState();
+        dashboardContent.classList.remove('hidden');
+    } catch (error) {
+        console.error('Dashboard Error:', error);
+        dashboardError.classList.remove('hidden');
+        dashboardErrorText.textContent = error.message;
+    } finally {
+        dashboardLoading.classList.add('hidden');
+    }
+}
+
+function renderDashboard(dataObject) {
+    // 1. Convert the object to an array and sort by date correctly
+    const summaryArray = Object.keys(dataObject).map(date => ({
+        date: date,
+        ...dataObject[date]
+    })).sort((a, b) => new Date(a.date) - new Date(b.date));
+
+    // 2. Generate the Table HTML
+    dashboardContent.innerHTML = `
+        <div class="overflow-x-auto bg-white rounded-xl shadow-sm border border-gray-200">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-indigo-600">
+                    <tr>
+                        <th class="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider">Date</th>
+                        <th class="px-6 py-4 text-center text-xs font-bold text-white uppercase tracking-wider">Total</th>
+                        <th class="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider">Brs / Sis</th>
+                        <th class="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider">Kannada Brs / Sis</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    ${summaryArray.map(item => `
+                        <tr class="hover:bg-indigo-50 transition-colors">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
+                                ${new Date(item.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-bold bg-indigo-100 text-indigo-800">
+                                    ${item.Total || 0}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                <span class="text-blue-600 font-medium">${item.Brother || 0}</span> / 
+                                <span class="text-pink-600 font-medium">${item.Sister || 0}</span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                <span class="bg-gray-100 px-2 py-1 rounded">
+                                    ${item.KannadaBrother || 0} Brs | ${item.KannadaSister || 0} Sis
+                                </span>
+                            </td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        </div>
+    `;
+    
+    // Re-initialize any icons if you added them
+    lucide.createIcons();
+}
+
+// --- Utility Functions ---
+function showMessage(type, message) {
+    const messagebox = document.getElementById('message-box');
+    const iconContainer = document.getElementById('message-icon');
+    const messageText = document.getElementById('message-text');
+
+    let iconHtml = '';
+    if (type === 'success' && lucide['check-circle']) {
+        iconHtml = lucide['check-circle']({ class: 'w-10 h-10 text-green-500' });
+    } else if (type === 'error' && lucide['x-octagon']) {
+        iconHtml = lucide['x-octagon']({ class: 'w-10 h-10 text-red-500' });
+    }
+
+    iconContainer.innerHTML = iconHtml;
+    messageText.textContent = message;
+    messagebox.classList.remove('hidden');
+    
+    // Auto-scroll to message
+    messagebox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function getMemberCount() {
+    return document.querySelectorAll('.member-card').length;
+}
+
+function updateSubmitButtonState() {
+    submitButton.disabled = (getMemberCount() === 0);
+}
+
+function setFieldStyle(element, isValid, message = "") {
+    let errorMsg = element.parentNode.querySelector('.val-error');
+    if (isValid) {
+        element.classList.remove('border-red-500', 'bg-red-50');
+        if (errorMsg) errorMsg.remove();
+    } else {
+        element.classList.add('border-red-500', 'bg-red-50');
+        if (!errorMsg) {
+            errorMsg = document.createElement('p');
+            errorMsg.className = 'val-error text-xs text-red-500 mt-1';
+            element.parentNode.appendChild(errorMsg);
         }
+        errorMsg.textContent = message;
+    }
+}
 
-        /**
-         * Generates and populates a select element with 30-minute time intervals.
-         */
-        function generateTimeOptions(selectId) {
-            const selectElement = document.getElementById(selectId);
-            if (!selectElement) return;
+// --- Dynamic Member Card Logic ---
+function createLanguageCheckboxes(uniqueId) {
+    let html = LANGUAGES.map(lang => `
+        <div class="flex items-center">
+            <input type="checkbox" id="lang-${uniqueId}-${lang.replace(/\s/g, '')}" name="language-${uniqueId}-check" value="${lang}"
+                    class="h-4 w-4 text-indigo-600 border-gray-300 rounded">
+            <label for="lang-${uniqueId}-${lang.replace(/\s/g, '')}" class="ml-2 text-sm text-gray-700">${lang}</label>
+        </div>
+    `).join('');
 
-            // Add default option
-            selectElement.innerHTML = '<option value="">Select Time</option>'; 
+    html += `
+        <div class="flex items-center">
+            <input type="checkbox" id="lang-${uniqueId}-Other" class="h-4 w-4 text-indigo-600 border-gray-300 rounded">
+            <label for="lang-${uniqueId}-Other" class="ml-2 text-sm text-gray-700 font-medium">Other</label>
+        </div>
+    `;
+    return html;
+}
 
-            for (let h = 0; h < 24; h++) {
-                for (let m = 0; m < 60; m += 30) {
-                    const hour = String(h).padStart(2, '0');
-                    const minute = String(m).padStart(2, '0');
-                    const timeValue = `${hour}:${minute}`;
-                    
-                    const option = document.createElement('option');
-                    option.value = timeValue;
-                    option.textContent = timeValue;
-                    selectElement.appendChild(option);
-                }
-            }
-        }
+function createMemberCard() {
+    memberCounter++;
+    const uniqueId = memberCounter;
+    const card = document.createElement('div');
+    card.className = 'member-card p-4 rounded-lg space-y-4 border border-gray-200 mb-4';
+    card.setAttribute('data-member-id', uniqueId);
 
-        function createLanguageCheckboxes(uniqueId) {
-            let html = LANGUAGES.map(lang => `
-                <div class="flex items-center">
-                    <input type="checkbox" id="lang-${uniqueId}-${lang.replace(/\s/g, '')}" name="language-${uniqueId}-check" value="${lang}"
-                            class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                    <label for="lang-${uniqueId}-${lang.replace(/\s/g, '')}" class="ml-2 text-sm text-gray-700">${lang}</label>
-                </div>
-            `).join('');
+    card.innerHTML = `
+        <div class="flex justify-between items-center border-b pb-2">
+            <h3 class="text-lg font-medium text-indigo-600">Participant</h3>
+            <button type="button" class="remove-member-btn text-red-500"><i data-lucide="x-circle" class="w-5 h-5"></i></button>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                <input type="text" id="name-${uniqueId}" required class="w-full border rounded p-2">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Brother or Sister?</label>
+                <select id="sibling-${uniqueId}" required class="w-full border rounded p-2">
+                    <option value="">Select</option>
+                    <option value="Brother">Brother</option>
+                    <option value="Sister">Sister</option>
+                </select>
+            </div>
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Known Languages (Select all that apply)</label>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">${createLanguageCheckboxes(uniqueId)}</div>
+            <div id="other-lang-field-${uniqueId}" class="mt-3 hidden">
+                <input type="text" id="other-language-input-${uniqueId}" placeholder="Specify language" class="w-full border rounded p-2">
+            </div>
+        </div>
+    `;
 
-            // Add the 'Other' checkbox
-            html += `
-                <div class="flex items-center">
-                    <input type="checkbox" id="lang-${uniqueId}-Other" name="language-${uniqueId}-other-check"
-                            class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500" data-toggle-target="other-lang-field-${uniqueId}">
-                    <label for="lang-${uniqueId}-Other" class="ml-2 text-sm text-gray-700 font-medium">Other (Specify)</label>
-                </div>
-            `;
-            
-            return html;
-        }
+    membersContainer.appendChild(card);
+    lucide.createIcons();
+    
+    // Toggle Other Logic
+    const otherCb = card.querySelector(`#lang-${uniqueId}-Other`);
+    const otherField = card.querySelector(`#other-lang-field-${uniqueId}`);
+    otherCb.addEventListener('change', () => {
+        otherField.classList.toggle('hidden', !otherCb.checked);
+    });
 
-        function createMemberCard() {
-            memberCounter++;
-            const uniqueId = memberCounter; // Use the incrementing counter for unique field names/IDs
-
-            const card = document.createElement('div');
-            card.className = 'member-card p-4 rounded-lg space-y-4';
-            card.setAttribute('data-member-id', uniqueId);
-
-            card.innerHTML = `
-                <div class="flex justify-between items-center border-b pb-2 mb-3">
-                    <h3 class="text-lg font-medium text-indigo-600">Participant ${getMemberCount() + 1}</h3>
-                    <button type="button" class="remove-member-btn text-red-500 hover:text-red-700 transition" data-member-id="${uniqueId}">
-                        <i data-lucide="x-circle" class="w-5 h-5"></i>
-                    </button>
-                </div>
-
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                        <label for="name-${uniqueId}" class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-                        <input type="text" id="name-${uniqueId}" name="name-${uniqueId}" required placeholder="e.g., John Doe"
-                                class="focus:ring-indigo-500 focus:border-indigo-500">
-                    </div>
-
-                    <div>
-                        <label for="sibling-${uniqueId}" class="block text-sm font-medium text-gray-700 mb-1">Brother or Sister?</label>
-                        <select id="sibling-${uniqueId}" name="sibling-${uniqueId}" required
-                                class="focus:ring-indigo-500 focus:border-indigo-500">
-                            <option value="">Select</option>
-                            <option value="Brother">Brother</option>
-                            <option value="Sister">Sister</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Known Languages (Select all that apply)</label>
-                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                        ${createLanguageCheckboxes(uniqueId)}
-                    </div>
-                    
-                    <div id="other-lang-field-${uniqueId}" class="mt-3 hidden">
-                        <label for="other-language-input-${uniqueId}" class="block text-sm font-medium text-gray-700 mb-1">Specify Other Language(s) (e.g., French, German)</label>
-                        <input type="text" id="other-language-input-${uniqueId}" name="other-language-input-${uniqueId}"
-                                class="focus:ring-indigo-500 focus:border-indigo-500" disabled>
-                    </div>
-                </div>
-            `;
-
-            membersContainer.appendChild(card);
-            lucide.createIcons(); // Re-initialize icons for new content
-
-            // Add listener to the new remove button
-            card.querySelector('.remove-member-btn').addEventListener('click', removeMember);
-
-            // Add listener to all new required inputs to update button state and clear errors
-            Array.from(card.querySelectorAll('input, select')).forEach(input => {
-                input.addEventListener('input', clearErrorState);
-                input.addEventListener('change', clearErrorState);
-            });
-            
-            // --- Logic for 'Other (Specify)' Input Field ---
-            const otherCheckbox = card.querySelector(`#lang-${uniqueId}-Other`);
-            const otherInputField = card.querySelector(`#other-language-input-${uniqueId}`);
-            const otherFieldContainer = card.querySelector(`#other-lang-field-${uniqueId}`);
-
-            const toggleOtherInput = () => {
-                if (otherCheckbox.checked) {
-                    otherFieldContainer.classList.remove('hidden');
-                    otherInputField.required = true;
-                    otherInputField.disabled = false;
-                    otherInputField.addEventListener('input', clearErrorState); // Add listener for dynamic field
-                    otherInputField.addEventListener('change', clearErrorState);
-                } else {
-                    otherFieldContainer.classList.add('hidden');
-                    otherInputField.required = false;
-                    otherInputField.disabled = true;
-                    otherInputField.value = ''; // Clear value when hidden
-                    otherInputField.classList.remove('is-invalid'); // Clear error state on uncheck
-                }
-                updateSubmitButtonState();
-            };
-
-            otherCheckbox.addEventListener('change', toggleOtherInput);
-
-
-            memberCountDisplay.textContent = `(${getMemberCount()})`;
-            updateSubmitButtonState();
-        }
-
-        function removeMember(event) {
-            const btn = event.currentTarget;
-            const memberCard = btn.closest('.member-card');
-
-            if (memberCard) {
-                memberCard.remove();
-                memberCountDisplay.textContent = `(${getMemberCount()})`;
-                updateSubmitButtonState();
-
-                // Re-label remaining cards for cleaner UI
-                let currentId = 1;
-                document.querySelectorAll('.member-card').forEach(card => {
-                    const title = card.querySelector('h3');
-                    if(title) title.textContent = `Participant ${currentId}`;
-                    currentId++;
-                });
-            }
-        }
-
-        // --- Form Submission Handler ---
-
-        form.addEventListener('submit', async function(e) {
-            e.preventDefault();
-
-            // STEP 1: Run validation and stop submission if any field is invalid
-            if (!highlightInvalidFields()) {
-                showStatus('error', 'Please fill in all required fields marked in red.');
-                return;
-            }
-
-            if (getMemberCount() === 0) {
-                showStatus('error', 'Please add at least one participant.');
-                return;
-            }
-
-            showStatus('loading', 'Submitting data...');
-            submitButton.disabled = true;
-
-            // 1. Gather all core trip data
-            const mobileNumber = document.getElementById('mobile-number').value;
-            const accommodation = document.getElementById('accommodation').value;
-            const location = document.getElementById('location').value; // COLLECT NEW FIELD
-            const arrivalDate = document.getElementById('arrival-date').value;
-            const arrivalTime = document.getElementById('arrival-time').value;
-            const departureDate = document.getElementById('departure-date').value;
-            const departureTime = document.getElementById('departure-time').value;
-
-            // 2. Gather all member data
-            const membersArray = [];
-            const memberCards = document.querySelectorAll('.member-card');
-
-            memberCards.forEach(card => {
-                const uniqueId = card.getAttribute('data-member-id');
-
-                const nameInput = card.querySelector(`input[name="name-${uniqueId}"]`);
-                const siblingSelect = card.querySelector(`select[name="sibling-${uniqueId}"]`);
-
-                // Collect the fixed languages
-                let selectedLanguages = Array.from(card.querySelectorAll(`input[name="language-${uniqueId}-check"]:checked`))
-                    .map(cb => cb.value);
-                
-                // Collect the 'Other' language input if provided
-                const otherLangInput = card.querySelector(`input[name="other-language-input-${uniqueId}"]`);
-                const otherCheckbox = card.querySelector(`#lang-${uniqueId}-Other`);
-
-                if (otherCheckbox && otherCheckbox.checked && otherLangInput && otherLangInput.value.trim()) {
-                    // Split the comma-separated list from the 'Other' input and add to the array
-                    const specifiedLanguages = otherLangInput.value.split(',').map(s => s.trim()).filter(s => s.length > 0);
-                    selectedLanguages.push(...specifiedLanguages);
-                }
-
-                membersArray.push({
-                    name: nameInput ? nameInput.value : '',
-                    siblingType: siblingSelect ? siblingSelect.value : '',
-                    languages: selectedLanguages
-                });
-            });
-
-            // 3. Construct the payload using FormData
-            const formData = new FormData();
-            formData.append('action', 'submitRegistration'); // Action for the Apps Script
-            formData.append('mobileNumber', mobileNumber);
-            formData.append('accommodation', accommodation);
-            formData.append('location', location); // APPEND NEW FIELD
-            formData.append('arrivalDate', arrivalDate);
-            formData.append('arrivalTime', arrivalTime);
-            formData.append('departureDate', departureDate);
-            formData.append('departureTime', departureTime);
-
-            // CRITICAL: Stringify the array for the 'members' key
-            formData.append('members', JSON.stringify(membersArray));
-
-            try {
-                const response = await fetchWithRetry(APPS_SCRIPT_URL, {
-                    method: 'POST',
-                    body: formData,
-                });
-
-                const result = await response.json();
-
-                if (result.status === 'SUCCESS') {
-                    showStatus('success', result.message);
-                    form.reset(); // Clear form on success
-                    membersContainer.innerHTML = '';
-                    memberCounter = 0; // Reset counter
-                    memberCountDisplay.textContent = `(0)`;
-                    createMemberCard(); // Re-add the default participant after successful submission
-                } else {
-                    // Log the error details from the Apps Script
-                    console.error('Apps Script Error Details:', result.details);
-                    showStatus('error', `Submission Failed: ${result.message}`);
-                }
-
-            } catch (error) {
-                console.error('Network or fetch error:', error);
-                showStatus('error', 'A network error occurred. Please try again. If the issue persists, check the browser console for details.');
-            } finally {
-                updateSubmitButtonState();
-            }
-        });
-
-
-        // --- DASHBOARD FUNCTIONS (Removed) ---
-        // Removed fetchAttendanceData() and updateDashboard()
-
-        // --- Initialization ---
-
-        // Populate the time dropdowns
-        generateTimeOptions('arrival-time');
-        generateTimeOptions('departure-time');
-
-        // Load the first participant card automatically on page load
-        createMemberCard();
-
-        // Initial state update
+    card.querySelector('.remove-member-btn').addEventListener('click', () => {
+        card.remove();
+        updateMemberNumbers();
         updateSubmitButtonState();
+    });
+
+    updateMemberNumbers();
+    updateSubmitButtonState();
+}
+
+function updateMemberNumbers() {
+    document.querySelectorAll('.member-card').forEach((card, i) => {
+        card.querySelector('h3').textContent = `Participant ${i + 1}`;
+    });
+    memberCountDisplay.textContent = `(${getMemberCount()})`;
+}
+
+// --- Validation Logic ---
+function validateRegistrationForm() {
+    let isValid = true;
+    let firstErrorField = null;
+    let errors = [];
+
+    // Mobile
+    const mobile = document.getElementById('mobile-number');
+    if (!/^[6-9]\d{9}$/.test(mobile.value)) {
+        setFieldStyle(mobile, false, "10-digit number starting 6-9");
+        isValid = false;
+        firstErrorField = firstErrorField || mobile;
+    } else { setFieldStyle(mobile, true); }
+
+    // Dates
+    const arr = document.getElementById('arrival-date');
+    const dep = document.getElementById('departure-date');
+    if (!arr.value) { setFieldStyle(arr, false, "Required"); isValid = false; firstErrorField = firstErrorField || arr; }
+    if (dep.value && arr.value && dep.value < arr.value) {
+        setFieldStyle(dep, false, "Must be after arrival");
+        isValid = false;
+        firstErrorField = firstErrorField || dep;
+    }
+
+// Add this inside validateRegistrationForm()
+const locInput = document.getElementById('location');
+if (!locInput.value.trim()) {
+    setFieldStyle(locInput, false, "Location is required");
+    isValid = false;
+    firstErrorField = firstErrorField || locInput;
+} else {
+    setFieldStyle(locInput, true);
+}
+
+    // Participants
+    document.querySelectorAll('.member-card').forEach((card, i) => {
+        const id = card.getAttribute('data-member-id');
+        const name = card.querySelector(`#name-${id}`);
+        const sib = card.querySelector(`#sibling-${id}`);
+        const langLabel = card.querySelector('label.mb-2');
+        const anyLang = Array.from(card.querySelectorAll('input[type="checkbox"]')).some(c => c.checked);
+
+        if (!name.value.trim()) { setFieldStyle(name, false, "Required"); isValid = false; firstErrorField = firstErrorField || name; }
+        else { setFieldStyle(name, true); }
+
+        if (!sib.value) { setFieldStyle(sib, false, "Required"); isValid = false; firstErrorField = firstErrorField || sib; }
+        else { setFieldStyle(sib, true); }
+
+        if (!anyLang) {
+            langLabel.classList.add('text-red-600', 'font-bold');
+            langLabel.textContent = "Languages (MANDATORY) *";
+            isValid = false;
+            firstErrorField = firstErrorField || langLabel;
+        } else {
+            langLabel.classList.remove('text-red-600', 'font-bold');
+            langLabel.textContent = "Known Languages (Select all that apply)";
+        }
+    });
+
+    if (!isValid && firstErrorField) {
+        firstErrorField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    return isValid;
+}
+
+// --- SINGLE CONSOLIDATED SUBMIT HANDLER ---
+// --- Place this inside your <script> tags, replacing the old form.onsubmit or addEventListener ---
+
+const confirmModal = document.getElementById('confirm-modal');
+const summaryContent = document.getElementById('summary-content');
+const cancelBtn = document.getElementById('cancel-submit');
+const finalConfirmBtn = document.getElementById('final-confirm');
+
+// STEP A: When user clicks the main "Submit" button
+form.addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    // 1. Run your validation
+    if (!validateRegistrationForm()) return;
+
+    // 2. Build the Summary View
+    const mobile = document.getElementById('mobile-number').value;
+    const arrival = `${document.getElementById('arrival-date').value} (${document.getElementById('arrival-time').value})`;
+    const departure = `${document.getElementById('departure-date').value} at ${document.getElementById('departure-time').value}`;
+    const accommodation = document.getElementById('accommodation').value;
+    
+    let membersHtml = '';
+    document.querySelectorAll('.member-card').forEach((card, i) => {
+        const id = card.getAttribute('data-member-id');
+        const name = card.querySelector(`#name-${id}`).value;
+        const sib = card.querySelector(`#sibling-${id}`).value;
         
-        // Removed: Initial view setup (only registration remains)
+        // Collect Languages
+        let langs = Array.from(card.querySelectorAll(`input[name="language-${id}-check"]:checked`)).map(c => c.value);
+        const otherCb = card.querySelector(`#lang-${id}-Other`);
+        const otherInput = card.querySelector(`#other-language-input-${id}`);
+        if(otherCb.checked && otherInput.value) langs.push(otherInput.value);
 
-        // Event Listeners for registration form (main fields)
-        addMemberBtn.addEventListener('click', createMemberCard);
-        Array.from(form.querySelectorAll('input:required, select:required')).forEach(input => {
-            input.addEventListener('input', clearErrorState);
-            input.addEventListener('change', clearErrorState);
+        membersHtml += `
+            <div class="p-3 bg-indigo-50 rounded-lg border border-indigo-100">
+                <p class="font-bold text-indigo-800">Participant ${i+1}: ${name}</p>
+                <p class="text-sm text-gray-600"><strong>Type:</strong> ${sib} | <strong>Languages:</strong> ${langs.join(', ')}</p>
+            </div>
+        `;
+    });
+
+     // Add this line to gather the value
+    const locationVal = document.getElementById('location').value;
+
+
+// 2. Inject into Modal with Mobile-First Layout
+summaryContent.innerHTML = `
+    <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 mb-4 shadow-sm">
+        <div class="space-y-3">
+            <div>
+                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Mobile Number</p>
+                <p class="text-sm font-semibold text-gray-900">${mobile}</p>
+            </div>
+            <div>
+                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Location</p>
+                <p class="text-sm font-semibold text-gray-900">${locationVal}</p>
+            </div>
+            <div>
+                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Accommodation</p>
+                <p class="text-sm font-semibold text-gray-900">${accommodation}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="flex flex-col sm:flex-row gap-2 mb-4">
+        <div class="flex-1 bg-indigo-50 p-3 rounded-lg border-l-4 border-indigo-500">
+            <p class="text-[10px] font-bold text-indigo-600 uppercase">Arrival</p>
+            <p class="text-xs font-bold text-gray-800">${arrival}</p>
+        </div>
+        <div class="flex-1 bg-orange-50 p-3 rounded-lg border-l-4 border-orange-500">
+            <p class="text-[10px] font-bold text-orange-600 uppercase">Departure</p>
+            <p class="text-xs font-bold text-gray-800">${departure}</p>
+        </div>
+    </div>
+
+    <div class="space-y-3">
+        <div class="flex justify-between items-center px-1">
+            <p class="text-xs font-bold text-gray-500 uppercase">Participants (${getMemberCount()})</p>
+        </div>
+        
+        <div class="max-h-[25vh] overflow-y-auto space-y-2 pr-1">
+            ${membersHtml}
+        </div>
+    </div>
+`;
+
+    // 4. Show the Modal
+    confirmModal.classList.remove('hidden');
+});
+
+// STEP B: If user clicks "Edit Details"
+cancelBtn.addEventListener('click', () => {
+    confirmModal.classList.add('hidden');
+});
+
+// STEP C: If user clicks "Confirm & Submit"
+finalConfirmBtn.addEventListener('click', async () => {
+    confirmModal.classList.add('hidden'); // Close modal
+    loadingSpinner.classList.remove('hidden'); // Show spinner
+    submitButton.disabled = true;
+
+    // Build the final Data Object
+    const membersArray = [];
+    document.querySelectorAll('.member-card').forEach(card => {
+        const id = card.getAttribute('data-member-id');
+        let langs = Array.from(card.querySelectorAll(`input[name="language-${id}-check"]:checked`)).map(c => c.value);
+        const otherInput = card.querySelector(`#other-language-input-${id}`);
+        if (card.querySelector(`#lang-${id}-Other`).checked && otherInput.value.trim()) langs.push(otherInput.value.trim());
+        
+        membersArray.push({
+            name: card.querySelector(`#name-${id}`).value,
+            siblingType: card.querySelector(`#sibling-${id}`).value,
+            languages: langs
         });
+    });
 
+    const formData = new FormData();
+    formData.append('mobileNumber', document.getElementById('mobile-number').value);
+    formData.append('accommodation', document.getElementById('accommodation').value);
+    formData.append('arrivalDate', document.getElementById('arrival-date').value);
+    formData.append('arrivalTime', document.getElementById('arrival-time').value);
+    formData.append('departureDate', document.getElementById('departure-date').value);
+    formData.append('departureTime', document.getElementById('departure-time').value);
+    formData.append('location', document.getElementById('location').value);
+    formData.append('members', JSON.stringify(membersArray));
+
+    try {
+        const response = await fetch(GOOGLE_APPS_SCRIPT_ENDPOINT, { method: 'POST', body: formData });
+        const result = await response.json();
+
+        if (result.status === 'SUCCESS') {
+            showMessage('success', result.message);
+            form.reset();
+            membersContainer.innerHTML = '';
+            memberCounter = 0;
+            createMemberCard(); // Reset to one card
+        } else {
+            showMessage('error', result.message);
+            submitButton.disabled = false;
+        }
+    } catch (error) {
+        showMessage('error', 'Network error. Please try again.');
+        submitButton.disabled = false;
+    } finally {
+        loadingSpinner.classList.add('hidden');
+    }
+});
+
+// Initialization
+addMemberBtn.addEventListener('click', createMemberCard);
+document.addEventListener('DOMContentLoaded', () => {
+    generateTimeOptions('arrival-time');
+    generateTimeOptions('departure-time');
+    createMemberCard();
+    showView('registration');
+});
+
+// Mock for generateTimeOptions if needed
+function generateTimeOptions(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    for (let i = 0; i < 24; i++) {
+        let h = i.toString().padStart(2, '0') + ':00';
+        el.innerHTML += `<option value="${h}">${h}</option>`;
+    }
+}
     </script>
 </body>
-
 </html>
