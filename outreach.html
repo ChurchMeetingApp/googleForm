@@ -1,4 +1,4 @@
-Bidar Outreach Service Portal - Registration<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -56,7 +56,7 @@ Bidar Outreach Service Portal - Registration<!DOCTYPE html>
 
         <!-- Header -->
         <header class="text-center mb-8">
-            <h1 class="text-3xl sm:text-4xl font-extrabold text-indigo-700">Bidar Outreach Service Portal - Registration</h1>
+            <h1 class="text-3xl sm:text-4xl font-extrabold text-indigo-700">Bidar Outreach Management</h1>
             <p class="text-gray-600 mt-2">Trip Dates: Mar-08-2026 to Mar-29-2026</p>
         </header>
 
@@ -594,20 +594,47 @@ form.addEventListener('submit', function(e) {
      // Add this line to gather the value
     const locationVal = document.getElementById('location').value;
 
-    // 3. Inject into Modal
-    summaryContent.innerHTML = `
-        <div class="bg-gray-50 p-4 rounded-lg grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-            <div><p class="text-xs font-bold text-gray-400 uppercase">Mobile Number</p><p class="font-medium">${mobile}</p></div>
-            <div><p class="text-xs font-bold text-gray-400 uppercase">Location</p><p class="font-medium">${locationVal}</p></div>
-            <div><p class="text-xs font-bold text-gray-400 uppercase">Accommodation</p><p class="font-medium">${accommodation}</p></div>
-            <div class="col-span-2"><p class="text-xs font-bold text-gray-400 uppercase">Arrival Date & Time</p><p class="font-medium">${arrival}</p></div>
-            <div><p class="text-xs font-bold text-gray-400 uppercase">Departure Date & Time</p><p class="font-medium">${departure}</p</div>       
-        </div>
+
+// 2. Inject into Modal with Mobile-First Layout
+summaryContent.innerHTML = `
+    <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 mb-4 shadow-sm">
         <div class="space-y-3">
-            <p class="text-xs font-bold text-gray-400 uppercase">Participant List</p>
+            <div>
+                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Mobile Number</p>
+                <p class="text-sm font-semibold text-gray-900">${mobile}</p>
+            </div>
+            <div>
+                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Location</p>
+                <p class="text-sm font-semibold text-gray-900">${locationVal}</p>
+            </div>
+            <div>
+                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Accommodation</p>
+                <p class="text-sm font-semibold text-gray-900">${accommodation}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="flex flex-col sm:flex-row gap-2 mb-4">
+        <div class="flex-1 bg-indigo-50 p-3 rounded-lg border-l-4 border-indigo-500">
+            <p class="text-[10px] font-bold text-indigo-600 uppercase">Arrival</p>
+            <p class="text-xs font-bold text-gray-800">${arrival}</p>
+        </div>
+        <div class="flex-1 bg-orange-50 p-3 rounded-lg border-l-4 border-orange-500">
+            <p class="text-[10px] font-bold text-orange-600 uppercase">Departure</p>
+            <p class="text-xs font-bold text-gray-800">${departure}</p>
+        </div>
+    </div>
+
+    <div class="space-y-3">
+        <div class="flex justify-between items-center px-1">
+            <p class="text-xs font-bold text-gray-500 uppercase">Participants (${getMemberCount()})</p>
+        </div>
+        
+        <div class="max-h-[25vh] overflow-y-auto space-y-2 pr-1">
             ${membersHtml}
         </div>
-    `;
+    </div>
+`;
 
     // 4. Show the Modal
     confirmModal.classList.remove('hidden');
@@ -692,4 +719,3 @@ function generateTimeOptions(id) {
     </script>
 </body>
 </html>
-
