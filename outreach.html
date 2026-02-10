@@ -118,6 +118,22 @@
                         </div>
 
                         <!-- Accommodation Required -->
+			<div>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <div>
+        <label for="location" class="block text-sm font-medium text-gray-700 mb-1">Location (City, State)</label>
+        <div class="relative">
+            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+                <i data-lucide="map-pin" class="w-4 h-4"></i>
+            </span>
+            <input type="text" id="location" name="location" required 
+                   placeholder="e.g., Bangalore, Karnataka"
+                   class="pl-10 w-full border rounded-lg p-2 focus:ring-indigo-500 focus:border-indigo-500">
+        </div>
+    </div>
+</div>
+
+			
                         <div>
                             <label for="accommodation" class="block text-sm font-medium text-gray-700 mb-1">Accommodation Required?</label>
                             <select id="accommodation" name="accommodation" required
@@ -128,6 +144,7 @@
                                 <option value="No">No</option>
                             </select>
                         </div>
+</div>
 
                         <!-- Arrival Date & Time -->
                         <div>
@@ -200,451 +217,478 @@
                 <p class="mt-3 text-indigo-700 font-medium">Processing request...</p>
             </div>
         </div>
-
     </div>
-
+<div id="confirm-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+        <div class="p-6 border-b bg-indigo-600 text-white">
+            <h3 class="text-xl font-bold">Review Registration Summary</h3>
+            <p class="text-indigo-100 text-sm">Please verify the details before final submission.</p>
+        </div>
+        <div id="summary-content" class="p-6 overflow-y-auto text-gray-700 space-y-4">
+            </div>
+        <div class="p-4 border-t bg-gray-50 flex justify-end gap-3">
+            <button id="cancel-submit" class="px-6 py-2 border rounded-lg hover:bg-gray-100 transition">Edit Details</button>
+            <button id="final-confirm" class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 shadow-md transition">Confirm & Submit</button>
+        </div>
+    </div>
+</div>
     <script>
-        // Initialize Lucide icons
-        lucide.createIcons();
+// Initialize Lucide icons
+lucide.createIcons();
 
-        // --- Configuration ---
-        // IMPORTANT: Ensure this URL is your fully deployed Google Apps Script Web App URL 
-        // with access set to "Anyone". 
-        //const GOOGLE_APPS_SCRIPT_ENDPOINT = "https://script.google.com/macros/s/AKfycbzQmlZcF3JepPQNcIbzV-65KqM0TRd1aUH5QmlA5Ckuw-R2aXJdvrfu_0ugmVArJxUp/exec";
-        const GOOGLE_APPS_SCRIPT_ENDPOINT = "https://script.google.com/macros/s/AKfycby4V1kBtUpMRoE1kKxWGXSW2B-3Tv6tlrk3s-DT1YWnP_7ujna6HkGA9r5v04O80lOh/exec";
-        const LANGUAGES = ['English', 'Kannada', 'Marathi', 'Telugu', 'Tamil', 'Malayalam', 'Hindi'];
+// --- Configuration ---
+const GOOGLE_APPS_SCRIPT_ENDPOINT = "https://script.google.com/macros/s/AKfycby4V1kBtUpMRoE1kKxWGXSW2B-3Tv6tlrk3s-DT1YWnP_7ujna6HkGA9r5v04O80lOh/exec";
+const LANGUAGES = ['English', 'Kannada', 'Marathi', 'Telugu', 'Tamil', 'Malayalam', 'Hindi'];
+
+const form = document.getElementById('registration-form');
+const membersContainer = document.getElementById('members-container');
+const addMemberBtn = document.getElementById('add-member-btn');
+const submitButton = document.getElementById('submit-button');
+const memberCountDisplay = document.getElementById('member-count-display');
+const loadingSpinner = document.getElementById('loading-spinner');
+
+const dashboardLoading = document.getElementById('dashboard-loading');
+const dashboardContent = document.getElementById('dashboard-content');
+const dashboardError = document.getElementById('dashboard-error');
+const dashboardErrorText = document.getElementById('dashboard-error-text');
+
+let memberCounter = 0;
+
+// --- View Switching Logic ---
+function showView(viewId) {
+    document.querySelectorAll('.view-content').forEach(view => view.classList.add('hidden'));
+    document.getElementById(`view-${viewId}`).classList.remove('hidden');
+
+    document.querySelectorAll('.tab-button').forEach(btn => {
+        btn.classList.remove('active', 'text-indigo-600', 'bg-indigo-50', 'border-indigo-500');
+        btn.classList.add('text-gray-600', 'hover:text-indigo-600');
+    });
+    document.getElementById(`tab-${viewId}`).classList.add('active', 'text-indigo-600', 'bg-indigo-50', 'border-indigo-500');
+
+    if (viewId === 'dashboard') fetchDataAndRenderDashboard();
+}
+
+// --- DASHBOARD DATA FETCHING & RENDERING ---
+async function fetchDataAndRenderDashboard() {
+    // Show loading, hide others
+    dashboardContent.classList.add('hidden');
+    dashboardError.classList.add('hidden');
+    dashboardLoading.classList.remove('hidden');
+
+    try {
+        // We add a cache-buster timestamp to ensure we get fresh data
+        const dashboardUrl = `${GOOGLE_APPS_SCRIPT_ENDPOINT}?action=get_attendance&_=${new Date().getTime()}`;
+        const response = await fetch(dashboardUrl);
         
-        const form = document.getElementById('registration-form');
-        const membersContainer = document.getElementById('members-container');
-        const addMemberBtn = document.getElementById('add-member-btn');
-        const submitButton = document.getElementById('submit-button');
-        const memberCountDisplay = document.getElementById('member-count-display');
-        const loadingSpinner = document.getElementById('loading-spinner');
+        if (!response.ok) throw new Error('Network response was not ok');
         
-        const dashboardLoading = document.getElementById('dashboard-loading');
-        const dashboardContent = document.getElementById('dashboard-content');
-        const dashboardError = document.getElementById('dashboard-error');
-        const dashboardErrorText = document.getElementById('dashboard-error-text');
+        const result = await response.json();
 
-        let memberCounter = 0;
-
-        // --- View Switching Logic ---
-        function showView(viewId) {
-            document.querySelectorAll('.view-content').forEach(view => {
-                view.classList.add('hidden');
-            });
-            document.getElementById(`view-${viewId}`).classList.remove('hidden');
-
-            document.querySelectorAll('.tab-button').forEach(btn => {
-                btn.classList.remove('active', 'text-indigo-600', 'bg-indigo-50', 'border-indigo-500');
-                btn.classList.add('text-gray-600', 'hover:text-indigo-600', 'hover:border-indigo-300');
-            });
-            document.getElementById(`tab-${viewId}`).classList.add('active', 'text-indigo-600', 'bg-indigo-50', 'border-indigo-500');
-            document.getElementById(`tab-${viewId}`).classList.remove('text-gray-600', 'hover:text-indigo-600', 'hover:border-indigo-300');
-
-            if (viewId === 'dashboard') {
-                fetchDataAndRenderDashboard();
-            }
+        if (result.status === 'ERROR') {
+            throw new Error(result.message || 'Failed to fetch dashboard data');
         }
 
-        // --- Utility Functions ---
-
-        function showMessage(type, message) {
-            const messagebox = document.getElementById('message-box');
-            const iconContainer = document.getElementById('message-icon');
-            const messageText = document.getElementById('message-text');
-
-            let iconHtml = '';
-
-            if (type === 'success' && lucide['check-circle']) {
-                iconHtml = lucide['check-circle']({ class: 'w-10 h-10 text-green-500' });
-            } else if (type === 'error' && lucide['x-octagon']) {
-                iconHtml = lucide['x-octagon']({ class: 'w-10 h-10 text-red-500' });
-            }
-
-            iconContainer.innerHTML = iconHtml;
-            messageText.textContent = message;
-            messagebox.classList.remove('hidden');
-        }
-
-        function getMemberCount() {
-            return document.querySelectorAll('.member-card').length;
-        }
-
-        function updateSubmitButtonState() {
-            const currentMemberCount = getMemberCount();
-
-            // Check validity of main form fields
-            const mainFormValid = Array.from(form.querySelectorAll('input:required, select:required'))
-                .every(input => input.checkValidity());
-
-            // Check validity of all member card fields
-            const allMembersValid = Array.from(membersContainer.querySelectorAll('.member-card')).every(card =>
-                Array.from(card.querySelectorAll('input:required, select:required'))
-                    .every(input => input.checkValidity())
-            );
-
-            submitButton.disabled = currentMemberCount === 0 || !mainFormValid || !allMembersValid;
-        }
-
-        function generateTimeOptions(selectId) {
-            const selectElement = document.getElementById(selectId);
-            if (!selectElement) return;
-
-            selectElement.innerHTML = '<option value="">Select Time</option>'; 
-
-            for (let h = 0; h < 24; h++) {
-                for (let m = 0; m < 60; m += 30) {
-                    const hour = String(h).padStart(2, '0');
-                    const minute = String(m).padStart(2, '0');
-                    const timeValue = `${hour}:${minute}`;
-                    
-                    const option = document.createElement('option');
-                    option.value = timeValue;
-                    option.textContent = timeValue;
-                    selectElement.appendChild(option);
-                }
-            }
-        }
-
-        // --- Dynamic Member Card Logic ---
-
-        function createLanguageCheckboxes(uniqueId) {
-            let html = LANGUAGES.map(lang => `
-                <div class="flex items-center">
-                    <input type="checkbox" id="lang-${uniqueId}-${lang.replace(/\s/g, '')}" name="language-${uniqueId}-check" value="${lang}"
-                            class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                    <label for="lang-${uniqueId}-${lang.replace(/\s/g, '')}" class="ml-2 text-sm text-gray-700">${lang}</label>
-                </div>
-            `).join('');
-
-            // Add the 'Other' checkbox
-            html += `
-                <div class="flex items-center">
-                    <input type="checkbox" id="lang-${uniqueId}-Other" name="language-${uniqueId}-other-check"
-                            class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500" data-toggle-target="other-lang-field-${uniqueId}">
-                    <label for="lang-${uniqueId}-Other" class="ml-2 text-sm text-gray-700 font-medium">Other (Specify)</label>
-                </div>
-            `;
-            
-            return html;
-        }
-
-        function createMemberCard() {
-            memberCounter++;
-            const uniqueId = memberCounter;
-
-            const card = document.createElement('div');
-            card.className = 'member-card p-4 rounded-lg space-y-4';
-            card.setAttribute('data-member-id', uniqueId);
-
-            card.innerHTML = `
-                <div class="flex justify-between items-center border-b pb-2 mb-3">
-                    <h3 class="text-lg font-medium text-indigo-600">Participant ${getMemberCount() + 1}</h3>
-                    <button type="button" class="remove-member-btn text-red-500 hover:text-red-700 transition" data-member-id="${uniqueId}">
-                        <i data-lucide="x-circle" class="w-5 h-5"></i>
-                    </button>
-                </div>
-
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <!-- Name -->
-                    <div>
-                        <label for="name-${uniqueId}" class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-                        <input type="text" id="name-${uniqueId}" name="name-${uniqueId}" required placeholder="e.g., John Doe"
-                                class="focus:ring-indigo-500 focus:border-indigo-500">
-                    </div>
-
-                    <!-- Brother/Sister -->
-                    <div>
-                        <label for="sibling-${uniqueId}" class="block text-sm font-medium text-gray-700 mb-1">Brother or Sister?</label>
-                        <select id="sibling-${uniqueId}" name="sibling-${uniqueId}" required
-                                class="focus:ring-indigo-500 focus:border-indigo-500">
-                            <option value="">Select</option>
-                            <option value="Brother">Brother</option>
-                            <option value="Sister">Sister</option>
-                        </select>
-                    </div>
-                </div>
-
-                <!-- Languages -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Known Languages (Select all that apply)</label>
-                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                        ${createLanguageCheckboxes(uniqueId)}
-                    </div>
-                    
-                    <!-- New Other Language Input Field -->
-                    <div id="other-lang-field-${uniqueId}" class="mt-3 hidden">
-                        <label for="other-language-input-${uniqueId}" class="block text-sm font-medium text-gray-700 mb-1">Specify Other Language(s) (e.g., French, German)</label>
-                        <input type="text" id="other-language-input-${uniqueId}" name="other-language-input-${uniqueId}"
-                                class="focus:ring-indigo-500 focus:border-indigo-500" disabled>
-                    </div>
-                </div>
-            `;
-
-            membersContainer.appendChild(card);
-            lucide.createIcons();
-
-            card.querySelector('.remove-member-btn').addEventListener('click', removeMember);
-            Array.from(card.querySelectorAll('input, select')).forEach(input => {
-                input.addEventListener('input', updateSubmitButtonState);
-            });
-            
-            const otherCheckbox = card.querySelector(`#lang-${uniqueId}-Other`);
-            const otherInputField = card.querySelector(`#other-language-input-${uniqueId}`);
-            const otherFieldContainer = card.querySelector(`#other-lang-field-${uniqueId}`);
-
-            const toggleOtherInput = () => {
-                if (otherCheckbox.checked) {
-                    otherFieldContainer.classList.remove('hidden');
-                    otherInputField.required = true;
-                    otherInputField.disabled = false;
-                } else {
-                    otherFieldContainer.classList.add('hidden');
-                    otherInputField.required = false;
-                    otherInputField.disabled = true;
-                    otherInputField.value = '';
-                }
-                updateSubmitButtonState();
-            };
-
-            otherCheckbox.addEventListener('change', toggleOtherInput);
-            otherInputField.addEventListener('input', updateSubmitButtonState);
-
-
-            memberCountDisplay.textContent = `(${getMemberCount()})`;
-            updateSubmitButtonState();
-        }
-
-        function removeMember(event) {
-            const btn = event.currentTarget;
-            const memberCard = btn.closest('.member-card');
-
-            if (memberCard) {
-                memberCard.remove();
-                memberCountDisplay.textContent = `(${getMemberCount()})`;
-                updateSubmitButtonState();
-
-                let currentId = 1;
-                document.querySelectorAll('.member-card').forEach(card => {
-                    const title = card.querySelector('h3');
-                    if(title) title.textContent = `Participant ${currentId}`;
-                    currentId++;
-                });
-            }
+        const aggregatedData = result.counts;
+        
+        if (!aggregatedData || Object.keys(aggregatedData).length === 0) {
+            dashboardContent.innerHTML = `
+                <div class="text-center p-12 bg-white rounded-xl border border-dashed border-gray-300">
+                    <p class="text-gray-500">No registration data found yet.</p>
+                </div>`;
+        } else {
+            renderDashboard(aggregatedData);
         }
         
-        // --- Dashboard Data Fetching and Rendering ---
+        dashboardContent.classList.remove('hidden');
+    } catch (error) {
+        console.error('Dashboard Error:', error);
+        dashboardError.classList.remove('hidden');
+        dashboardErrorText.textContent = error.message;
+    } finally {
+        dashboardLoading.classList.add('hidden');
+    }
+}
 
-        async function fetchDataAndRenderDashboard() {
-            dashboardContent.classList.add('hidden');
-            dashboardError.classList.add('hidden');
-            dashboardLoading.classList.remove('hidden');
+function renderDashboard(dataObject) {
+    // 1. Convert the object to an array and sort by date correctly
+    const summaryArray = Object.keys(dataObject).map(date => ({
+        date: date,
+        ...dataObject[date]
+    })).sort((a, b) => new Date(a.date) - new Date(b.date));
 
-            try {
-                // Construct the URL with the necessary action parameter for the Apps Script doGet function
-                const dashboardUrl = `${GOOGLE_APPS_SCRIPT_ENDPOINT}?action=get_attendance`;
-                console.log('Fetching dashboard data from URL:', dashboardUrl);
+    // 2. Generate the Table HTML
+    dashboardContent.innerHTML = `
+        <div class="overflow-x-auto bg-white rounded-xl shadow-sm border border-gray-200">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-indigo-600">
+                    <tr>
+                        <th class="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider">Date</th>
+                        <th class="px-6 py-4 text-center text-xs font-bold text-white uppercase tracking-wider">Total</th>
+                        <th class="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider">Brs / Sis</th>
+                        <th class="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider">Kannada Brs / Sis</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    ${summaryArray.map(item => `
+                        <tr class="hover:bg-indigo-50 transition-colors">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
+                                ${new Date(item.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-bold bg-indigo-100 text-indigo-800">
+                                    ${item.Total || 0}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                <span class="text-blue-600 font-medium">${item.Brother || 0}</span> / 
+                                <span class="text-pink-600 font-medium">${item.Sister || 0}</span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                <span class="bg-gray-100 px-2 py-1 rounded">
+                                    ${item.KannadaBrother || 0} Brs | ${item.KannadaSister || 0} Sis
+                                </span>
+                            </td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        </div>
+    `;
+    
+    // Re-initialize any icons if you added them
+    lucide.createIcons();
+}
 
-                // Fetch data using GET request
-                const response = await fetch(dashboardUrl);
+// --- Utility Functions ---
+function showMessage(type, message) {
+    const messagebox = document.getElementById('message-box');
+    const iconContainer = document.getElementById('message-icon');
+    const messageText = document.getElementById('message-text');
 
-                if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}. Check Apps Script URL/Deployment.`);
-                }
+    let iconHtml = '';
+    if (type === 'success' && lucide['check-circle']) {
+        iconHtml = lucide['check-circle']({ class: 'w-10 h-10 text-green-500' });
+    } else if (type === 'error' && lucide['x-octagon']) {
+        iconHtml = lucide['x-octagon']({ class: 'w-10 h-10 text-red-500' });
+    }
 
-                // Assuming the Apps Script now returns a wrapper object with { status: 'SUCCESS', counts: { ... } }
-                const result = await response.json(); 
+    iconContainer.innerHTML = iconHtml;
+    messageText.textContent = message;
+    messagebox.classList.remove('hidden');
+    
+    // Auto-scroll to message
+    messagebox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
 
-                if (result.status === 'ERROR') {
-                     throw new Error(`Apps Script Error: ${result.message} - ${result.details}`);
-                }
-                
-                const aggregatedData = result.counts; // Access the counts object
+function getMemberCount() {
+    return document.querySelectorAll('.member-card').length;
+}
 
-                if (!aggregatedData || Object.keys(aggregatedData).length === 0) {
-                    dashboardContent.innerHTML = '<p class="text-center text-gray-500 p-4 border border-gray-200 rounded-lg">No registration data found yet.</p>';
-                } else {
-                    renderDashboard(aggregatedData);
-                }
-                
-                dashboardContent.classList.remove('hidden');
+function updateSubmitButtonState() {
+    submitButton.disabled = (getMemberCount() === 0);
+}
 
-            } catch (error) {
-                console.error('Dashboard Fetch Error:', error);
-                dashboardError.classList.remove('hidden');
-                dashboardErrorText.textContent = `Error details: ${error.message}. Ensure your Apps Script is deployed with the 'Anyone' access setting and is returning the correct aggregated JSON object.`;
-            } finally {
-                dashboardLoading.classList.add('hidden');
-            }
+function setFieldStyle(element, isValid, message = "") {
+    let errorMsg = element.parentNode.querySelector('.val-error');
+    if (isValid) {
+        element.classList.remove('border-red-500', 'bg-red-50');
+        if (errorMsg) errorMsg.remove();
+    } else {
+        element.classList.add('border-red-500', 'bg-red-50');
+        if (!errorMsg) {
+            errorMsg = document.createElement('p');
+            errorMsg.className = 'val-error text-xs text-red-500 mt-1';
+            element.parentNode.appendChild(errorMsg);
         }
+        errorMsg.textContent = message;
+    }
+}
 
-        function renderDashboard(dataObject) {
-            // 1. Convert object to sortable array
-            const summaryArray = Object.keys(dataObject).map(date => ({
-                date: date,
-                ...dataObject[date]
-            })).sort((a, b) => new Date(a.date) - new Date(b.date)); // Sort by date
+// --- Dynamic Member Card Logic ---
+function createLanguageCheckboxes(uniqueId) {
+    let html = LANGUAGES.map(lang => `
+        <div class="flex items-center">
+            <input type="checkbox" id="lang-${uniqueId}-${lang.replace(/\s/g, '')}" name="language-${uniqueId}-check" value="${lang}"
+                    class="h-4 w-4 text-indigo-600 border-gray-300 rounded">
+            <label for="lang-${uniqueId}-${lang.replace(/\s/g, '')}" class="ml-2 text-sm text-gray-700">${lang}</label>
+        </div>
+    `).join('');
 
-            // 2. Render Summary Table
-            let summaryHtml = `
-                <div class="mb-8 p-6 bg-indigo-50 rounded-xl shadow-inner overflow-x-auto">
-                    <h3 class="text-xl font-bold text-indigo-800 mb-4 flex items-center">
-                        <i data-lucide="calendar" class="w-5 h-5 mr-2"></i>
-                        Participant Summary by Arrival Date
-                    </h3>
-                    <table class="min-w-full divide-y divide-indigo-200">
-                        <thead class="bg-indigo-200 sticky top-0">
-                            <tr>
-                                <th class="px-3 py-2 text-left text-xs font-bold text-indigo-700 uppercase">Arrival Date</th>
-                                <th class="px-3 py-2 text-left text-xs font-bold text-indigo-700 uppercase">Total</th>
-                                <th class="px-3 py-2 text-left text-xs font-bold text-indigo-700 uppercase">Brothers</th>
-                                <th class="px-3 py-2 text-left text-xs font-bold text-indigo-700 uppercase">Sisters</th>
-                                <th class="px-3 py-2 text-left text-xs font-bold text-indigo-700 uppercase border-l border-indigo-300">Kannada Brothers</th>
-                                <th class="px-3 py-2 text-left text-xs font-bold text-indigo-700 uppercase">Kannada Sisters</th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y divide-indigo-100">
-                            ${summaryArray.map(item => `
-                                <tr class="hover:bg-indigo-50">
-                                    <td class="px-3 py-3 whitespace-nowrap text-sm font-medium text-gray-900">${new Date(item.date).toLocaleDateString('en-US', { dateStyle: 'medium' })}</td>
-                                    <td class="px-3 py-3 whitespace-nowrap text-sm font-bold text-indigo-600">${item.Total || 0}</td>
-                                    <td class="px-3 py-3 whitespace-nowrap text-sm text-gray-700">${item.Brother || 0}</td>
-                                    <td class="px-3 py-3 whitespace-nowrap text-sm text-gray-700">${item.Sister || 0}</td>
-                                    <td class="px-3 py-3 whitespace-nowrap text-sm text-green-700 font-medium border-l border-indigo-100">${item.KannadaBrother || 0}</td>
-                                    <td class="px-3 py-3 whitespace-nowrap text-sm text-green-700 font-medium">${item.KannadaSister || 0}</td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
-                </div>
-            `;
+    html += `
+        <div class="flex items-center">
+            <input type="checkbox" id="lang-${uniqueId}-Other" class="h-4 w-4 text-indigo-600 border-gray-300 rounded">
+            <label for="lang-${uniqueId}-Other" class="ml-2 text-sm text-gray-700 font-medium">Other</label>
+        </div>
+    `;
+    return html;
+}
 
-            dashboardContent.innerHTML = summaryHtml;
-            lucide.createIcons(); // Re-render icons for the new HTML
-        }
+function createMemberCard() {
+    memberCounter++;
+    const uniqueId = memberCounter;
+    const card = document.createElement('div');
+    card.className = 'member-card p-4 rounded-lg space-y-4 border border-gray-200 mb-4';
+    card.setAttribute('data-member-id', uniqueId);
 
+    card.innerHTML = `
+        <div class="flex justify-between items-center border-b pb-2">
+            <h3 class="text-lg font-medium text-indigo-600">Participant</h3>
+            <button type="button" class="remove-member-btn text-red-500"><i data-lucide="x-circle" class="w-5 h-5"></i></button>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                <input type="text" id="name-${uniqueId}" required class="w-full border rounded p-2">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Brother or Sister?</label>
+                <select id="sibling-${uniqueId}" required class="w-full border rounded p-2">
+                    <option value="">Select</option>
+                    <option value="Brother">Brother</option>
+                    <option value="Sister">Sister</option>
+                </select>
+            </div>
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Known Languages (Select all that apply)</label>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">${createLanguageCheckboxes(uniqueId)}</div>
+            <div id="other-lang-field-${uniqueId}" class="mt-3 hidden">
+                <input type="text" id="other-language-input-${uniqueId}" placeholder="Specify language" class="w-full border rounded p-2">
+            </div>
+        </div>
+    `;
 
-        // --- Form Submission Handler (Unchanged) ---
+    membersContainer.appendChild(card);
+    lucide.createIcons();
+    
+    // Toggle Other Logic
+    const otherCb = card.querySelector(`#lang-${uniqueId}-Other`);
+    const otherField = card.querySelector(`#other-lang-field-${uniqueId}`);
+    otherCb.addEventListener('change', () => {
+        otherField.classList.toggle('hidden', !otherCb.checked);
+    });
 
-        form.addEventListener('submit', async function(e) {
-            e.preventDefault();
-
-            if (getMemberCount() === 0) {
-                showMessage('error', 'Please add at least one participant.');
-                return;
-            }
-
-            loadingSpinner.classList.remove('hidden');
-            submitButton.disabled = true;
-
-            const mobileNumber = document.getElementById('mobile-number').value;
-            const arrivalDate = document.getElementById('arrival-date').value;
-            const arrivalTime = document.getElementById('arrival-time').value;
-            const departureDate = document.getElementById('departure-date').value;
-            const departureTime = document.getElementById('departure-time').value;
-            const accommodation = document.getElementById('accommodation').value;
-
-            const membersArray = [];
-            const memberCards = document.querySelectorAll('.member-card');
-
-            memberCards.forEach(card => {
-                const uniqueId = card.getAttribute('data-member-id');
-
-                const nameInput = card.querySelector(`input[name="name-${uniqueId}"]`);
-                const siblingSelect = card.querySelector(`select[name="sibling-${uniqueId}"]`);
-
-                let selectedLanguages = Array.from(card.querySelectorAll(`input[name="language-${uniqueId}-check"]:checked`))
-                    .map(cb => cb.value);
-                
-                const otherLangInput = card.querySelector(`input[name="other-language-input-${uniqueId}"]`);
-                const otherCheckbox = card.querySelector(`#lang-${uniqueId}-Other`);
-
-                if (otherCheckbox && otherCheckbox.checked && otherLangInput && otherLangInput.value.trim()) {
-                    const specifiedLanguages = otherLangInput.value.split(',').map(s => s.trim()).filter(s => s.length > 0);
-                    selectedLanguages.push(...specifiedLanguages);
-                }
-
-                membersArray.push({
-                    name: nameInput ? nameInput.value : '',
-                    siblingType: siblingSelect ? siblingSelect.value : '',
-                    languages: selectedLanguages
-                });
-            });
-
-            const formData = new FormData();
-            formData.append('mobileNumber', mobileNumber);
-            formData.append('accommodation', accommodation);
-            formData.append('arrivalDate', arrivalDate);
-            formData.append('arrivalTime', arrivalTime);
-            formData.append('departureDate', departureDate);
-            formData.append('departureTime', departureTime);
-            formData.append('members', JSON.stringify(membersArray));
-
-            try {
-                const maxRetries = 3;
-                let response = null;
-                for (let attempt = 0; attempt < maxRetries; attempt++) {
-                    response = await fetch(GOOGLE_APPS_SCRIPT_ENDPOINT, {
-                        method: 'POST',
-                        body: formData,
-                    });
-
-                    if (response.ok) {
-                        break;
-                    } else if (attempt === maxRetries - 1) {
-                        throw new Error(`Failed to fetch after ${maxRetries} attempts.`);
-                    }
-                    await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 1000));
-                }
-
-                const result = await response.json();
-
-                if (result.status === 'SUCCESS') {
-                    showMessage('success', result.message);
-                    form.reset();
-                    membersContainer.innerHTML = '';
-                    memberCounter = 0;
-                    memberCountDisplay.textContent = `(0)`;
-                    createMemberCard();
-                } else {
-                    console.error('Apps Script Error Details:', result.details);
-                    showMessage('error', `Submission Failed: ${result.message}`);
-                }
-
-            } catch (error) {
-                console.error('Network or fetch error:', error);
-                showMessage('error', 'A network error occurred. Please try again.');
-            } finally {
-                loadingSpinner.classList.add('hidden');
-                updateSubmitButtonState();
-            }
-        });
-
-
-        // --- Event Listeners and Initial Setup ---
-        addMemberBtn.addEventListener('click', createMemberCard);
-
-        Array.from(form.querySelectorAll('input:required, select:required')).forEach(input => {
-            input.addEventListener('input', updateSubmitButtonState);
-        });
-        
-        // --- Initialization ---
-        generateTimeOptions('arrival-time');
-        generateTimeOptions('departure-time');
-
-        // Load the first participant card automatically on page load
-        createMemberCard();
-
-        // Initial state update
+    card.querySelector('.remove-member-btn').addEventListener('click', () => {
+        card.remove();
+        updateMemberNumbers();
         updateSubmitButtonState();
-        
-        // Show the registration view first
-        document.addEventListener('DOMContentLoaded', () => showView('registration'));
+    });
 
+    updateMemberNumbers();
+    updateSubmitButtonState();
+}
+
+function updateMemberNumbers() {
+    document.querySelectorAll('.member-card').forEach((card, i) => {
+        card.querySelector('h3').textContent = `Participant ${i + 1}`;
+    });
+    memberCountDisplay.textContent = `(${getMemberCount()})`;
+}
+
+// --- Validation Logic ---
+function validateRegistrationForm() {
+    let isValid = true;
+    let firstErrorField = null;
+    let errors = [];
+
+    // Mobile
+    const mobile = document.getElementById('mobile-number');
+    if (!/^[6-9]\d{9}$/.test(mobile.value)) {
+        setFieldStyle(mobile, false, "10-digit number starting 6-9");
+        isValid = false;
+        firstErrorField = firstErrorField || mobile;
+    } else { setFieldStyle(mobile, true); }
+
+    // Dates
+    const arr = document.getElementById('arrival-date');
+    const dep = document.getElementById('departure-date');
+    if (!arr.value) { setFieldStyle(arr, false, "Required"); isValid = false; firstErrorField = firstErrorField || arr; }
+    if (dep.value && arr.value && dep.value < arr.value) {
+        setFieldStyle(dep, false, "Must be after arrival");
+        isValid = false;
+        firstErrorField = firstErrorField || dep;
+    }
+
+// Add this inside validateRegistrationForm()
+const locInput = document.getElementById('location');
+if (!locInput.value.trim()) {
+    setFieldStyle(locInput, false, "Location is required");
+    isValid = false;
+    firstErrorField = firstErrorField || locInput;
+} else {
+    setFieldStyle(locInput, true);
+}
+
+    // Participants
+    document.querySelectorAll('.member-card').forEach((card, i) => {
+        const id = card.getAttribute('data-member-id');
+        const name = card.querySelector(`#name-${id}`);
+        const sib = card.querySelector(`#sibling-${id}`);
+        const langLabel = card.querySelector('label.mb-2');
+        const anyLang = Array.from(card.querySelectorAll('input[type="checkbox"]')).some(c => c.checked);
+
+        if (!name.value.trim()) { setFieldStyle(name, false, "Required"); isValid = false; firstErrorField = firstErrorField || name; }
+        else { setFieldStyle(name, true); }
+
+        if (!sib.value) { setFieldStyle(sib, false, "Required"); isValid = false; firstErrorField = firstErrorField || sib; }
+        else { setFieldStyle(sib, true); }
+
+        if (!anyLang) {
+            langLabel.classList.add('text-red-600', 'font-bold');
+            langLabel.textContent = "Languages (MANDATORY) *";
+            isValid = false;
+            firstErrorField = firstErrorField || langLabel;
+        } else {
+            langLabel.classList.remove('text-red-600', 'font-bold');
+            langLabel.textContent = "Known Languages (Select all that apply)";
+        }
+    });
+
+    if (!isValid && firstErrorField) {
+        firstErrorField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    return isValid;
+}
+
+// --- SINGLE CONSOLIDATED SUBMIT HANDLER ---
+// --- Place this inside your <script> tags, replacing the old form.onsubmit or addEventListener ---
+
+const confirmModal = document.getElementById('confirm-modal');
+const summaryContent = document.getElementById('summary-content');
+const cancelBtn = document.getElementById('cancel-submit');
+const finalConfirmBtn = document.getElementById('final-confirm');
+
+// STEP A: When user clicks the main "Submit" button
+form.addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    // 1. Run your validation
+    if (!validateRegistrationForm()) return;
+
+    // 2. Build the Summary View
+    const mobile = document.getElementById('mobile-number').value;
+    const arrival = `${document.getElementById('arrival-date').value} (${document.getElementById('arrival-time').value})`;
+    const departure = `${document.getElementById('departure-date').value} at ${document.getElementById('departure-time').value}`;
+    const accommodation = document.getElementById('accommodation').value;
+    
+    let membersHtml = '';
+    document.querySelectorAll('.member-card').forEach((card, i) => {
+        const id = card.getAttribute('data-member-id');
+        const name = card.querySelector(`#name-${id}`).value;
+        const sib = card.querySelector(`#sibling-${id}`).value;
+        
+        // Collect Languages
+        let langs = Array.from(card.querySelectorAll(`input[name="language-${id}-check"]:checked`)).map(c => c.value);
+        const otherCb = card.querySelector(`#lang-${id}-Other`);
+        const otherInput = card.querySelector(`#other-language-input-${id}`);
+        if(otherCb.checked && otherInput.value) langs.push(otherInput.value);
+
+        membersHtml += `
+            <div class="p-3 bg-indigo-50 rounded-lg border border-indigo-100">
+                <p class="font-bold text-indigo-800">Participant ${i+1}: ${name}</p>
+                <p class="text-sm text-gray-600"><strong>Type:</strong> ${sib} | <strong>Languages:</strong> ${langs.join(', ')}</p>
+            </div>
+        `;
+    });
+
+     // Add this line to gather the value
+    const locationVal = document.getElementById('location').value;
+
+    // 3. Inject into Modal
+    summaryContent.innerHTML = `
+        <div class="bg-gray-50 p-4 rounded-lg grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+            <div><p class="text-xs font-bold text-gray-400 uppercase">Mobile Number</p><p class="font-medium">${mobile}</p></div>
+            <div><p class="text-xs font-bold text-gray-400 uppercase">Location</p><p class="font-medium">${locationVal}</p></div>
+            <div><p class="text-xs font-bold text-gray-400 uppercase">Accommodation</p><p class="font-medium">${accommodation}</p></div>
+            <div class="col-span-2"><p class="text-xs font-bold text-gray-400 uppercase">Arrival Date & Time</p><p class="font-medium">${arrival}</p></div>
+            <div><p class="text-xs font-bold text-gray-400 uppercase">Departure Date & Time</p><p class="font-medium">${departure}</p</div>       
+        </div>
+        <div class="space-y-3">
+            <p class="text-xs font-bold text-gray-400 uppercase">Participant List</p>
+            ${membersHtml}
+        </div>
+    `;
+
+    // 4. Show the Modal
+    confirmModal.classList.remove('hidden');
+});
+
+// STEP B: If user clicks "Edit Details"
+cancelBtn.addEventListener('click', () => {
+    confirmModal.classList.add('hidden');
+});
+
+// STEP C: If user clicks "Confirm & Submit"
+finalConfirmBtn.addEventListener('click', async () => {
+    confirmModal.classList.add('hidden'); // Close modal
+    loadingSpinner.classList.remove('hidden'); // Show spinner
+    submitButton.disabled = true;
+
+    // Build the final Data Object
+    const membersArray = [];
+    document.querySelectorAll('.member-card').forEach(card => {
+        const id = card.getAttribute('data-member-id');
+        let langs = Array.from(card.querySelectorAll(`input[name="language-${id}-check"]:checked`)).map(c => c.value);
+        const otherInput = card.querySelector(`#other-language-input-${id}`);
+        if (card.querySelector(`#lang-${id}-Other`).checked && otherInput.value.trim()) langs.push(otherInput.value.trim());
+        
+        membersArray.push({
+            name: card.querySelector(`#name-${id}`).value,
+            siblingType: card.querySelector(`#sibling-${id}`).value,
+            languages: langs
+        });
+    });
+
+    const formData = new FormData();
+    formData.append('mobileNumber', document.getElementById('mobile-number').value);
+    formData.append('accommodation', document.getElementById('accommodation').value);
+    formData.append('arrivalDate', document.getElementById('arrival-date').value);
+    formData.append('arrivalTime', document.getElementById('arrival-time').value);
+    formData.append('departureDate', document.getElementById('departure-date').value);
+    formData.append('departureTime', document.getElementById('departure-time').value);
+    formData.append('location', document.getElementById('location').value);
+    formData.append('members', JSON.stringify(membersArray));
+
+    try {
+        const response = await fetch(GOOGLE_APPS_SCRIPT_ENDPOINT, { method: 'POST', body: formData });
+        const result = await response.json();
+
+        if (result.status === 'SUCCESS') {
+            showMessage('success', result.message);
+            form.reset();
+            membersContainer.innerHTML = '';
+            memberCounter = 0;
+            createMemberCard(); // Reset to one card
+        } else {
+            showMessage('error', result.message);
+            submitButton.disabled = false;
+        }
+    } catch (error) {
+        showMessage('error', 'Network error. Please try again.');
+        submitButton.disabled = false;
+    } finally {
+        loadingSpinner.classList.add('hidden');
+    }
+});
+
+// Initialization
+addMemberBtn.addEventListener('click', createMemberCard);
+document.addEventListener('DOMContentLoaded', () => {
+    generateTimeOptions('arrival-time');
+    generateTimeOptions('departure-time');
+    createMemberCard();
+    showView('registration');
+});
+
+// Mock for generateTimeOptions if needed
+function generateTimeOptions(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    for (let i = 0; i < 24; i++) {
+        let h = i.toString().padStart(2, '0') + ':00';
+        el.innerHTML += `<option value="${h}">${h}</option>`;
+    }
+}
     </script>
 </body>
-
 </html>
-
-
