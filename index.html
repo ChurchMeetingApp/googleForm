@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>Bidar Outreach Registration & Dashboard</title>
     <!-- Load Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -56,8 +59,8 @@
 
         <!-- Header -->
         <header class="text-center mb-8">
-            <h1 class="text-3xl sm:text-4xl font-extrabold text-indigo-700">Bidar Outreach Management</h1>
-            <p class="text-gray-600 mt-2">Trip Dates: Mar-08-2026 to Mar-29-2026</p>
+            <h1 class="text-3xl sm:text-4xl font-extrabold text-indigo-700">Bidar Outreach Registration Portal</h1>
+            <p class="text-gray-600 mt-2">Trip Dates: 08-Mar-2026 to 29-Mar-2026</p>
         </header>
 
         <!-- Tab Navigation -->
@@ -233,6 +236,7 @@
     </div>
 </div>
     <script>
+		window.onpageshow = function(event) { if (event.persisted) window.location.reload(); };
 // Initialize Lucide icons
 lucide.createIcons();
 
@@ -719,3 +723,4 @@ function generateTimeOptions(id) {
     </script>
 </body>
 </html>
+
