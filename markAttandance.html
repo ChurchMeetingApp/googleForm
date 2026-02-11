@@ -86,12 +86,12 @@
     <div id="familyList">Fetching data...</div>
 
     <div class="text-area-card">
-        <label>Missing Saints</label>
+        <label>Missing Members (Continuous Count)</label>
         <textarea id="missingText" placeholder="Name 1&#10;Name 2"></textarea>
     </div>
 
     <div class="text-area-card">
-        <label>Visiting Saints </label>
+        <label>Visiting Members (Restarts from 1)</label>
         <textarea id="visitingText" placeholder="Visitor 1&#10;Visitor 2"></textarea>
     </div>
 
@@ -168,7 +168,7 @@
                 <div class="member-row" onclick="togglePerson(this)">
                     <div class="name-container">
                         <span class="name-text">${p.name}</span>
-                        <span class="age-sub">${p.ageGrp}</span>
+                        <span class="age-sub">Group: ${p.ageGrp}</span>
                     </div>
                     <input type="checkbox" class="indiv-check" data-name="${p.name}" data-fam="${fam}" data-grp="${p.ageGrp}">
                 </div>`;
@@ -201,27 +201,44 @@
 
         let uniqueFams = [...new Set(selected.map(p => p.fam))];
         uniqueFams.forEach(f => {
-            let members = selected.filter(p => p.fam === f);
-            let kids = members.filter(p => p.grp === "CHILD");
-            let head = members.find(p => p.grp === "B");
-            let spouse = members.find(p => p.grp === "S");
-            let others = members.filter(p => p.grp !== "S" && p.grp !== "B" && p.grp !== "CHILD");
-            let kidStr = kids.length > 0 ? ` + (${kids.map(k => k.name).join(" & ")})` : "";
+    let members = selected.filter(p => p.fam === f);
+    
+    // Switch from .find() to .filter() to catch MULTIPLE B or S
+    let kids = members.filter(p => p.grp === "CHILD");
+    let heads = members.filter(p => p.grp === "B");
+    let spouses = members.filter(p => p.grp === "S");
+    let others = members.filter(p => p.grp !== "S" && p.grp !== "B" && p.grp !== "CHILD");
 
-            if (head) {
-                text += `${count++}. ${head.name}${(!spouse ? kidStr : "")}\n`;
-                if (spouse) text += `${count++}. ${spouse.name}${kidStr}\n`;
-                others.forEach(o => text += `${count++}. ${o.name}\n`);
-            } else if (spouse) {
-                text += `${count++}. ${spouse.name}${kidStr}\n`;
-                others.forEach(o => text += `${count++}. ${o.name}\n`);
-            } else if (others.length > 0) {
-                text += `${count++}. ${others[0].name}${kidStr}\n`;
-                others.slice(1).forEach(o => text += `${count++}. ${o.name}\n`);
-            } else {
-                kids.forEach(k => text += `${count++}. ${k.name}\n`);
-            }
+    let kidStr = kids.length > 0 ? ` + (${kids.map(k => k.name).join(" & ")})` : "";
+
+    // 1. Handle all Brothers (B)
+    heads.forEach((h, index) => {
+        // Attach kids to the first Brother ONLY if no Sisters exist
+        let attachKids = (index === 0 && spouses.length === 0);
+        text += `${count++}. ${h.name}${attachKids ? kidStr : ""}\n`;
+    });
+
+    // 2. Handle all Sisters (S)
+    spouses.forEach((s, index) => {
+        // Attach kids to the first Sister found
+        let attachKids = (index === 0);
+        text += `${count++}. ${s.name}${attachKids ? kidStr : ""}\n`;
+    });
+
+    // 3. Handle all Others (This is likely where Ligi is)
+    others.forEach((o, index) => {
+        // Fallback: If no B and no S were selected, attach kids to the first 'Other' person
+        let attachKids = (index === 0 && heads.length === 0 && spouses.length === 0);
+        text += `${count++}. ${o.name}${attachKids ? kidStr : ""}\n`;
+    });
+
+    // 4. Handle Kids only if they haven't been attached to anyone yet
+    if (heads.length === 0 && spouses.length === 0 && others.length === 0) {
+        kids.forEach(k => {
+            text += `${count++}. ${k.name}\n`;
         });
+    }
+});
 
         // 2. Add Missing Members (Continuous Count)
         if (missingText !== "") {
@@ -232,7 +249,7 @@
 
         // 3. Add Visiting Members (Restart Count from 1)
         if (visitingText !== "") {
-            text += `\nVisiting Saints:\n`;
+            text += `\nVisiting Members:\n`;
             let vCount = 1;
             visitingText.split('\n').forEach(line => {
                 if (line.trim()) text += `${vCount++}. ${line.trim()}\n`;
@@ -248,5 +265,3 @@
 </script>
 </body>
 </html>
-
-
