@@ -85,18 +85,20 @@
         <div class="filter-grid">
             <input type="date" id="attDate">
             <select id="meetingType">
-                <option value="LTM">LTM</option>
-                <option value="CLTM">CLTM</option>
-                <option value="Prayer Meeting">Prayer Meeting</option>
-                <option value="Sisters Meeting">Sisters Meeting</option>
-                <option value="SGM">SGM</option>
-                <option value="Ministry Meeting">Ministry Meeting</option>
-            </select>
-            <select id="locFilter" onchange="renderUI()"><option value="">All Locations</option></select>
-            <select id="areaFilter" onchange="renderUI()"><option value="">All Areas</option></select>
+    		<option value="">All Meetings (Please choose...)</option>
+    		<option value="LTM">LTM</option>
+    		<option value="CLTM">CLTM</option>
+    		<option value="Prayer Meeting">Prayer Meeting</option>
+    		<option value="Sisters Meeting">Sisters Meeting</option>
+    		<option value="SGM">SGM</option>
+    		<option value="Ministry Meeting">Ministry Meeting</option>
+	</select>
+            <select id="cityFilter" onchange="renderUI()"><option value="">All Cities</option></select>
+	    <select id="locFilter" onchange="renderUI()"><option value="">All locations</option></select>
             <select id="bORs" onchange="renderUI()"><option value="">All B/S</option></select>
             <select id="grpFilter" onchange="renderUI()"><option value="">All Groups</option></select>
-            <select id="langFilter" onchange="renderUI()" class="full-row"><option value="">All Languages</option></select>
+            <select id="areaFilter" onchange="renderUI()"><option value="">All Areas</option></select>
+            <select id="langFilter" onchange="renderUI()"><option value="">All Languages</option></select>
         </div>
         <input type="text" id="searchFilter" placeholder="Search members or family..." onkeyup="renderUI()">
     </div>
@@ -150,17 +152,44 @@
         });
     }
 
-    function populateFilters() {
-        const getUnique = (key) => [...new Set(masterData.map(p => p[key]))].filter(Boolean).sort();
-        const fill = (id, list) => {
+// 1. Modified populateFilters to accept an optional "filteredList"
+    function populateFilters(dataToUse = masterData) {
+        const getUnique = (key, list) => [...new Set(list.map(p => p[key]))].filter(Boolean).sort();
+        
+        const fill = (id, list, placeholder) => {
             const el = document.getElementById(id);
-            list.forEach(v => el.innerHTML += `<option value="${v}">${v}</option>`);
+            const currentVal = el.value; // Save current selection
+            el.innerHTML = `<option value="">${placeholder}</option>`;
+            list.forEach(v => {
+                const selected = v === currentVal ? 'selected' : '';
+                el.innerHTML += `<option value="${v}" ${selected}>${v}</option>`;
+            });
         };
-        fill('locFilter', getUnique('location'));
-        fill('areaFilter', getUnique('area'));
-        fill('grpFilter', getUnique('ageGrp'));
-        fill('bORs', getUnique('bORs'));
-        fill('langFilter', getUnique('language'));
+
+        // City, Age Group, B/S, and Language usually stay global
+        // but Area and Location should depend on the selected City
+        const selectedCity = document.getElementById('cityFilter').value;
+        
+        // If a city is selected, only show Areas/Locations belonging to that city
+        const citySpecificData = selectedCity 
+            ? masterData.filter(p => p.city === selectedCity) 
+            : masterData;
+
+        // Fill City only once if it's empty
+        if (document.getElementById('cityFilter').options.length <= 1) {
+            fill('cityFilter', getUnique('city', masterData), "All Cities");
+        }
+        
+        // These update dynamically based on the City selection
+        fill('areaFilter', getUnique('area', citySpecificData), "All Areas");
+        fill('locFilter', getUnique('location', citySpecificData), "All locations");
+        
+        // These usually remain static
+        if (document.getElementById('grpFilter').options.length <= 1) {
+            fill('grpFilter', getUnique('ageGrp', masterData), "All Groups");
+            fill('bORs', getUnique('bORs', masterData), "All B/S");
+            fill('langFilter', getUnique('language', masterData), "All Languages");
+        }
     }
 
     function toggleAllVisible() {
@@ -170,9 +199,15 @@
         document.querySelectorAll('.family-header input').forEach(cb => cb.checked = mainCb.checked);
     }
 
+// 2. Modified renderUI to trigger filter updates
     function renderUI() {
         const container = document.getElementById('familyList');
+        
+        // Update the dropdowns first based on current selections
+        populateFilters();
+
         const filters = {
+            city: document.getElementById('cityFilter').value,
             loc: document.getElementById('locFilter').value,
             area: document.getElementById('areaFilter').value,
             bors: document.getElementById('bORs').value,
@@ -182,6 +217,7 @@
         };
 
         const filtered = masterData.filter(p => 
+            (!filters.city || p.city === filters.city) &&
             (!filters.loc || p.location === filters.loc) &&
             (!filters.area || p.area === filters.area) &&
             (!filters.bors || p.bORs === filters.bors) &&
@@ -190,6 +226,7 @@
             (p.name.toLowerCase().includes(filters.search) || p.family.toLowerCase().includes(filters.search))
         );
 
+        // ... rest of your existing renderUI code (families grouping and HTML generation) ...
         document.getElementById('totalCount').innerText = `Total: ${filtered.length} members`;
         document.getElementById('globalSelectAll').checked = false;
         container.innerHTML = "";
@@ -216,12 +253,14 @@
                     </div>
                     <input type="checkbox" class="indiv-check" 
                            data-name="${p.name}" data-fam="${fam}" data-bors="${p.bORs}" 
-                           data-grp="${p.ageGrp}" data-area="${p.area}" data-lang="${p.language}" data-loc="${p.location}">
+                           data-grp="${p.ageGrp}" data-area="${p.area}" data-lang="${p.language}" data-loc="${p.location}" 
+                           data-city="${p.city}" data-sheperd="${p.sheperd}">
                 </div>`;
             });
             container.innerHTML += html + `</div>`;
         });
     }
+
 
     function togglePerson(row) {
         const cb = row.querySelector('.indiv-check');
@@ -232,9 +271,22 @@
         headerCb.closest('.family-card').querySelectorAll('.indiv-check').forEach(cb => cb.checked = headerCb.checked);
     }
 
+   function validateMeetingSelection() {
+    	const meetingType = document.getElementById('meetingType').value;
+
+    	if (meetingType === "") {
+        	alert("Please select a specific meeting type (LTM, CLTM, etc.) to continue.");
+        	document.getElementById('meetingType').focus();
+        	return false; // Prevents the rest of your code from running
+    	}
+    
+    	return true; // Selection is valid
+   }
     // --- Confirmation & Post Logic ---
 
     function openConfirmation() {
+	if (!validateMeetingSelection()) return;
+
         const checked = Array.from(document.querySelectorAll('.indiv-check:checked'));
         if (checked.length === 0) return alert("Select members first!");
 
@@ -246,7 +298,8 @@
             date: date,
             attendanceData: checked.map(cb => ({
                 name: cb.dataset.name, family: cb.dataset.fam, bORs: cb.dataset.bors,
-                ageGrp: cb.dataset.grp, area: cb.dataset.area, language: cb.dataset.lang, location: cb.dataset.loc
+                ageGrp: cb.dataset.grp, area: cb.dataset.area, language: cb.dataset.lang, location: cb.dataset.loc, city: cb.dataset.city,
+		sheperd: cb.dataset.sheperd
             }))
         };
 
