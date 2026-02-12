@@ -9,19 +9,23 @@
         :root { --primary: #1a73e8; --success: #34a853; --danger: #d93025; --bg: #f1f3f4; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); padding: 15px; margin: 0; color: #202124; }
         
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; margin-top: 10px; }
+        /* New Top Filter Bar */
+        .top-bar { background: white; padding: 15px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 15px; }
+        .filter-group { display: flex; align-items: center; gap: 10px; }
+        label { font-size: 13px; font-weight: 600; color: #5f6368; }
+
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; }
         .card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
         .header-flex { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
         h3 { font-size: 13px; color: #5f6368; margin: 0; text-transform: uppercase; }
         
-        select, input { padding: 8px; border-radius: 6px; border: 1px solid #dadce0; font-size: 13px; }
+        select, input { padding: 8px; border-radius: 6px; border: 1px solid #dadce0; font-size: 13px; outline: none; }
         .chart-box { height: 250px; width: 100%; margin-bottom: 20px; }
         
         table { width: 100%; border-collapse: collapse; font-size: 13px; }
         th, td { padding: 10px; border: 1px solid #eee; text-align: left; }
         th { background: #f8f9fa; font-weight: 600; }
         .num { text-align: center; font-weight: bold; }
-        tr.total-row { background: #f1f3f4; font-weight: bold; }
         
         .drill-link { text-decoration: none; cursor: pointer; color: inherit; border-bottom: 1px dashed #ccc; }
         .drill-link:hover { border-bottom-style: solid; color: var(--primary); }
@@ -32,30 +36,46 @@
 </head>
 <body>
 
+<div class="top-bar">
+    <div class="filter-group">
+        <label>Month:</label>
+        <select id="monthSelect" onchange="updateUI()"></select>
+    </div>
+    <div class="filter-group">
+        <label>Chart Type:</label>
+<select id="chartType" onchange="updateUI()">
+    <option value="bar">Bar (Vertical)</option>
+    <option value="horizontalBar">Bar (Horizontal)</option>
+    <option value="line">Line Trend</option>
+    <option value="pie">Pie Chart</option>
+    <option value="doughnut">Doughnut</option>
+    <option value="polarArea">Polar Area</option>
+    <option value="radar">Radar Comparison</option>
+    <option value="stacked">Stacked Bar</option>
+    <option value="area">Area Chart</option>
+</select>
+    </div>
+</div>
     <div class="grid">
         <div class="card">
             <div class="header-flex">
                 <h3>Attendance by City</h3>
-                <span id="ltmLabel" style="font-size: 11px; color: var(--primary);"></span>
             </div>
             <div class="chart-box"><canvas id="ltmChart"></canvas></div>
             <table>
                 <thead><tr><th>City Name</th><th class="num">Attendance</th></tr></thead>
                 <tbody id="ltmBody"></tbody>
-                <tfoot id="ltmFoot"></tfoot>
             </table>
         </div>
 
         <div class="card">
             <div class="header-flex">
                 <h3>Status by City</h3>
-                <span id="clLabel" style="font-size: 11px; color: var(--success);"></span>
             </div>
             <div class="chart-box"><canvas id="clChart"></canvas></div>
             <table>
                 <thead><tr><th>City Name</th><th class="num">Active</th><th class="num">Missing</th></tr></thead>
                 <tbody id="clBody"></tbody>
-                <tfoot id="clFoot"></tfoot>
             </table>
         </div>
     </div>
@@ -74,7 +94,7 @@
                 <input type="text" id="modalSearch" placeholder="Search name..." onkeyup="filterModalList()" style="flex: 1;">
             </div>
 
-            <div style="overflow-y:auto; flex:1; border-top:1px solid #eee;">
+            <div style="overflow-y:auto; flex:1;">
                 <table style="width:100%;">
                     <thead><tr><th>Name</th><th>Area</th><th>Shepherd</th></tr></thead>
                     <tbody id="modalBody"></tbody>
@@ -90,53 +110,52 @@
     window.onload = async () => {
         const response = await fetch(API + "?action=getAnalytics");
         rawData = await response.json();
+        
+        // Populate Month Dropdown
+        const monthSelect = document.getElementById('monthSelect');
+        rawData.monthly.forEach((m, idx) => {
+            monthSelect.innerHTML += `<option value="${idx}">${m.month}</option>`;
+        });
+
         updateUI();
     };
 
     function updateUI() {
-        const latest = rawData.monthly[0];
-        const cities = [...new Set([...latest.activeNames, ...latest.missingNames].map(p => p.city))].sort();
-        
-        document.getElementById('ltmLabel').innerText = latest.month;
-        document.getElementById('clLabel').innerText = latest.month;
-
-        let totalAct = 0, totalMis = 0;
+        const monthIdx = document.getElementById('monthSelect').value;
+        const data = rawData.monthly[monthIdx];
+        const cities = [...new Set([...data.activeNames, ...data.missingNames].map(p => p.city))].sort();
 
         // Populate LTM Table
         document.getElementById('ltmBody').innerHTML = cities.map(city => {
-            const count = latest.activeNames.filter(p => p.city === city).length;
-            totalAct += count;
+            const count = data.activeNames.filter(p => p.city === city).length;
             return `<tr><td>${city}</td><td class="num">${count}</td></tr>`;
         }).join('');
-        document.getElementById('ltmFoot').innerHTML = `<tr class="total-row"><td>TOTAL</td><td class="num">${totalAct}</td></tr>`;
 
         // Populate Church Life Table
         document.getElementById('clBody').innerHTML = cities.map(city => {
-            const act = latest.activeNames.filter(p => p.city === city).length;
-            const mis = latest.missingNames.filter(p => p.city === city).length;
-            totalMis += mis;
+            const act = data.activeNames.filter(p => p.city === city).length;
+            const mis = data.missingNames.filter(p => p.city === city).length;
             return `<tr>
                 <td>${city}</td>
                 <td class="num"><a class="drill-link" style="color:var(--success)" onclick="openModal('${city}', 'active')">${act}</a></td>
                 <td class="num"><a class="drill-link" style="color:var(--danger)" onclick="openModal('${city}', 'missing')">${mis}</a></td>
             </tr>`;
         }).join('');
-        document.getElementById('clFoot').innerHTML = `<tr class="total-row"><td>TOTAL</td><td class="num">${totalAct}</td><td class="num">${totalMis}</td></tr>`;
 
-        renderCharts(cities, latest);
+        renderCharts(cities, data);
     }
 
     function openModal(city, type) {
-        const latest = rawData.monthly[0];
-        const fullList = type === 'active' ? latest.activeNames : latest.missingNames;
+        const monthIdx = document.getElementById('monthSelect').value;
+        const monthData = rawData.monthly[monthIdx];
+        const fullList = type === 'active' ? monthData.activeNames : monthData.missingNames;
         currentModalList = fullList.filter(p => p.city === city);
         
-        // Setup Area Filter for this specific city
         const areas = [...new Set(currentModalList.map(p => p.area))].sort();
         const areaSelect = document.getElementById('modalAreaFilter');
         areaSelect.innerHTML = '<option value="All">All Areas</option>' + areas.map(a => `<option value="${a}">${a}</option>`).join('');
         
-        document.getElementById('modalTitle').innerText = `${city} - ${type === 'active' ? 'Active' : 'Missing'}`;
+        document.getElementById('modalTitle').innerText = `${city} (${monthData.month}) - ${type.toUpperCase()}`;
         document.getElementById('modalSearch').value = '';
         filterModalList();
         document.getElementById('nameModal').style.display = 'block';
@@ -145,12 +164,10 @@
     function filterModalList() {
         const selectedArea = document.getElementById('modalAreaFilter').value;
         const search = document.getElementById('modalSearch').value.toLowerCase();
-        
         const filtered = currentModalList.filter(p => 
             (selectedArea === "All" || p.area === selectedArea) &&
             (p.name.toLowerCase().includes(search))
         );
-
         document.getElementById('modalBody').innerHTML = filtered.map(p => `
             <tr><td>${p.name}</td><td>${p.area}</td><td><span style="font-size:11px; color:var(--primary)">${p.sheperd}</span></td></tr>
         `).join('');
@@ -158,27 +175,72 @@
 
     function closeModal() { document.getElementById('nameModal').style.display = 'none'; }
 
-    function renderCharts(cities, data) {
-        const actData = cities.map(c => data.activeNames.filter(p => p.city === c).length);
-        const misData = cities.map(c => data.missingNames.filter(p => p.city === c).length);
+function renderCharts(cities, data) {
+    const actData = cities.map(c => data.activeNames.filter(p => p.city === c).length);
+    const misData = cities.map(c => data.missingNames.filter(p => p.city === c).length);
+    const selection = document.getElementById('chartType').value;
+    
+    // Logic for "Area" and "Stacked"
+    const isArea = selection === 'area';
+    const isStacked = selection === 'stacked';
+    const isHorizontal = selection === 'horizontalBar';
+    
+    // Determine base type (Area and Stacked both use 'line' or 'bar' as base)
+    const chartType = isArea ? 'line' : (isStacked || isHorizontal ? 'bar' : selection);
+    const indexAxis = isHorizontal ? 'y' : 'x';
+    const colors = cities.map((_, i) => `hsl(${i * (360 / cities.length)}, 70%, 50%)`);
 
-        if (chartLTM) chartLTM.destroy();
-        chartLTM = new Chart(document.getElementById('ltmChart'), {
-            type: 'bar',
-            data: { labels: cities, datasets: [{ label: 'Attendance', data: actData, backgroundColor: '#1a73e8' }] },
-            options: { responsive: true, maintainAspectRatio: false }
-        });
-
-        if (chartCL) chartCL.destroy();
-        chartCL = new Chart(document.getElementById('clChart'), {
-            type: 'doughnut',
-            data: { 
-                labels: ['Active', 'Missing'], 
-                datasets: [{ data: [actData.reduce((a,b)=>a+b,0), misData.reduce((a,b)=>a+b,0)], backgroundColor: ['#34a853', '#ea4335'] }] 
+    const createConfig = (title, datasets) => ({
+        type: chartType,
+        data: { labels: cities, datasets: datasets },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            indexAxis: indexAxis,
+            plugins: {
+                legend: { display: true, position: 'top' },
+                title: { display: true, text: title }
             },
-            options: { responsive: true, maintainAspectRatio: false }
-        });
-    }
+            // Hide scales for Pie/Doughnut/Radar
+            scales: (['pie', 'doughnut', 'polarArea', 'radar'].includes(chartType)) ? {} : {
+                x: { stacked: isStacked, beginAtZero: true },
+                y: { stacked: isStacked, beginAtZero: true }
+            }
+        }
+    });
+
+    // --- CHART 1: Attendance ---
+    if (chartLTM) chartLTM.destroy();
+    chartLTM = new Chart(document.getElementById('ltmChart'), createConfig('Attendance by City', [{
+        label: 'Attendance',
+        data: actData,
+        backgroundColor: (['pie', 'doughnut', 'polarArea'].includes(chartType)) ? colors : 'rgba(26, 115, 232, 0.6)',
+        borderColor: '#1a73e8',
+        fill: isArea, // This is the secret for Area Charts
+        tension: 0.4
+    }]));
+
+    // --- CHART 2: Church Life Status ---
+    if (chartCL) chartCL.destroy();
+    chartCL = new Chart(document.getElementById('clChart'), createConfig('Active vs Missing', [
+        { 
+            label: 'Active', 
+            data: actData, 
+            backgroundColor: isArea ? 'rgba(52, 168, 83, 0.4)' : '#34a853', 
+            borderColor: '#34a853',
+            fill: isArea, 
+            tension: 0.4 
+        },
+        { 
+            label: 'Missing', 
+            data: misData, 
+            backgroundColor: isArea ? 'rgba(217, 48, 37, 0.4)' : '#d93025', 
+            borderColor: '#d93025',
+            fill: isArea, 
+            tension: 0.4 
+        }
+    ]));
+}
 </script>
 </body>
 </html>
