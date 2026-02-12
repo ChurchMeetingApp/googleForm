@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Attendance Generator</title>
+    <style>
+        :root { --primary: #1a73e8; --bg: #f1f3f4; --text: #202124; --success: #28a745; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; } 
+        body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); margin: 0; padding: 8px; color: var(--text); line-height: 1.4; }
+        
+        .container { max-width: 500px; margin: auto; padding-bottom: 80px; }
+        h2 { text-align: center; color: var(--primary); margin: 8px 0; font-size: 1.4rem; }
+
+        /* Compact Setup Cards */
+        .setup-card { background: white; padding: 10px; border-radius: 12px; margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .filter-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+        .full-row { grid-column: span 2; }
+        
+        input, select { 
+            width: 100%; padding: 8px; border-radius: 6px; 
+            border: 1px solid #dadce0; font-size: 12px; outline: none; background: white;
+        }
+        #searchFilter { margin-top: 6px; padding: 10px; border-color: var(--primary); }
+
+        .count-summary { text-align: right; font-size: 11px; font-weight: bold; color: var(--primary); margin: 4px; }
+
+        .select-all-bar {
+            position: sticky; top: 0; z-index: 100;
+            display: flex; align-items: center; background: #e8f0fe;
+            padding: 8px 12px; border-radius: 8px; margin-bottom: 8px;
+            font-weight: 600; color: #1967d2; font-size: 0.8rem; cursor: pointer;
+        }
+        .select-all-bar input { width: 16px; height: 16px; margin-right: 10px; }
+
+        /* Compact Family Cards */
+        .family-card { background: white; border-radius: 8px; margin-bottom: 8px; border: 1px solid #dfe1e5; overflow: hidden; }
+        .family-header { background: #f8f9fa; padding: 6px 12px; display: flex; align-items: center; border-bottom: 1px solid #eee; font-size: 0.75rem; color: #5f6368; }
+        .family-header input { width: 14px; height: 14px; margin-right: 8px; }
+
+        .member-row { 
+            display: flex; align-items: center; justify-content: space-between; 
+            padding: 8px 12px; border-bottom: 1px solid #f8f9fa; cursor: pointer; 
+        }
+        .member-row:last-child { border-bottom: none; }
+        .name-text { font-size: 0.95rem; font-weight: 500; }
+        .age-sub { font-size: 10px; color: #70757a; }
+
+        .indiv-check { width: 20px; height: 20px; accent-color: var(--primary); pointer-events: none; }
+
+        /* Floating Submit Bar */
+        .footer-bar { position: fixed; bottom: 0; left: 0; right: 0; background: white; padding: 10px; border-top: 1px solid #eee; z-index: 1000; display: flex; justify-content: center; }
+        .submit-btn { 
+            width: 100%; max-width: 480px; background: var(--success); color: white; 
+            border: none; padding: 14px; border-radius: 10px; font-weight: bold; font-size: 1rem; cursor: pointer;
+        }
+        .submit-btn:disabled { background: #ccc; }
+
+        /* Confirmation Modal */
+        #confirmModal { 
+            display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.5); align-items: center; justify-content: center; padding: 20px;
+        }
+        .modal-content { 
+            background: white; border-radius: 16px; width: 100%; max-width: 400px; 
+            max-height: 80vh; display: flex; flex-direction: column; overflow: hidden;
+        }
+        .modal-header { padding: 15px; border-bottom: 1px solid #eee; font-weight: bold; text-align: center; }
+        .modal-body { padding: 15px; overflow-y: auto; font-size: 14px; }
+        .modal-footer { padding: 10px; display: flex; gap: 10px; border-top: 1px solid #eee; }
+        .modal-btn { flex: 1; padding: 12px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; }
+        .btn-cancel { background: #f1f3f4; color: #3c4043; }
+        .btn-confirm { background: var(--success); color: white; }
+
+        #toast { visibility: hidden; background: #323232; color: white; padding: 12px; border-radius: 8px; position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); z-index: 3000; font-size: 13px; }
+        #toast.show { visibility: visible; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Attendance</h2>
+
+    <div class="setup-card">
+        <div class="filter-grid">
+            <input type="date" id="attDate">
+            <select id="meetingType">
+                <option value="LTM">LTM</option>
+                <option value="CLTM">CLTM</option>
+                <option value="Prayer Meeting">Prayer Meeting</option>
+                <option value="Sisters Meeting">Sisters Meeting</option>
+                <option value="SGM">SGM</option>
+                <option value="Ministry Meeting">Ministry Meeting</option>
+            </select>
+            <select id="locFilter" onchange="renderUI()"><option value="">All Locations</option></select>
+            <select id="areaFilter" onchange="renderUI()"><option value="">All Areas</option></select>
+            <select id="bORs" onchange="renderUI()"><option value="">All B/S</option></select>
+            <select id="grpFilter" onchange="renderUI()"><option value="">All Groups</option></select>
+            <select id="langFilter" onchange="renderUI()" class="full-row"><option value="">All Languages</option></select>
+        </div>
+        <input type="text" id="searchFilter" placeholder="Search members or family..." onkeyup="renderUI()">
+    </div>
+
+    <div id="totalCount" class="count-summary">Total: 0 members</div>
+
+    <div class="select-all-bar" onclick="toggleAllVisible()">
+        <input type="checkbox" id="globalSelectAll">
+        <span>Select All Visible</span>
+    </div>
+
+    <div id="familyList">Loading list...</div>
+</div>
+
+<div id="confirmModal">
+    <div class="modal-content">
+        <div class="modal-header" id="modalHeader">Verify Selection</div>
+        <div class="modal-body" id="modalBody"></div>
+        <div class="modal-footer">
+            <button class="modal-btn btn-cancel" onclick="closeModal()">Edit</button>
+            <button class="modal-btn btn-confirm" id="finalSubmitBtn" onclick="executeSubmit()">Confirm & Post</button>
+        </div>
+    </div>
+</div>
+
+<div class="footer-bar">
+    <button id="submitBtn" class="submit-btn" onclick="openConfirmation()">
+        <span id="btnText">Submit Attendance</span>
+        <span id="btnLoader" style="display:none;">Uploading...</span>
+    </button>
+</div>
+
+<div id="toast">Success!</div>
+
+<script>
+    //const API_URL = "https://script.google.com/macros/s/AKfycbyg_upnTM5VS2VIcjdnkIbYQRohd3tSq0qUYqsi0FtgNJosLyLgK_yEfAUC4_zOCZNM/exec"; 
+    const API_URL = "https://script.google.com/macros/s/AKfycbyWD724YvzDPZXOZjkvTNiV30qE2doD2CrV8cKwELQNB4-h2dlW1x82vMJn0APAkm_C/exec";
+    let masterData = [];
+    let pendingData = null;
+
+    window.onload = () => {
+        document.getElementById('attDate').valueAsDate = new Date();
+        fetchData();
+    };
+
+    function fetchData() {
+        fetch(API_URL).then(r => r.json()).then(data => {
+            masterData = data;
+            populateFilters();
+            renderUI();
+        });
+    }
+
+    function populateFilters() {
+        const getUnique = (key) => [...new Set(masterData.map(p => p[key]))].filter(Boolean).sort();
+        const fill = (id, list) => {
+            const el = document.getElementById(id);
+            list.forEach(v => el.innerHTML += `<option value="${v}">${v}</option>`);
+        };
+        fill('locFilter', getUnique('location'));
+        fill('areaFilter', getUnique('area'));
+        fill('grpFilter', getUnique('ageGrp'));
+        fill('bORs', getUnique('bORs'));
+        fill('langFilter', getUnique('language'));
+    }
+
+    function toggleAllVisible() {
+        const mainCb = document.getElementById('globalSelectAll');
+        if(event.target.type !== 'checkbox') mainCb.checked = !mainCb.checked;
+        document.querySelectorAll('.indiv-check').forEach(cb => cb.checked = mainCb.checked);
+        document.querySelectorAll('.family-header input').forEach(cb => cb.checked = mainCb.checked);
+    }
+
+    function renderUI() {
+        const container = document.getElementById('familyList');
+        const filters = {
+            loc: document.getElementById('locFilter').value,
+            area: document.getElementById('areaFilter').value,
+            bors: document.getElementById('bORs').value,
+            grp: document.getElementById('grpFilter').value,
+            lang: document.getElementById('langFilter').value,
+            search: document.getElementById('searchFilter').value.toLowerCase()
+        };
+
+        const filtered = masterData.filter(p => 
+            (!filters.loc || p.location === filters.loc) &&
+            (!filters.area || p.area === filters.area) &&
+            (!filters.bors || p.bORs === filters.bors) &&
+            (!filters.grp || p.ageGrp === filters.grp) &&
+            (!filters.lang || p.language === filters.lang) &&
+            (p.name.toLowerCase().includes(filters.search) || p.family.toLowerCase().includes(filters.search))
+        );
+
+        document.getElementById('totalCount').innerText = `Total: ${filtered.length} members`;
+        document.getElementById('globalSelectAll').checked = false;
+        container.innerHTML = "";
+
+        const families = {};
+        filtered.forEach(p => {
+            const f = p.family || "Individual";
+            if (!families[f]) families[f] = [];
+            families[f].push(p);
+        });
+
+        Object.keys(families).sort((a,b) => (a==="Individual") ? 1 : (b==="Individual") ? -1 : a.localeCompare(b))
+        .forEach(fam => {
+            let html = `<div class="family-card">`;
+            if (fam !== "Individual") {
+                html += `<div class="family-header"><input type="checkbox" onchange="selectFamily(this)"><span>${fam}</span></div>`;
+            }
+            families[fam].forEach(p => {
+                html += `
+                <div class="member-row" onclick="togglePerson(this)">
+                    <div class="name-container">
+                        <span class="name-text">${p.name}</span><br>
+                        <span class="age-sub">${p.ageGrp} | ${p.location}</span>
+                    </div>
+                    <input type="checkbox" class="indiv-check" 
+                           data-name="${p.name}" data-fam="${fam}" data-bors="${p.bORs}" 
+                           data-grp="${p.ageGrp}" data-area="${p.area}" data-lang="${p.language}" data-loc="${p.location}">
+                </div>`;
+            });
+            container.innerHTML += html + `</div>`;
+        });
+    }
+
+    function togglePerson(row) {
+        const cb = row.querySelector('.indiv-check');
+        cb.checked = !cb.checked;
+    }
+
+    function selectFamily(headerCb) {
+        headerCb.closest('.family-card').querySelectorAll('.indiv-check').forEach(cb => cb.checked = headerCb.checked);
+    }
+
+    // --- Confirmation & Post Logic ---
+
+    function openConfirmation() {
+        const checked = Array.from(document.querySelectorAll('.indiv-check:checked'));
+        if (checked.length === 0) return alert("Select members first!");
+
+        const meeting = document.getElementById('meetingType').value;
+        const date = document.getElementById('attDate').value;
+
+        pendingData = {
+            meetingName: meeting,
+            date: date,
+            attendanceData: checked.map(cb => ({
+                name: cb.dataset.name, family: cb.dataset.fam, bORs: cb.dataset.bors,
+                ageGrp: cb.dataset.grp, area: cb.dataset.area, language: cb.dataset.lang, location: cb.dataset.loc
+            }))
+        };
+
+        // Populate Modal
+        document.getElementById('modalHeader').innerText = `${meeting} - ${checked.length} Members`;
+        document.getElementById('modalBody').innerHTML = `<ol>` + 
+            pendingData.attendanceData.map(m => `<li><b>${m.name}</b> <small>(${m.family})</small></li>`).join('') + 
+            `</ol>`;
+        
+        document.getElementById('confirmModal').style.display = 'flex';
+    }
+
+    function closeModal() {
+        document.getElementById('confirmModal').style.display = 'none';
+    }
+
+    async function executeSubmit() {
+        const btn = document.getElementById('submitBtn');
+        const fBtn = document.getElementById('finalSubmitBtn');
+        
+        fBtn.disabled = true;
+        fBtn.innerText = "Posting...";
+        document.getElementById('btnText').style.display = 'none';
+        document.getElementById('btnLoader').style.display = 'inline';
+
+        try {
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify(pendingData),
+                redirect: 'follow'
+            });
+
+            const result = await response.text();
+            if (result.includes("Success")) {
+                showToast(`Success! Submitted ${pendingData.attendanceData.length} members.`);
+                document.querySelectorAll('.indiv-check').forEach(cb => cb.checked = false);
+                closeModal();
+                renderUI();
+            } else {
+                alert("Server Error: " + result);
+            }
+        } catch (e) {
+            alert("Network Error. Check connection.");
+        } finally {
+            fBtn.disabled = false;
+            fBtn.innerText = "Confirm & Post";
+            btn.disabled = false;
+            document.getElementById('btnText').style.display = 'inline';
+            document.getElementById('btnLoader').style.display = 'none';
+        }
+    }
+
+    function showToast(msg) {
+        const t = document.getElementById("toast");
+        t.innerText = msg;
+        t.className = "show";
+        setTimeout(() => t.className = "", 3000);
+    }
+</script>
+</body>
+</html>
