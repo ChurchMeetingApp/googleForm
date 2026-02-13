@@ -418,6 +418,8 @@ async function checkAndSyncAttendance() {
 
         const meeting = document.getElementById('meetingType').value;
         const date = document.getElementById('attDate').value;
+	const location = document.getElementById('locFilter').value || "All Locations";
+	const city = "Bengaluru"; // Or get from your city variable
 
         pendingData = {
             meetingName: meeting,
@@ -435,7 +437,8 @@ async function checkAndSyncAttendance() {
             }))
         };
 
-        document.getElementById('modalHeader').innerText = `${meeting} - ${checked.length} Members`;
+        // Update the header with Meeting, Count, Date, and Location info
+	document.getElementById('modalHeader').innerText = `${meeting} (${checked.length}) | ${date} | ${city} - ${location}`;
         document.getElementById('modalBody').innerHTML = `<ol>` +
             pendingData.attendanceData.map(m => `<li><b>${m.name}</b> <small>(${m.family})</small></li>`).join('') +
             `</ol>`;
