@@ -71,9 +71,45 @@
         .modal-btn { flex: 1; padding: 12px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; }
         .btn-cancel { background: #f1f3f4; color: #3c4043; }
         .btn-confirm { background: var(--success); color: white; }
-
+.locked {
+    opacity: 0.4;
+    pointer-events: none; /* Prevents clicking or scrolling */
+    filter: grayscale(1);
+    transition: all 0.5s ease;
+}
         #toast { visibility: hidden; background: #323232; color: white; padding: 12px; border-radius: 8px; position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); z-index: 3000; font-size: 13px; }
         #toast.show { visibility: visible; }
+
+
+/* Loading Overlay Style */
+#loadingOverlay {
+    display: none; /* Hidden by default */
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(255, 255, 255, 0.7); /* Light gray transparent */
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    backdrop-filter: blur(2px);
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid var(--primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+
     </style>
 </head>
 <body>
@@ -105,11 +141,10 @@
 
     <div id="totalCount" class="count-summary">Total: 0 members</div>
 
-    <div class="select-all-bar" onclick="toggleAllVisible()">
-        <input type="checkbox" id="globalSelectAll">
-        <span>Select All Visible</span>
-    </div>
-
+<div id="selectAllBar" class="select-all-bar" onclick="toggleAllVisible()">
+    <input type="checkbox" id="globalSelectAll">
+    <span>Select All Visible</span>
+</div>
     <div id="familyList">Loading list...</div>
 </div>
 
@@ -133,32 +168,138 @@
 
 <div id="toast">Success!</div>
 
+<div id="loadingOverlay">
+    <div class="spinner"></div>
+    <p style="color: var(--primary); font-weight: bold; margin-top: 10px;">Checking Records...</p>
+</div>
+
 <script>
-    //const API_URL = "https://script.google.com/macros/s/AKfycbyg_upnTM5VS2VIcjdnkIbYQRohd3tSq0qUYqsi0FtgNJosLyLgK_yEfAUC4_zOCZNM/exec"; 
     const API_URL = "https://script.google.com/macros/s/AKfycbyWD724YvzDPZXOZjkvTNiV30qE2doD2CrV8cKwELQNB4-h2dlW1x82vMJn0APAkm_C/exec";
     let masterData = [];
     let pendingData = null;
 
+    // 1. Attach Event Listeners
+    document.getElementById('attDate').addEventListener('change', checkAndSyncAttendance);
+    document.getElementById('meetingType').addEventListener('change', checkAndSyncAttendance);
+    document.getElementById('locFilter').addEventListener('change', checkAndSyncAttendance);
+
+    // 2. The Fetch & Sync Function
+async function checkAndSyncAttendance() {
+    const date = document.getElementById('attDate').value;
+    const meeting = document.getElementById('meetingType').value;
+    const location = document.getElementById('locFilter').value;
+    const city = "Bengaluru";
+
+    if (!date || !meeting) return;
+
+    const loader = document.getElementById('loadingOverlay');
+    loader.style.display = 'flex';
+
+    unlockUI();
+    console.log("Checking server for existing records...");
+
+    const params = new URLSearchParams({
+        mode: 'lookup',
+        date: date,
+        meeting: meeting,
+        location: location,
+        city: city
+    });
+
+    try {
+        const response = await fetch(`${API_URL}?${params.toString()}`);
+        const existingKeys = await response.json();
+
+        // 1. Reset: Uncheck all first to start fresh
+        const checkboxes = document.querySelectorAll('.indiv-check');
+        checkboxes.forEach(cb => cb.checked = false);
+
+        // 2. The IF / ELSE Logic
+        if (existingKeys && existingKeys.length > 0) {
+            existingKeys.forEach(key => {
+                // Split the server string "SNo|Name|Family"
+                const parts = key.split('|');
+                const name = parts[1];
+                const family = parts[2];
+
+                // Match using your existing data-name and data-fam
+                const cb = document.querySelector(`.indiv-check[data-name="${name}"][data-fam="${family}"]`);
+                if (cb) cb.checked = true;
+            });
+
+            showToast(`Found ${existingKeys.length} existing entries.`);
+            document.getElementById('btnText').innerText = "Update Attendance";
+        } else {
+            // Else block: No records found, set button back to Submit
+            document.getElementById('btnText').innerText = "Submit Attendance";
+        }
+    } catch (e) {
+        console.error("Fetch Error:", e);
+    } finally {
+        loader.style.display = 'none';
+    }
+}
+    function checkRequirements() {
+        const date = document.getElementById('attDate').value;
+        const meeting = document.getElementById('meetingType').value;
+        //const location = document.getElementById('locFilter').value;
+
+        if (!date || meeting === "") {
+            document.getElementById('alertMessage').innerHTML =
+                "Please select the <b>Date and Meeting Name</b> first.";
+            document.getElementById('selectionAlert').style.display = 'flex';
+            return false;
+        }
+        return true;
+    }
+
     window.onload = () => {
         document.getElementById('attDate').valueAsDate = new Date();
         fetchData();
+
+        // Lock the interaction area until filters are picked
+        document.getElementById('familyList').classList.add('locked');
+        document.getElementById('searchFilter').disabled = true;
+        document.getElementById('searchFilter').placeholder = "Select Date and Meeting first...";
+        document.getElementById('selectAllBar').classList.add('locked');
     };
+
+    function unlockUI() {
+        const list = document.getElementById('familyList');
+        const search = document.getElementById('searchFilter');
+        const selectBar = document.getElementById('selectAllBar');
+
+        if (list.classList.contains('locked')) {
+            list.classList.remove('locked');
+            selectBar.classList.remove('locked');
+            search.disabled = false;
+            search.placeholder = "Search members or family...";
+            showToast("Ready! You can now select members.");
+        }
+    }
 
     function fetchData() {
         fetch(API_URL).then(r => r.json()).then(data => {
+            // Filter global data to ONLY include Bengaluru
+            masterData = data.filter(p => p.city === "Bengaluru");
+
+            const cityFilter = document.getElementById('cityFilter');
+            cityFilter.innerHTML = `<option value="Bengaluru">Bengaluru</option>`;
+            cityFilter.value = "Bengaluru";
+            cityFilter.disabled = true;
+
             masterData = data;
             populateFilters();
             renderUI();
         });
     }
 
-// 1. Modified populateFilters to accept an optional "filteredList"
     function populateFilters(dataToUse = masterData) {
         const getUnique = (key, list) => [...new Set(list.map(p => p[key]))].filter(Boolean).sort();
-        
+
         const fill = (id, list, placeholder) => {
             const el = document.getElementById(id);
-            const currentVal = el.value; // Save current selection
+            const currentVal = el.value;
             el.innerHTML = `<option value="">${placeholder}</option>`;
             list.forEach(v => {
                 const selected = v === currentVal ? 'selected' : '';
@@ -166,25 +307,18 @@
             });
         };
 
-        // City, Age Group, B/S, and Language usually stay global
-        // but Area and Location should depend on the selected City
         const selectedCity = document.getElementById('cityFilter').value;
-        
-        // If a city is selected, only show Areas/Locations belonging to that city
-        const citySpecificData = selectedCity 
-            ? masterData.filter(p => p.city === selectedCity) 
-            : masterData;
+        const citySpecificData = selectedCity ?
+            masterData.filter(p => p.city === selectedCity) :
+            masterData;
 
-        // Fill City only once if it's empty
         if (document.getElementById('cityFilter').options.length <= 1) {
             fill('cityFilter', getUnique('city', masterData), "All Cities");
         }
-        
-        // These update dynamically based on the City selection
+
         fill('areaFilter', getUnique('area', citySpecificData), "All Areas");
         fill('locFilter', getUnique('location', citySpecificData), "All locations");
-        
-        // These usually remain static
+
         if (document.getElementById('grpFilter').options.length <= 1) {
             fill('grpFilter', getUnique('ageGrp', masterData), "All Groups");
             fill('bORs', getUnique('bORs', masterData), "All B/S");
@@ -194,16 +328,13 @@
 
     function toggleAllVisible() {
         const mainCb = document.getElementById('globalSelectAll');
-        if(event.target.type !== 'checkbox') mainCb.checked = !mainCb.checked;
+        if (event.target.type !== 'checkbox') mainCb.checked = !mainCb.checked;
         document.querySelectorAll('.indiv-check').forEach(cb => cb.checked = mainCb.checked);
         document.querySelectorAll('.family-header input').forEach(cb => cb.checked = mainCb.checked);
     }
 
-// 2. Modified renderUI to trigger filter updates
     function renderUI() {
         const container = document.getElementById('familyList');
-        
-        // Update the dropdowns first based on current selections
         populateFilters();
 
         const filters = {
@@ -216,7 +347,7 @@
             search: document.getElementById('searchFilter').value.toLowerCase()
         };
 
-        const filtered = masterData.filter(p => 
+        const filtered = masterData.filter(p =>
             (!filters.city || p.city === filters.city) &&
             (!filters.loc || p.location === filters.loc) &&
             (!filters.area || p.area === filters.area) &&
@@ -226,7 +357,6 @@
             (p.name.toLowerCase().includes(filters.search) || p.family.toLowerCase().includes(filters.search))
         );
 
-        // ... rest of your existing renderUI code (families grouping and HTML generation) ...
         document.getElementById('totalCount').innerText = `Total: ${filtered.length} members`;
         document.getElementById('globalSelectAll').checked = false;
         container.innerHTML = "";
@@ -238,14 +368,14 @@
             families[f].push(p);
         });
 
-        Object.keys(families).sort((a,b) => (a==="Individual") ? 1 : (b==="Individual") ? -1 : a.localeCompare(b))
-        .forEach(fam => {
-            let html = `<div class="family-card">`;
-            if (fam !== "Individual") {
-                html += `<div class="family-header"><input type="checkbox" onchange="selectFamily(this)"><span>${fam}</span></div>`;
-            }
-            families[fam].forEach(p => {
-                html += `
+        Object.keys(families).sort((a, b) => (a === "Individual") ? 1 : (b === "Individual") ? -1 : a.localeCompare(b))
+            .forEach(fam => {
+                let html = `<div class="family-card">`;
+                if (fam !== "Individual") {
+                    html += `<div class="family-header"><input type="checkbox" onchange="selectFamily(this)"><span>${fam}</span></div>`;
+                }
+                families[fam].forEach(p => {
+                    html += `
                 <div class="member-row" onclick="togglePerson(this)">
                     <div class="name-container">
                         <span class="name-text">${p.name}</span><br>
@@ -256,11 +386,10 @@
                            data-grp="${p.ageGrp}" data-area="${p.area}" data-lang="${p.language}" data-loc="${p.location}" 
                            data-city="${p.city}" data-sheperd="${p.sheperd}">
                 </div>`;
+                });
+                container.innerHTML += html + `</div>`;
             });
-            container.innerHTML += html + `</div>`;
-        });
     }
-
 
     function togglePerson(row) {
         const cb = row.querySelector('.indiv-check');
@@ -271,21 +400,18 @@
         headerCb.closest('.family-card').querySelectorAll('.indiv-check').forEach(cb => cb.checked = headerCb.checked);
     }
 
-   function validateMeetingSelection() {
-    	const meetingType = document.getElementById('meetingType').value;
-
-    	if (meetingType === "") {
-        	alert("Please select a specific meeting type (LTM, CLTM, etc.) to continue.");
-        	document.getElementById('meetingType').focus();
-        	return false; // Prevents the rest of your code from running
-    	}
-    
-    	return true; // Selection is valid
-   }
-    // --- Confirmation & Post Logic ---
+    function validateMeetingSelection() {
+        const meetingType = document.getElementById('meetingType').value;
+        if (meetingType === "") {
+            alert("Please select a specific meeting type (LTM, CLTM, etc.) to continue.");
+            document.getElementById('meetingType').focus();
+            return false;
+        }
+        return true;
+    }
 
     function openConfirmation() {
-	if (!validateMeetingSelection()) return;
+        if (!validateMeetingSelection()) return;
 
         const checked = Array.from(document.querySelectorAll('.indiv-check:checked'));
         if (checked.length === 0) return alert("Select members first!");
@@ -297,18 +423,23 @@
             meetingName: meeting,
             date: date,
             attendanceData: checked.map(cb => ({
-                name: cb.dataset.name, family: cb.dataset.fam, bORs: cb.dataset.bors,
-                ageGrp: cb.dataset.grp, area: cb.dataset.area, language: cb.dataset.lang, location: cb.dataset.loc, city: cb.dataset.city,
-		sheperd: cb.dataset.sheperd
+                name: cb.dataset.name,
+                family: cb.dataset.fam,
+                bORs: cb.dataset.bors,
+                ageGrp: cb.dataset.grp,
+                area: cb.dataset.area,
+                language: cb.dataset.lang,
+                location: cb.dataset.loc,
+                city: cb.dataset.city,
+                sheperd: cb.dataset.sheperd
             }))
         };
 
-        // Populate Modal
         document.getElementById('modalHeader').innerText = `${meeting} - ${checked.length} Members`;
-        document.getElementById('modalBody').innerHTML = `<ol>` + 
-            pendingData.attendanceData.map(m => `<li><b>${m.name}</b> <small>(${m.family})</small></li>`).join('') + 
+        document.getElementById('modalBody').innerHTML = `<ol>` +
+            pendingData.attendanceData.map(m => `<li><b>${m.name}</b> <small>(${m.family})</small></li>`).join('') +
             `</ol>`;
-        
+
         document.getElementById('confirmModal').style.display = 'flex';
     }
 
@@ -319,7 +450,7 @@
     async function executeSubmit() {
         const btn = document.getElementById('submitBtn');
         const fBtn = document.getElementById('finalSubmitBtn');
-        
+
         fBtn.disabled = true;
         fBtn.innerText = "Posting...";
         document.getElementById('btnText').style.display = 'none';
@@ -336,9 +467,10 @@
             const result = await response.text();
             if (result.includes("Success")) {
                 showToast(`Success! Submitted ${pendingData.attendanceData.length} members.`);
-                document.querySelectorAll('.indiv-check').forEach(cb => cb.checked = false);
+                //document.querySelectorAll('.indiv-check').forEach(cb => cb.checked = false);
                 closeModal();
-                renderUI();
+                //renderUI();
+		document.getElementById('btnText').innerText = "Update Attendance";
             } else {
                 alert("Server Error: " + result);
             }
@@ -359,6 +491,7 @@
         t.className = "show";
         setTimeout(() => t.className = "", 3000);
     }
+
 </script>
 </body>
 </html>
