@@ -34,6 +34,61 @@
         #nameModal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:2000; padding: 10px; }
         .modal-content { background:white; width: 100%; max-width:600px; margin:20px auto; padding:20px; border-radius:16px; height: 80vh; display:flex; flex-direction:column; position: relative; }
         .close-btn { position: absolute; right: 15px; top: 15px; border: none; background: #f1f3f4; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; font-size: 20px; }
+
+        /* Updated Modal Styles for Mobile Visibility */
+#nameModal { 
+    display:none; 
+    position:fixed; 
+    top:0; 
+    left:0; 
+    width:100%; 
+    height:100%; 
+    background:rgba(0,0,0,0.8); /* Darker background for better focus */
+    z-index:2000; 
+    padding: 20px 10px; /* Space around the modal */
+    box-sizing: border-box;
+}
+
+.modal-content { 
+    background:white; 
+    width: 100%; 
+    max-width:600px; 
+    margin: 0 auto; 
+    padding: 20px; 
+    border-radius:16px; 
+    max-height: 90vh; /* Changed from height to max-height */
+    display:flex; 
+    flex-direction:column; 
+    position: relative; 
+    top: 50%; /* Center vertically */
+    transform: translateY(-50%); /* Center vertically */
+}
+
+.close-btn { 
+    position: absolute; 
+    right: 10px; 
+    top: -45px; /* Moves button ABOVE the white box so it's never hidden by content */
+    border: none; 
+    background: white; 
+    color: black;
+    border-radius: 50%; 
+    width: 35px; 
+    height: 35px; 
+    cursor: pointer; 
+    font-size: 24px; 
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+}
+
+/* Ensure table container takes up remaining space and scrolls */
+.modal-content .table-container {
+    flex-grow: 1;
+    overflow-y: auto;
+    margin-top: 10px;
+}
     </style>
 </head>
 <body>
@@ -267,3 +322,4 @@
 
 </body>
 </html>
+
