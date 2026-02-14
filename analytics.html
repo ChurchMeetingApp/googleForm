@@ -3,244 +3,267 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Advanced Church Analytics</title>
+    <title>Church Analytics Pro - Unified & Filtered</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        :root { --primary: #1a73e8; --success: #34a853; --danger: #d93025; --bg: #f1f3f4; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); padding: 15px; margin: 0; color: #202124; }
+        :root { --primary: #1a73e8; --success: #34a853; --danger: #d93025; --warning: #fbbc04; --bg: #f8f9fa; --card-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); margin: 0; padding: 10px; color: #3c4043; }
         
-        /* New Top Filter Bar */
-        .top-bar { background: white; padding: 15px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 15px; }
-        .filter-group { display: flex; align-items: center; gap: 10px; }
-        label { font-size: 13px; font-weight: 600; color: #5f6368; }
+        .top-bar { background: white; padding: 15px; border-radius: 12px; margin-bottom: 15px; box-shadow: var(--card-shadow); display: flex; flex-wrap: wrap; align-items: center; gap: 15px; position: sticky; top: 10px; z-index: 1000; }
+        .filter-group { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 150px; }
+        
+        .grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
+        @media (min-width: 900px) { .grid { grid-template-columns: 1fr 1fr; } }
 
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; }
-        .card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        .header-flex { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
-        h3 { font-size: 13px; color: #5f6368; margin: 0; text-transform: uppercase; }
+        .card { background: white; border-radius: 16px; padding: 16px; box-shadow: var(--card-shadow); border: 1px solid #e0e0e0; display: flex; flex-direction: column; }
+        .header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 10px; }
+        h3 { font-size: 13px; color: #5f6368; margin: 0; text-transform: uppercase; letter-spacing: 0.5px; }
         
-        select, input { padding: 8px; border-radius: 6px; border: 1px solid #dadce0; font-size: 13px; outline: none; }
-        .chart-box { height: 250px; width: 100%; margin-bottom: 20px; }
+        select { padding: 6px 10px; border-radius: 8px; border: 1px solid #dadce0; font-size: 12px; background: #fff; cursor: pointer; }
+        
+        .chart-box { height: 220px; width: 100%; margin-bottom: 15px; position: relative; }
+        .table-container { max-height: 180px; overflow-y: auto; border-radius: 8px; border: 1px solid #f1f3f4; }
         
         table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        th, td { padding: 10px; border: 1px solid #eee; text-align: left; }
-        th { background: #f8f9fa; font-weight: 600; }
-        .num { text-align: center; font-weight: bold; }
+        th, td { padding: 10px; border-bottom: 1px solid #f1f3f4; text-align: left; }
+        th { background: #f8f9fa; font-weight: 600; position: sticky; top: 0; z-index: 10; color: #5f6368; }
+        .num { text-align: center; font-weight: bold; width: 60px; }
         
-        .drill-link { text-decoration: none; cursor: pointer; color: inherit; border-bottom: 1px dashed #ccc; }
-        .drill-link:hover { border-bottom-style: solid; color: var(--primary); }
+        .drill-link { text-decoration: none; cursor: pointer; color: var(--primary); font-weight: 700; }
 
-        #nameModal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; }
-        .modal-content { background:white; max-width:600px; margin:40px auto; padding:20px; border-radius:12px; max-height:85vh; display:flex; flex-direction:column; }
+        #nameModal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:2000; padding: 10px; }
+        .modal-content { background:white; width: 100%; max-width:600px; margin:20px auto; padding:20px; border-radius:16px; height: 80vh; display:flex; flex-direction:column; position: relative; }
+        .close-btn { position: absolute; right: 15px; top: 15px; border: none; background: #f1f3f4; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; font-size: 20px; }
     </style>
 </head>
 <body>
 
 <div class="top-bar">
     <div class="filter-group">
-        <label>Month:</label>
-        <select id="monthSelect" onchange="updateUI()"></select>
+        <label style="font-size:13px; font-weight:600">Month:</label>
+        <select id="monthSelect" onchange="updateUI()" style="flex:1"></select>
     </div>
     <div class="filter-group">
-        <label>Chart Type:</label>
-<select id="chartType" onchange="updateUI()">
-    <option value="bar">Bar (Vertical)</option>
-    <option value="horizontalBar">Bar (Horizontal)</option>
-    <option value="line">Line Trend</option>
-    <option value="pie">Pie Chart</option>
-    <option value="doughnut">Doughnut</option>
-    <option value="polarArea">Polar Area</option>
-    <option value="radar">Radar Comparison</option>
-    <option value="stacked">Stacked Bar</option>
-    <option value="area">Area Chart</option>
-</select>
+        <label style="font-size:13px; font-weight:600">City View:</label>
+        <select id="areaCityFilter" onchange="updateUI()" style="flex:1"></select>
     </div>
 </div>
-    <div class="grid">
-        <div class="card">
-            <div class="header-flex">
-                <h3>Attendance by City</h3>
-            </div>
-            <div class="chart-box"><canvas id="ltmChart"></canvas></div>
-            <table>
-                <thead><tr><th>City Name</th><th class="num">Attendance</th></tr></thead>
-                <tbody id="ltmBody"></tbody>
-            </table>
-        </div>
 
-        <div class="card">
-            <div class="header-flex">
-                <h3>Status by City</h3>
-            </div>
-            <div class="chart-box"><canvas id="clChart"></canvas></div>
+<template id="chartOptionsTemplate">
+    <option value="bar-v">V-Bar</option>
+    <option value="bar-h">H-Bar</option>
+    <option value="line">Line</option>
+    <option value="pie">Pie</option>
+    <option value="doughnut">Doughnut</option>
+</template>
+
+<div class="grid">
+    <div class="card">
+        <div class="header-row">
+            <h3 id="trendTitle">Lord's Table Meeting</h3>
+            <select id="type1" onchange="updateUI()"></select>
+        </div>
+        <div class="chart-box"><canvas id="chart1"></canvas></div>
+        <div class="table-container">
             <table>
-                <thead><tr><th>City Name</th><th class="num">Active</th><th class="num">Missing</th></tr></thead>
-                <tbody id="clBody"></tbody>
+                <thead><tr><th>Meeting</th><th>Date</th><th class="num">Qty</th></tr></thead>
+                <tbody id="body1"></tbody>
             </table>
         </div>
     </div>
 
-    <div id="nameModal">
-        <div class="modal-content">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <h2 id="modalTitle" style="font-size:16px; color:#1a73e8; margin:0;"></h2>
-                <button onclick="closeModal()" style="border:none; background:none; font-size:24px; cursor:pointer;">&times;</button>
-            </div>
-            
-            <div style="padding: 15px 0; display: flex; gap: 10px;">
-                <select id="modalAreaFilter" onchange="filterModalList()" style="flex: 1;">
-                    <option value="All">All Areas</option>
-                </select>
-                <input type="text" id="modalSearch" placeholder="Search name..." onkeyup="filterModalList()" style="flex: 1;">
-            </div>
-
-            <div style="overflow-y:auto; flex:1;">
-                <table style="width:100%;">
-                    <thead><tr><th>Name</th><th>Area</th><th>Shepherd</th></tr></thead>
-                    <tbody id="modalBody"></tbody>
-                </table>
-            </div>
+    <div class="card">
+        <div class="header-row">
+            <h3 id="statusTitle">Church Life</h3>
+            <select id="type2" onchange="updateUI()"></select>
+        </div>
+        <div class="chart-box"><canvas id="chart2"></canvas></div>
+        <div class="table-container">
+            <table>
+                <thead><tr><th>Status Category</th><th class="num">Active</th><th class="num">Miss</th></tr></thead>
+                <tbody id="body2"></tbody>
+            </table>
         </div>
     </div>
+
+    <div class="card">
+        <div class="header-row">
+            <h3 id="areaTitle">Area Distribution</h3>
+            <select id="type3" onchange="updateUI()"></select>
+        </div>
+        <div class="chart-box"><canvas id="chart3"></canvas></div>
+        <div class="table-container">
+            <table>
+                <thead><tr><th>Area Name</th><th class="num">Count</th></tr></thead>
+                <tbody id="body3"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="header-row">
+            <h3 id="shepTitle">Shepherd Load</h3>
+            <select id="type4" onchange="updateUI()"></select>
+        </div>
+        <div class="chart-box"><canvas id="chart4"></canvas></div>
+        <div class="table-container">
+            <table>
+                <thead><tr><th>Shepherd</th><th class="num">Members</th></tr></thead>
+                <tbody id="body4"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div id="nameModal">
+    <div class="modal-content">
+        <button class="close-btn" onclick="closeModal()">&times;</button>
+        <h2 id="modalTitle" style="font-size:18px; margin:0 0 15px 0; color:var(--primary)"></h2>
+        <div class="table-container" style="max-height: 100%;">
+            <table>
+                <thead><tr><th>Name</th><th>Area</th><th>Shepherd</th></tr></thead>
+                <tbody id="modalBody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
 
 <script>
     const API = "https://script.google.com/macros/s/AKfycbyWD724YvzDPZXOZjkvTNiV30qE2doD2CrV8cKwELQNB4-h2dlW1x82vMJn0APAkm_C/exec";
-    let rawData, currentModalList = [], chartLTM, chartCL;
+    let rawData, charts = {};
 
     window.onload = async () => {
+        ['type1', 'type2', 'type3', 'type4'].forEach(id => {
+            document.getElementById(id).innerHTML = document.getElementById('chartOptionsTemplate').innerHTML;
+        });
+
         const response = await fetch(API + "?action=getAnalytics");
         rawData = await response.json();
         
-        // Populate Month Dropdown
-        const monthSelect = document.getElementById('monthSelect');
+        const mSelect = document.getElementById('monthSelect');
         rawData.monthly.forEach((m, idx) => {
-            monthSelect.innerHTML += `<option value="${idx}">${m.month}</option>`;
+            mSelect.innerHTML += `<option value="${idx}">${m.month}</option>`;
         });
-
+        
+        initCityFilters();
         updateUI();
     };
 
-    function updateUI() {
-        const monthIdx = document.getElementById('monthSelect').value;
-        const data = rawData.monthly[monthIdx];
-        const cities = [...new Set([...data.activeNames, ...data.missingNames].map(p => p.city))].sort();
-
-        // Populate LTM Table
-        document.getElementById('ltmBody').innerHTML = cities.map(city => {
-            const count = data.activeNames.filter(p => p.city === city).length;
-            return `<tr><td>${city}</td><td class="num">${count}</td></tr>`;
-        }).join('');
-
-        // Populate Church Life Table
-        document.getElementById('clBody').innerHTML = cities.map(city => {
-            const act = data.activeNames.filter(p => p.city === city).length;
-            const mis = data.missingNames.filter(p => p.city === city).length;
-            return `<tr>
-                <td>${city}</td>
-                <td class="num"><a class="drill-link" style="color:var(--success)" onclick="openModal('${city}', 'active')">${act}</a></td>
-                <td class="num"><a class="drill-link" style="color:var(--danger)" onclick="openModal('${city}', 'missing')">${mis}</a></td>
-            </tr>`;
-        }).join('');
-
-        renderCharts(cities, data);
+    function initCityFilters() {
+        const idx = document.getElementById('monthSelect').value;
+        const monthData = rawData.monthly[idx];
+        const cities = [...new Set([...monthData.activeNames, ...monthData.missingNames].map(p => p.city))].sort();
+        const cityFilter = document.getElementById('areaCityFilter');
+        cityFilter.innerHTML = cities.map(c => `<option value="${c}">${c}</option>`).join('');
     }
 
+    function getChartConfig(typeValue) {
+        let type = typeValue;
+        let indexAxis = 'x';
+        if (typeValue === 'bar-h') { type = 'bar'; indexAxis = 'y'; }
+        if (typeValue === 'bar-v') { type = 'bar'; indexAxis = 'x'; }
+        return { type, indexAxis };
+    }
+
+    function updateUI() {
+        const idx = document.getElementById('monthSelect').value;
+        const selectedCity = document.getElementById('areaCityFilter').value;
+        const monthData = rawData.monthly[idx];
+
+        // --- FILTER LTM DATA BY SELECTED CITY ---
+        // This ensures Chart 1 only shows data for the chosen city
+        const cityTrend = rawData.ltm.filter(d => d.city === selectedCity);
+
+        // --- FILTER STATUS DATA BY SELECTED CITY ---
+        const cityActive = monthData.activeNames.filter(p => p.city === selectedCity);
+        const cityMissing = monthData.missingNames.filter(p => p.city === selectedCity);
+
+        // 1. Table 1: Trend (Now City-Specific)
+        document.getElementById('trendTitle').innerText = `Lord's Table Meeting : ${selectedCity}`;
+        document.getElementById('body1').innerHTML = cityTrend.map(i => 
+            `<tr><td>LTM/CLTM</td><td>${i.date}</td><td class="num">${i.total}</td></tr>`
+        ).join('');
+
+        // 2. Table 2: Status Breakdown
+        document.getElementById('statusTitle').innerText = `Church Life: ${selectedCity}`;
+        document.getElementById('body2').innerHTML = `
+            <tr><td>${selectedCity}</td><td class="num"><a class="drill-link" style="color:var(--success)" onclick="openModal('${selectedCity}', 'active')">${cityActive.length}</a></td><td class="num"><a class="drill-link" style="color:var(--danger)" onclick="openModal('${selectedCity}', 'missing')">${cityMissing.length}</a></td></tr>
+        `;
+
+        // 3. Table 3: Area Distribution
+        document.getElementById('areaTitle').innerText = `Areas: ${selectedCity}`;
+        const areas = {}; cityActive.forEach(p => areas[p.area] = (areas[p.area] || 0) + 1);
+        const aSorted = Object.keys(areas).sort((a,b) => areas[b] - areas[a]);
+        document.getElementById('body3').innerHTML = aSorted.map(a => `<tr><td>${a}</td><td class="num">${areas[a]}</td></tr>`).join('');
+
+        // 4. Table 4: Shepherd Load
+        document.getElementById('shepTitle').innerText = `Shepherds: ${selectedCity}`;
+        const sheps = {}; cityActive.forEach(p => sheps[p.sheperd] = (sheps[p.sheperd] || 0) + 1);
+        const sSorted = Object.keys(sheps).sort((a,b) => sheps[b] - sheps[a]);
+        document.getElementById('body4').innerHTML = sSorted.map(s => `<tr><td>${s}</td><td class="num">${sheps[s]}</td></tr>`).join('');
+
+        renderCharts(selectedCity, cityTrend, cityActive, cityMissing, aSorted, areas, sSorted, sheps);
+    }
+
+    function renderCharts(selectedCity, cityTrend, cityActive, cityMissing, aSorted, areas, sSorted, sheps) {
+        Object.values(charts).forEach(c => c.destroy());
+        const colors = (n) => Array.from({length: n}, (_, i) => `hsl(${i * (360/n)}, 65%, 50%)`);
+
+        // Chart 1: City Trend (Updated labels and data to use filtered cityTrend)
+        const conf1 = getChartConfig(document.getElementById('type1').value);
+        charts.c1 = new Chart(document.getElementById('chart1'), {
+            type: conf1.type,
+            data: {
+                labels: cityTrend.map(d => d.date),
+                datasets: [{ label: `${selectedCity} Total`, data: cityTrend.map(d => d.total), backgroundColor: '#1a73e8', borderColor: '#1a73e8', fill: false }]
+            },
+            options: { indexAxis: conf1.indexAxis, responsive: true, maintainAspectRatio: false }
+        });
+
+        // Chart 2: Status
+        const conf2 = getChartConfig(document.getElementById('type2').value);
+        charts.c2 = new Chart(document.getElementById('chart2'), {
+            type: conf2.type,
+            data: {
+                labels: ['Active', 'Missing'],
+                datasets: [{ data: [cityActive.length, cityMissing.length], backgroundColor: ['#34a853', '#d93025'] }]
+            },
+            options: { indexAxis: conf2.indexAxis, responsive: true, maintainAspectRatio: false }
+        });
+
+        // Chart 3: Areas
+        const conf3 = getChartConfig(document.getElementById('type3').value);
+        charts.c3 = new Chart(document.getElementById('chart3'), {
+            type: conf3.type,
+            data: {
+                labels: aSorted,
+                datasets: [{ data: aSorted.map(l => areas[l]), backgroundColor: colors(aSorted.length) }]
+            },
+            options: { indexAxis: conf3.indexAxis, responsive: true, maintainAspectRatio: false }
+        });
+
+        // Chart 4: Shepherds
+        const conf4 = getChartConfig(document.getElementById('type4').value);
+        charts.c4 = new Chart(document.getElementById('chart4'), {
+            type: conf4.type,
+            data: {
+                labels: sSorted,
+                datasets: [{ label: 'Members', data: sSorted.map(s => sheps[s]), backgroundColor: '#fbbc04' }]
+            },
+            options: { indexAxis: conf4.indexAxis, responsive: true, maintainAspectRatio: false }
+        });
+    }
+
+    // Modal functions remain the same...
     function openModal(city, type) {
-        const monthIdx = document.getElementById('monthSelect').value;
-        const monthData = rawData.monthly[monthIdx];
-        const fullList = type === 'active' ? monthData.activeNames : monthData.missingNames;
-        currentModalList = fullList.filter(p => p.city === city);
-        
-        const areas = [...new Set(currentModalList.map(p => p.area))].sort();
-        const areaSelect = document.getElementById('modalAreaFilter');
-        areaSelect.innerHTML = '<option value="All">All Areas</option>' + areas.map(a => `<option value="${a}">${a}</option>`).join('');
-        
-        document.getElementById('modalTitle').innerText = `${city} (${monthData.month}) - ${type.toUpperCase()}`;
-        document.getElementById('modalSearch').value = '';
-        filterModalList();
+        const monthData = rawData.monthly[document.getElementById('monthSelect').value];
+        const list = (type === 'active' ? monthData.activeNames : monthData.missingNames).filter(p => p.city === city);
+        document.getElementById('modalTitle').innerText = `${city} (${type})`;
+        document.getElementById('modalBody').innerHTML = list.map(p => `<tr><td>${p.name}</td><td>${p.area}</td><td>${p.sheperd}</td></tr>`).join('');
         document.getElementById('nameModal').style.display = 'block';
     }
-
-    function filterModalList() {
-        const selectedArea = document.getElementById('modalAreaFilter').value;
-        const search = document.getElementById('modalSearch').value.toLowerCase();
-        const filtered = currentModalList.filter(p => 
-            (selectedArea === "All" || p.area === selectedArea) &&
-            (p.name.toLowerCase().includes(search))
-        );
-        document.getElementById('modalBody').innerHTML = filtered.map(p => `
-            <tr><td>${p.name}</td><td>${p.area}</td><td><span style="font-size:11px; color:var(--primary)">${p.sheperd}</span></td></tr>
-        `).join('');
-    }
-
     function closeModal() { document.getElementById('nameModal').style.display = 'none'; }
-
-function renderCharts(cities, data) {
-    const actData = cities.map(c => data.activeNames.filter(p => p.city === c).length);
-    const misData = cities.map(c => data.missingNames.filter(p => p.city === c).length);
-    const selection = document.getElementById('chartType').value;
-    
-    // Logic for "Area" and "Stacked"
-    const isArea = selection === 'area';
-    const isStacked = selection === 'stacked';
-    const isHorizontal = selection === 'horizontalBar';
-    
-    // Determine base type (Area and Stacked both use 'line' or 'bar' as base)
-    const chartType = isArea ? 'line' : (isStacked || isHorizontal ? 'bar' : selection);
-    const indexAxis = isHorizontal ? 'y' : 'x';
-    const colors = cities.map((_, i) => `hsl(${i * (360 / cities.length)}, 70%, 50%)`);
-
-    const createConfig = (title, datasets) => ({
-        type: chartType,
-        data: { labels: cities, datasets: datasets },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            indexAxis: indexAxis,
-            plugins: {
-                legend: { display: true, position: 'top' },
-                title: { display: true, text: title }
-            },
-            // Hide scales for Pie/Doughnut/Radar
-            scales: (['pie', 'doughnut', 'polarArea', 'radar'].includes(chartType)) ? {} : {
-                x: { stacked: isStacked, beginAtZero: true },
-                y: { stacked: isStacked, beginAtZero: true }
-            }
-        }
-    });
-
-    // --- CHART 1: Attendance ---
-    if (chartLTM) chartLTM.destroy();
-    chartLTM = new Chart(document.getElementById('ltmChart'), createConfig('Attendance by City', [{
-        label: 'Attendance',
-        data: actData,
-        backgroundColor: (['pie', 'doughnut', 'polarArea'].includes(chartType)) ? colors : 'rgba(26, 115, 232, 0.6)',
-        borderColor: '#1a73e8',
-        fill: isArea, // This is the secret for Area Charts
-        tension: 0.4
-    }]));
-
-    // --- CHART 2: Church Life Status ---
-    if (chartCL) chartCL.destroy();
-    chartCL = new Chart(document.getElementById('clChart'), createConfig('Active vs Missing', [
-        { 
-            label: 'Active', 
-            data: actData, 
-            backgroundColor: isArea ? 'rgba(52, 168, 83, 0.4)' : '#34a853', 
-            borderColor: '#34a853',
-            fill: isArea, 
-            tension: 0.4 
-        },
-        { 
-            label: 'Missing', 
-            data: misData, 
-            backgroundColor: isArea ? 'rgba(217, 48, 37, 0.4)' : '#d93025', 
-            borderColor: '#d93025',
-            fill: isArea, 
-            tension: 0.4 
-        }
-    ]));
-}
 </script>
+
 </body>
 </html>
