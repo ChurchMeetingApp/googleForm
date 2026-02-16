@@ -183,7 +183,6 @@
     document.getElementById('meetingType').addEventListener('change', checkAndSyncAttendance);
     document.getElementById('locFilter').addEventListener('change', checkAndSyncAttendance);
 
-    // 2. The Fetch & Sync Function
 async function checkAndSyncAttendance() {
     const date = document.getElementById('attDate').value;
     const meeting = document.getElementById('meetingType').value;
@@ -193,7 +192,7 @@ async function checkAndSyncAttendance() {
     if (!date || !meeting) return;
 
     const loader = document.getElementById('loadingOverlay');
-    loader.style.display = 'flex';
+    if (loader) loader.style.display = 'flex';
 
     unlockUI();
     console.log("Checking server for existing records...");
@@ -210,48 +209,54 @@ async function checkAndSyncAttendance() {
         const response = await fetch(`${API_URL}?${params.toString()}`);
         const existingKeys = await response.json();
 
-        // 1. Reset: Uncheck all first to start fresh
-        const checkboxes = document.querySelectorAll('.indiv-check');
-        checkboxes.forEach(cb => cb.checked = false);
+        // 1. Clear the Memory Bank
+        selectedNames.clear(); 
 
-        // 2. The IF / ELSE Logic
+        // 2. NEW: Reset secondary dropdown filters to "All" (empty string)
+        document.getElementById('areaFilter').value = "";
+        document.getElementById('bORs').value = "";
+        document.getElementById('grpFilter').value = "";
+        document.getElementById('langFilter').value = "";
+        document.getElementById('searchFilter').value = ""; // Also clear search box
+
         if (existingKeys && existingKeys.length > 0) {
             existingKeys.forEach(key => {
-                // Split the server string "SNo|Name|Family"
                 const parts = key.split('|');
                 const name = parts[1];
                 const family = parts[2];
 
-                // Match using your existing data-name and data-fam
-                const cb = document.querySelector(`.indiv-check[data-name="${name}"][data-fam="${family}"]`);
-                if (cb) cb.checked = true;
+                // Save to Memory Bank
+                selectedNames.add(`${name}|${family}`);
             });
 
             showToast(`Found ${existingKeys.length} existing entries.`);
             document.getElementById('btnText').innerText = "Update Attendance";
         } else {
-            // Else block: No records found, set button back to Submit
             document.getElementById('btnText').innerText = "Submit Attendance";
         }
+
+        // 3. Redraw the screen (Filters are now cleared, so everyone shows up)
+        renderUI();
+
     } catch (e) {
         console.error("Fetch Error:", e);
     } finally {
-        loader.style.display = 'none';
+        if (loader) loader.style.display = 'none';
     }
 }
-    function checkRequirements() {
-        const date = document.getElementById('attDate').value;
-        const meeting = document.getElementById('meetingType').value;
-        //const location = document.getElementById('locFilter').value;
 
-        if (!date || meeting === "") {
-            document.getElementById('alertMessage').innerHTML =
-                "Please select the <b>Date and Meeting Name</b> first.";
-            document.getElementById('selectionAlert').style.display = 'flex';
-            return false;
-        }
-        return true;
+function checkRequirements() {
+    const date = document.getElementById('attDate').value;
+    const meeting = document.getElementById('meetingType').value;
+
+    if (!date || meeting === "") {
+        document.getElementById('alertMessage').innerHTML =
+            "Please select the <b>Date and Meeting Name</b> first.";
+        document.getElementById('selectionAlert').style.display = 'flex';
+        return false;
     }
+    return true;
+}
 
     window.onload = () => {
         document.getElementById('attDate').valueAsDate = new Date();
@@ -374,31 +379,63 @@ async function checkAndSyncAttendance() {
                 if (fam !== "Individual") {
                     html += `<div class="family-header"><input type="checkbox" onchange="selectFamily(this)"><span>${fam}</span></div>`;
                 }
-                families[fam].forEach(p => {
-                    html += `
-                <div class="member-row" onclick="togglePerson(this)">
-                    <div class="name-container">
-                        <span class="name-text">${p.name}</span><br>
-                        <span class="age-sub">${p.ageGrp} | ${p.location}</span>
-                    </div>
-                    <input type="checkbox" class="indiv-check" 
-                           data-name="${p.name}" data-fam="${fam}" data-bors="${p.bORs}" 
-                           data-grp="${p.ageGrp}" data-area="${p.area}" data-lang="${p.language}" data-loc="${p.location}" 
-                           data-city="${p.city}" data-sheperd="${p.sheperd}">
-                </div>`;
-                });
+	families[fam].forEach(p => {
+    		// Create a unique key for this person
+    		const personKey = `${p.name}|${fam}`;
+    
+    		// Check if they are already in our 'selectedNames' memory
+    		const isChecked = selectedNames.has(personKey) ? "checked" : "";
+
+    		html += `
+    		<div class="member-row" onclick="togglePerson(this)">
+        		<div class="name-container">
+            		<span class="name-text">${p.name}</span><br>
+            		<span class="age-sub">${p.ageGrp} | ${p.location}</span>
+        		</div>
+        		<input type="checkbox" class="indiv-check" ${isChecked}
+               		data-name="${p.name}" data-fam="${fam}" data-bors="${p.bORs}" 
+               		data-grp="${p.ageGrp}" data-area="${p.area}" data-lang="${p.language}" data-loc="${p.location}" 
+               		data-city="${p.city}" data-sheperd="${p.sheperd}">
+    		</div>`;
+		});
                 container.innerHTML += html + `</div>`;
             });
     }
+   let selectedNames = new Set();
 
-    function togglePerson(row) {
-        const cb = row.querySelector('.indiv-check');
-        cb.checked = !cb.checked;
-    }
+function togglePerson(row) {
+    const cb = row.querySelector('.indiv-check');
+    if (event.target.type !== 'checkbox') cb.checked = !cb.checked;
 
-    function selectFamily(headerCb) {
-        headerCb.closest('.family-card').querySelectorAll('.indiv-check').forEach(cb => cb.checked = headerCb.checked);
+    const personKey = `${cb.dataset.name}|${cb.dataset.fam}`;
+
+    if (cb.checked) {
+        selectedNames.add(personKey); // Save to memory
+    } else {
+        selectedNames.delete(personKey); // Remove from memory
     }
+}
+
+function selectFamily(headerCb) {
+    // 1. Find the card and all individual checkboxes inside it
+    const card = headerCb.closest('.family-card');
+    const checkboxes = card.querySelectorAll('.indiv-check');
+    
+    checkboxes.forEach(cb => {
+        // 2. Make the small checkbox match the big family checkbox
+        cb.checked = headerCb.checked;
+        
+        // 3. Create the key (must match the format in openConfirmation)
+        const key = `${cb.dataset.name.trim()}|${cb.dataset.fam.trim()}`;
+        
+        // 4. Update the Memory Bank
+        if (cb.checked) {
+            selectedNames.add(key);
+        } else {
+            selectedNames.delete(key);
+        }
+    });
+}
 
     function validateMeetingSelection() {
         const meetingType = document.getElementById('meetingType').value;
@@ -410,41 +447,63 @@ async function checkAndSyncAttendance() {
         return true;
     }
 
-    function openConfirmation() {
-        if (!validateMeetingSelection()) return;
+function openConfirmation() {
+    if (!validateMeetingSelection()) return;
 
-        const checked = Array.from(document.querySelectorAll('.indiv-check:checked'));
-        if (checked.length === 0) return alert("Select members first!");
+    // Get the current location filter value
+    const currentLoc = document.getElementById('locFilter').value;
 
-        const meeting = document.getElementById('meetingType').value;
-        const date = document.getElementById('attDate').value;
-	const location = document.getElementById('locFilter').value || "All Locations";
-	const city = "Bengaluru"; // Or get from your city variable
+    // 1. Create the data from Memory AND check the Location Filter
+    const selectedData = masterData.filter(p => {
+        const key = `${p.name}|${p.family}`;
+        
+        // Condition A: Is the person in our "Memory Bank"?
+        const isSelected = selectedNames.has(key);
+        
+        // Condition B: Does the person match the current Location filter?
+        // (If location filter is empty/null, we allow everyone selected)
+        const matchesLoc = !currentLoc || p.location === currentLoc;
 
-        pendingData = {
-            meetingName: meeting,
-            date: date,
-            attendanceData: checked.map(cb => ({
-                name: cb.dataset.name,
-                family: cb.dataset.fam,
-                bORs: cb.dataset.bors,
-                ageGrp: cb.dataset.grp,
-                area: cb.dataset.area,
-                language: cb.dataset.lang,
-                location: cb.dataset.loc,
-                city: cb.dataset.city,
-                sheperd: cb.dataset.sheperd
-            }))
-        };
+        return isSelected && matchesLoc;
+    });
 
-        // Update the header with Meeting, Count, Date, and Location info
-	document.getElementById('modalHeader').innerText = `${meeting} (${checked.length}) | ${date} | ${city} - ${location}`;
-        document.getElementById('modalBody').innerHTML = `<ol>` +
-            pendingData.attendanceData.map(m => `<li><b>${m.name}</b> <small>(${m.family})</small></li>`).join('') +
-            `</ol>`;
-
-        document.getElementById('confirmModal').style.display = 'flex';
+    if (selectedData.length === 0) {
+        return alert("No members selected for the current location filter!");
     }
+
+    const meeting = document.getElementById('meetingType').value;
+    const date = document.getElementById('attDate').value;
+    const location = document.getElementById('locFilter').value;
+    const city = document.getElementById('cityFilter').value;;
+
+    pendingData = {
+        meetingName: meeting,
+        date: date,
+        location: location,
+	city: city,
+        attendanceData: selectedData.map(p => ({
+            name: p.name,
+            family: p.family,
+            bORs: p.bORs,
+            ageGrp: p.ageGrp,
+            area: p.area,
+            language: p.language,
+            location: p.location,
+            city: p.city,
+            sheperd: p.sheperd
+        }))
+    };
+
+    // Update Modal Header with the specific location being submitted
+    const locDisplay = currentLoc || "All Locations";
+    document.getElementById('modalHeader').innerText = `${meeting} (${selectedData.length}) | ${date} | ${city} - ${locDisplay}`;
+    
+    document.getElementById('modalBody').innerHTML = `<ol>` +
+        pendingData.attendanceData.map(m => `<li><b>${m.name}</b> <small>(${m.family})</small></li>`).join('') +
+        `</ol>`;
+
+    document.getElementById('confirmModal').style.display = 'flex';
+}
 
     function closeModal() {
         document.getElementById('confirmModal').style.display = 'none';
