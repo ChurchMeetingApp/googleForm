@@ -156,8 +156,8 @@
                 <thead>
                     <tr>
                         <th>Area Name</th>
-                        <th class="num" style="color:var(--success)">Act</th>
-                        <th class="num" style="color:var(--danger)">Miss</th>
+                        <th class="num">Act</th>
+                        <th class="num">Miss</th>
                     </tr>
                 </thead>
                 <tbody id="body3"></tbody>
@@ -223,7 +223,7 @@
             
             initCityFilters();
             updateUI();
-        } catch (e) { console.error("Data load failed", e); }
+        } catch (e) { console.error("Load failed", e); }
     };
 
     function initCityFilters() {
@@ -266,7 +266,7 @@
             <td class="num"><a class="drill-link" style="color:var(--danger)" onclick="openModal('${selectedCity}', 'missing')">${cityMissing.length}</a></td></tr>
         `;
 
-        // Table 3: Areas (Active and Missing)
+        // Table 3: Areas with drill-down links
         const areasActive = {}; 
         const areasMissing = {};
         cityActive.forEach(p => { if(p.area) areasActive[p.area] = (areasActive[p.area] || 0) + 1; });
@@ -278,13 +278,16 @@
         document.getElementById('body3').innerHTML = aLabels.map(a => {
             const act = areasActive[a] || 0;
             const mis = areasMissing[a] || 0;
-            return `<tr><td>${a}</td><td class="num" style="color:var(--success)">${act}</td><td class="num" style="color:var(--danger)">${mis}</td></tr>`;
+            return `<tr>
+                <td>${a}</td>
+                <td class="num"><a class="drill-link" style="color:var(--success)" onclick="openModal('${selectedCity}', 'active', '${a}')">${act}</a></td>
+                <td class="num"><a class="drill-link" style="color:var(--danger)" onclick="openModal('${selectedCity}', 'missing', '${a}')">${mis}</a></td>
+            </tr>`;
         }).join('');
 
-        // Table 4: Shepherds (Active Only)
+        // Table 4
         const shepsActive = {}; 
         cityActive.forEach(p => { const s = p.sheperd || "None"; shepsActive[s] = (shepsActive[s] || 0) + 1; });
-
         const sLabels = Object.keys(shepsActive).sort((a,b) => shepsActive[b] - shepsActive[a]);
 
         document.getElementById('shepTitle').innerText = `Shepherds: ${selectedCity}`;
@@ -297,59 +300,44 @@
 
     function renderCharts(city, trend, active, missing, aLabels, aActive, aMissing, sLabels, sActive) {
         Object.values(charts).forEach(c => c.destroy());
-
-        // Chart 1
         const conf1 = getChartConfig(document.getElementById('type1').value);
         charts.c1 = new Chart(document.getElementById('chart1'), {
             type: conf1.type,
-            data: {
-                labels: trend.map(d => d.date),
-                datasets: [{ label: 'Attendance', data: trend.map(d => d.total), backgroundColor: '#1a73e8', borderColor: '#1a73e8', fill: false, tension: 0.3 }]
-            },
+            data: { labels: trend.map(d => d.date), datasets: [{ label: 'Attendance', data: trend.map(d => d.total), backgroundColor: '#1a73e8', borderColor: '#1a73e8', fill: false, tension: 0.3 }] },
             options: { indexAxis: conf1.indexAxis, responsive: true, maintainAspectRatio: false }
         });
-
-        // Chart 2
         const conf2 = getChartConfig(document.getElementById('type2').value);
         charts.c2 = new Chart(document.getElementById('chart2'), {
             type: conf2.type,
-            data: {
-                labels: ['Active', 'Missing'],
-                datasets: [{ data: [active.length, missing.length], backgroundColor: ['#34a853', '#d93025'] }]
-            },
+            data: { labels: ['Active', 'Missing'], datasets: [{ data: [active.length, missing.length], backgroundColor: ['#34a853', '#d93025'] }] },
             options: { indexAxis: conf2.indexAxis, responsive: true, maintainAspectRatio: false }
         });
-
-        // Chart 3 (Stacked Area)
         const conf3 = getChartConfig(document.getElementById('type3').value);
         charts.c3 = new Chart(document.getElementById('chart3'), {
             type: conf3.type,
-            data: {
-                labels: aLabels,
-                datasets: [
-                    { label: 'Active', data: aLabels.map(l => aActive[l] || 0), backgroundColor: '#34a853' },
-                    { label: 'Missing', data: aLabels.map(l => aMissing[l] || 0), backgroundColor: '#d93025' }
-                ]
-            },
+            data: { labels: aLabels, datasets: [{ label: 'Active', data: aLabels.map(l => aActive[l] || 0), backgroundColor: '#34a853' }, { label: 'Missing', data: aLabels.map(l => aMissing[l] || 0), backgroundColor: '#d93025' }] },
             options: { indexAxis: conf3.indexAxis, responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true }, y: { stacked: true } } }
         });
-
-        // Chart 4 (Shepherd Load - Active Only)
         const conf4 = getChartConfig(document.getElementById('type4').value);
         charts.c4 = new Chart(document.getElementById('chart4'), {
             type: conf4.type,
-            data: {
-                labels: sLabels,
-                datasets: [{ label: 'Active Members', data: sLabels.map(l => sActive[l]), backgroundColor: '#1a73e8' }]
-            },
+            data: { labels: sLabels, datasets: [{ label: 'Active', data: sLabels.map(l => sActive[l]), backgroundColor: '#1a73e8' }] },
             options: { indexAxis: conf4.indexAxis, responsive: true, maintainAspectRatio: false }
         });
     }
 
-    function openModal(city, type) {
+    // Enhanced Modal with Area Filtering
+    function openModal(city, type, area = null) {
         const monthData = rawData.monthly[document.getElementById('monthSelect').value];
-        const list = (type === 'active' ? monthData.activeNames : monthData.missingNames).filter(p => p.city === city);
-        document.getElementById('modalTitle').innerText = `${city} (${type.toUpperCase()})`;
+        let list = (type === 'active' ? monthData.activeNames : monthData.missingNames).filter(p => p.city === city);
+        
+        if (area) {
+            list = list.filter(p => p.area === area);
+            document.getElementById('modalTitle').innerText = `${area} - ${type.toUpperCase()}`;
+        } else {
+            document.getElementById('modalTitle').innerText = `${city} (${type.toUpperCase()})`;
+        }
+        
         document.getElementById('modalBody').innerHTML = list.map(p => `<tr><td>${p.name}</td><td>${p.area}</td><td>${p.sheperd}</td></tr>`).join('');
         document.getElementById('nameModal').style.display = 'block';
     }
