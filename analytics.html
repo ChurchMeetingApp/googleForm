@@ -3,124 +3,66 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Church Analytics Pro - Unified & Filtered</title>
+    <title>Church Analytics - Contextual Trend</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root { --primary: #1a73e8; --success: #34a853; --danger: #d93025; --warning: #fbbc04; --bg: #f8f9fa; --card-shadow: 0 2px 10px rgba(0,0,0,0.08); }
         body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); margin: 0; padding: 10px; color: #3c4043; }
         
         .top-bar { background: white; padding: 15px; border-radius: 12px; margin-bottom: 15px; box-shadow: var(--card-shadow); display: flex; flex-wrap: wrap; align-items: center; gap: 15px; position: sticky; top: 10px; z-index: 1000; }
-        .filter-group { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 150px; }
+        .filter-group { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 180px; }
         
         .grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
         @media (min-width: 900px) { .grid { grid-template-columns: 1fr 1fr; } }
 
-        .card { background: white; border-radius: 16px; padding: 16px; box-shadow: var(--card-shadow); border: 1px solid #e0e0e0; display: flex; flex-direction: column; }
-        .header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 10px; }
-        h3 { font-size: 13px; color: #5f6368; margin: 0; text-transform: uppercase; letter-spacing: 0.5px; }
+        .card { background: white; border-radius: 16px; padding: 16px; box-shadow: var(--card-shadow); border: 1px solid #e0e0e0; display: flex; flex-direction: column; height: 480px; }
+        .header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        h3 { font-size: 12px; color: #5f6368; margin: 0; text-transform: uppercase; letter-spacing: 0.5px; }
         
-        select { padding: 6px 10px; border-radius: 8px; border: 1px solid #dadce0; font-size: 12px; background: #fff; cursor: pointer; }
+        select { padding: 6px; border-radius: 8px; border: 1px solid #dadce0; font-size: 12px; background: #fff; cursor: pointer; }
         
-        .chart-box { height: 220px; width: 100%; margin-bottom: 15px; position: relative; }
-        .table-container { max-height: 180px; overflow-y: auto; border-radius: 8px; border: 1px solid #f1f3f4; }
+        .chart-box { height: 180px; width: 100%; margin-bottom: 10px; }
+        .table-container { flex-grow: 1; overflow-y: auto; border-radius: 8px; border: 1px solid #f1f3f4; }
         
         table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        th, td { padding: 10px; border-bottom: 1px solid #f1f3f4; text-align: left; }
+        th, td { padding: 8px 10px; border-bottom: 1px solid #f1f3f4; text-align: left; }
         th { background: #f8f9fa; font-weight: 600; position: sticky; top: 0; z-index: 10; color: #5f6368; }
         .num { text-align: center; font-weight: bold; width: 50px; }
         
         .drill-link { text-decoration: none; cursor: pointer; color: var(--primary); font-weight: 700; }
 
-        #nameModal { 
-            display:none; 
-            position:fixed; 
-            top:0; left:0; 
-            width:100%; height:100%; 
-            background:rgba(0,0,0,0.85); 
-            z-index:2000; 
-            padding: 10px; 
-            box-sizing: border-box;
-        }
-
-        .modal-content { 
-            background:white; 
-            width: 100%; 
-            max-width:500px; 
-            margin: 0 auto; 
-            border-radius:16px; 
-            max-height: 90vh; 
-            display:flex; 
-            flex-direction:column; 
-            position: relative; 
-            top: 50%; 
-            transform: translateY(-50%);
-            overflow: hidden;
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 20px;
-            border-bottom: 1px solid #f1f3f4;
-        }
-
-        .close-btn-header {
-            border: none;
-            background: #f1f3f4;
-            color: #333;
-            padding: 6px 12px;
-            border-radius: 8px;
-            font-weight: bold;
-            cursor: pointer;
-            font-size: 13px;
-        }
-
-        .modal-footer {
-            padding: 10px;
-            border-top: 1px solid #f1f3f4;
-            display: flex;
-            justify-content: center;
-        }
-
-        .footer-close-btn {
-            width: 100%;
-            padding: 12px;
-            background: #f1f3f4;
-            border: none;
-            border-radius: 8px;
-            font-weight: bold;
-            color: #3c4043;
-            cursor: pointer;
-        }
+        #nameModal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:2000; padding: 10px; }
+        .modal-content { background:white; width: 100%; max-width:500px; margin: 20px auto; border-radius:16px; max-height: 90vh; display:flex; flex-direction:column; overflow: hidden; position: relative; top: 5%; }
+        .modal-header { display: flex; justify-content: space-between; padding: 15px; border-bottom: 1px solid #f1f3f4; align-items: center; }
+        .close-btn { background: #eee; border: none; padding: 5px 15px; border-radius: 5px; cursor: pointer; }
     </style>
 </head>
 <body>
 
 <div class="top-bar">
     <div class="filter-group">
-        <label style="font-size:13px; font-weight:600">Month:</label>
-        <select id="monthSelect" onchange="updateUI()" style="flex:1"></select>
+        <label style="font-size:13px; font-weight:600">View By:</label>
+        <select id="rangeSelect" onchange="rebuildPeriodDropdown()">
+            <option value="1">Monthly</option>
+            <option value="3">Quarterly</option>
+            <option value="6">Half Yearly</option>
+        </select>
     </div>
     <div class="filter-group">
-        <label style="font-size:13px; font-weight:600">City View:</label>
-        <select id="areaCityFilter" onchange="updateUI()" style="flex:1"></select>
+        <label style="font-size:13px; font-weight:600">Period:</label>
+        <select id="periodSelect" onchange="updateUI()"></select>
+    </div>
+    <div class="filter-group">
+        <label style="font-size:13px; font-weight:600">City:</label>
+        <select id="areaCityFilter" onchange="updateUI()"></select>
     </div>
 </div>
-
-<template id="chartOptionsTemplate">
-    <option value="bar-v">V-Bar</option>
-    <option value="bar-h">H-Bar</option>
-    <option value="line" selected>Line</option>
-    <option value="pie">Pie</option>
-    <option value="doughnut">Doughnut</option>
-</template>
 
 <div class="grid">
     <div class="card">
         <div class="header-row">
-            <h3 id="trendTitle">Lord's Table Meeting</h3>
-            <select id="type1" onchange="updateUI()"></select>
+            <h3 id="ltmTitle">Lord's Table Meeting</h3>
+            <select id="type1" onchange="updateUI()"><option value="line">Line</option><option value="bar">Bar</option></select>
         </div>
         <div class="chart-box"><canvas id="chart1"></canvas></div>
         <div class="table-container">
@@ -133,13 +75,13 @@
 
     <div class="card">
         <div class="header-row">
-            <h3 id="statusTitle">Church Life</h3>
-            <select id="type2" onchange="updateUI()"></select>
+            <h3 id="statusTitle">Church Life Trend</h3>
+            <select id="type2" onchange="updateUI()"><option value="bar">Bar</option><option value="line">Line</option></select>
         </div>
         <div class="chart-box"><canvas id="chart2"></canvas></div>
         <div class="table-container">
             <table>
-                <thead><tr><th>City View</th><th class="num">Active</th><th class="num">Miss</th></tr></thead>
+                <thead><tr><th>Period</th><th class="num">Act</th><th class="num">Miss</th></tr></thead>
                 <tbody id="body2"></tbody>
             </table>
         </div>
@@ -148,18 +90,12 @@
     <div class="card">
         <div class="header-row">
             <h3 id="areaTitle">Area Distribution</h3>
-            <select id="type3" onchange="updateUI()"></select>
+            <select id="type3" onchange="updateUI()"><option value="bar">H-Bar</option><option value="pie">Pie</option></select>
         </div>
         <div class="chart-box"><canvas id="chart3"></canvas></div>
         <div class="table-container">
             <table>
-                <thead>
-                    <tr>
-                        <th>Area Name</th>
-                        <th class="num">Act</th>
-                        <th class="num">Miss</th>
-                    </tr>
-                </thead>
+                <thead><tr><th>Area Name</th><th class="num">Act</th><th class="num">Miss</th></tr></thead>
                 <tbody id="body3"></tbody>
             </table>
         </div>
@@ -168,17 +104,12 @@
     <div class="card">
         <div class="header-row">
             <h3 id="shepTitle">Shepherd Load</h3>
-            <select id="type4" onchange="updateUI()"></select>
+            <select id="type4" onchange="updateUI()"><option value="bar">Bar</option></select>
         </div>
         <div class="chart-box"><canvas id="chart4"></canvas></div>
         <div class="table-container">
             <table>
-                <thead>
-                    <tr>
-                        <th>Shepherd</th>
-                        <th class="num">Active</th>
-                    </tr>
-                </thead>
+                <thead><tr><th>Shepherd</th><th class="num">Active</th></tr></thead>
                 <tbody id="body4"></tbody>
             </table>
         </div>
@@ -189,7 +120,7 @@
     <div class="modal-content">
         <div class="modal-header">
             <h2 id="modalTitle" style="font-size:16px; margin:0; color:var(--primary)"></h2>
-            <button class="close-btn-header" onclick="closeModal()">CLOSE</button>
+            <button class="close-btn" onclick="closeModal()">CLOSE</button>
         </div>
         <div class="table-container">
             <table>
@@ -197,148 +128,138 @@
                 <tbody id="modalBody"></tbody>
             </table>
         </div>
-        <div class="modal-footer">
-            <button class="footer-close-btn" onclick="closeModal()">DONE</button>
-        </div>
     </div>
 </div>
 
 <script>
     const API = "https://script.google.com/macros/s/AKfycbyWD724YvzDPZXOZjkvTNiV30qE2doD2CrV8cKwELQNB4-h2dlW1x82vMJn0APAkm_C/exec";
-    let rawData, charts = {};
+    let rawData, charts = {}, groupedPeriods = [];
+
+    // Local Test Data (Falls back to this if fetch fails or for immediate testing)
+    const mockData = {
+        "ltm": [{"date": "15/01/2026", "total": 46, "city": "Bengaluru"}, {"date": "01/02/2026", "total": 38, "city": "Bengaluru"}, {"date": "08/02/2026", "total": 42, "city": "Bengaluru"}],
+        "monthly": [
+            { "month": "January 2026", "activeNames": [{"name": "Babu", "area": "Indira Nagar", "city": "Bengaluru", "sheperd": "Jiloo"}], "missingNames": [] },
+            { "month": "February 2026", "activeNames": [{"name": "Sujatha", "area": "Indira Nagar", "city": "Bengaluru"}], "missingNames": [{"name": "Babu", "area": "Indira Nagar", "city": "Bengaluru", "sheperd": "Jiloo"}] }
+        ]
+    };
 
     window.onload = async () => {
-        ['type1', 'type2', 'type3', 'type4'].forEach(id => {
-            document.getElementById(id).innerHTML = document.getElementById('chartOptionsTemplate').innerHTML;
-        });
-
         try {
             const response = await fetch(API + "?action=getAnalytics");
             rawData = await response.json();
-            
-            const mSelect = document.getElementById('monthSelect');
-            rawData.monthly.forEach((m, idx) => {
-                mSelect.innerHTML += `<option value="${idx}">${m.month}</option>`;
-            });
-            
-            initCityFilters();
-            updateUI();
-        } catch (e) { console.error("Load failed", e); }
+        } catch (e) { 
+            console.error("Load failed, using local data", e);
+            rawData = mockData; // Using mock for demonstration
+        }
+        rebuildPeriodDropdown();
     };
 
-    function initCityFilters() {
-        const idx = document.getElementById('monthSelect').value;
-        if(!rawData.monthly[idx]) return;
-        const monthData = rawData.monthly[idx];
-        const cities = [...new Set([...monthData.activeNames, ...monthData.missingNames].map(p => p.city))].sort();
-        const cityFilter = document.getElementById('areaCityFilter');
-        cityFilter.innerHTML = cities.map(c => `<option value="${c}">${c}</option>`).join('');
+    function rebuildPeriodDropdown() {
+        const range = parseInt(document.getElementById('rangeSelect').value);
+        const pSelect = document.getElementById('periodSelect');
+        groupedPeriods = [];
+        pSelect.innerHTML = "";
+
+        if (!rawData || !rawData.monthly) return;
+
+        for (let i = 0; i < rawData.monthly.length; i += range) {
+            let chunk = rawData.monthly.slice(i, i + range);
+            let label = chunk.length > 1 ? `${chunk[0].month} - ${chunk[chunk.length-1].month}` : chunk[0].month;
+            groupedPeriods.push({ label, indices: Array.from({length: chunk.length}, (_, k) => i + k) });
+            pSelect.innerHTML += `<option value="${groupedPeriods.length - 1}">${label}</option>`;
+        }
+        pSelect.value = groupedPeriods.length - 1;
+        initCityFilters();
+        updateUI();
     }
 
-    function getChartConfig(typeValue) {
-        let type = typeValue;
-        let indexAxis = 'x';
-        if (typeValue === 'bar-h') { type = 'bar'; indexAxis = 'y'; }
-        if (typeValue === 'bar-v') { type = 'bar'; indexAxis = 'x'; }
-        return { type, indexAxis };
+    function parseSafeDate(dateStr) {
+        if (!dateStr) return new Date(NaN);
+        const p = dateStr.split('/');
+        return p.length === 3 ? new Date(p[2], p[1] - 1, p[0]) : new Date(dateStr);
     }
 
     function updateUI() {
-        const idx = document.getElementById('monthSelect').value;
+        const periodIdx = parseInt(document.getElementById('periodSelect').value);
         const selectedCity = document.getElementById('areaCityFilter').value;
-        const monthData = rawData.monthly[idx];
+        if (!selectedCity || isNaN(periodIdx) || !groupedPeriods[periodIdx]) return;
 
-        const cityTrend = rawData.ltm.filter(d => d.city === selectedCity);
-        const cityActive = monthData.activeNames.filter(p => p.city === selectedCity);
-        const cityMissing = monthData.missingNames.filter(p => p.city === selectedCity);
+        const currentGroup = groupedPeriods[periodIdx];
+        const activeMonthNames = currentGroup.indices.map(i => rawData.monthly[i].month.toLowerCase());
+        
+        // 1. Lord's Table Meeting Filtering
+        const cityLTM = rawData.ltm.filter(d => {
+            if (d.city !== selectedCity) return false;
+            const dateObj = parseSafeDate(d.date);
+            const mYear = dateObj.toLocaleString('en-US', { month: 'long', year: 'numeric' }).toLowerCase();
+            return activeMonthNames.includes(mYear);
+        }).sort((a,b) => parseSafeDate(a.date) - parseSafeDate(b.date));
 
-        // Table 1
-        document.getElementById('trendTitle').innerText = `LTM : ${selectedCity}`;
-        document.getElementById('body1').innerHTML = cityTrend.map(i => 
-            `<tr><td>LTM/CLTM</td><td>${i.date}</td><td class="num">${i.total}</td></tr>`
-        ).join('');
+        document.getElementById('body1').innerHTML = cityLTM.map(d => `<tr><td>LTM</td><td>${d.date}</td><td class="num">${d.total}</td></tr>`).join('') || '<tr><td colspan="3">No data</td></tr>';
 
-        // Table 2
-        document.getElementById('statusTitle').innerText = `Church Life: ${selectedCity}`;
-        document.getElementById('body2').innerHTML = `
-            <tr><td>${selectedCity}</td>
-            <td class="num"><a class="drill-link" style="color:var(--success)" onclick="openModal('${selectedCity}', 'active')">${cityActive.length}</a></td>
-            <td class="num"><a class="drill-link" style="color:var(--danger)" onclick="openModal('${selectedCity}', 'missing')">${cityMissing.length}</a></td></tr>
-        `;
+        // 2. Church Life Trend
+        let c2L = [], c2A = [], c2M = [], b2 = "";
+        currentGroup.indices.forEach(idx => {
+            const m = rawData.monthly[idx];
+            const uA = m.activeNames.filter(p => p.city === selectedCity).length;
+            const uM = m.missingNames.filter(p => p.city === selectedCity).length;
+            c2L.push(m.month); c2A.push(uA); c2M.push(uM);
+            b2 += `<tr><td>${m.month}</td><td class="num"><a class="drill-link" onclick="openMonthDrill(${idx}, 'active')">${uA}</a></td><td class="num"><a class="drill-link" style="color:red" onclick="openMonthDrill(${idx}, 'missing')">${uM}</a></td></tr>`;
+        });
+        document.getElementById('body2').innerHTML = b2;
 
-        // Table 3: Areas with drill-down links
-        const areasActive = {}; 
-        const areasMissing = {};
-        cityActive.forEach(p => { if(p.area) areasActive[p.area] = (areasActive[p.area] || 0) + 1; });
-        cityMissing.forEach(p => { if(p.area) areasMissing[p.area] = (areasMissing[p.area] || 0) + 1; });
+        // 3 & 4. Summary & Shepherds
+        let allA = [], allM = [];
+        currentGroup.indices.forEach(i => {
+            allA.push(...rawData.monthly[i].activeNames.filter(p => p.city === selectedCity));
+            allM.push(...rawData.monthly[i].missingNames.filter(p => p.city === selectedCity));
+        });
+        
+        const uAct = Array.from(new Map(allA.map(p => [p.name, p])).values());
+        const uMiss = Array.from(new Map(allM.map(p => [p.name, p])).values());
 
-        const aLabels = [...new Set([...Object.keys(areasActive), ...Object.keys(areasMissing)])].sort();
+        const aA = {}, aM = {};
+        uAct.forEach(p => aA[p.area] = (aA[p.area] || 0) + 1);
+        uMiss.forEach(p => aM[p.area] = (aM[p.area] || 0) + 1);
+        const aL = [...new Set([...Object.keys(aA), ...Object.keys(aM)])].sort();
+        document.getElementById('body3').innerHTML = aL.map(a => `<tr><td>${a}</td><td class="num">${aA[a]||0}</td><td class="num">${aM[a]||0}</td></tr>`).join('');
 
-        document.getElementById('areaTitle').innerText = `Areas: ${selectedCity}`;
-        document.getElementById('body3').innerHTML = aLabels.map(a => {
-            const act = areasActive[a] || 0;
-            const mis = areasMissing[a] || 0;
-            return `<tr>
-                <td>${a}</td>
-                <td class="num"><a class="drill-link" style="color:var(--success)" onclick="openModal('${selectedCity}', 'active', '${a}')">${act}</a></td>
-                <td class="num"><a class="drill-link" style="color:var(--danger)" onclick="openModal('${selectedCity}', 'missing', '${a}')">${mis}</a></td>
-            </tr>`;
-        }).join('');
+        const sMap = {};
+        uAct.forEach(p => { const s = p.sheperd || p.shepherd || "None"; sMap[s] = (sMap[s] || 0) + 1; });
+        const sL = Object.keys(sMap).sort((a,b) => sMap[b] - sMap[a]);
+        document.getElementById('body4').innerHTML = sL.map(s => `<tr><td>${s}</td><td class="num">${sMap[s]}</td></tr>`).join('');
 
-        // Table 4
-        const shepsActive = {}; 
-        cityActive.forEach(p => { const s = p.sheperd || "None"; shepsActive[s] = (shepsActive[s] || 0) + 1; });
-        const sLabels = Object.keys(shepsActive).sort((a,b) => shepsActive[b] - shepsActive[a]);
-
-        document.getElementById('shepTitle').innerText = `Shepherds: ${selectedCity}`;
-        document.getElementById('body4').innerHTML = sLabels.map(s => `
-            <tr><td>${s}</td><td class="num">${shepsActive[s]}</td></tr>
-        `).join('');
-
-        renderCharts(selectedCity, cityTrend, cityActive, cityMissing, aLabels, areasActive, areasMissing, sLabels, shepsActive);
+        renderCharts(cityLTM, c2L, c2A, c2M, aL, aA, aM, sL, sMap);
     }
 
-    function renderCharts(city, trend, active, missing, aLabels, aActive, aMissing, sLabels, sActive) {
+    function initCityFilters() {
+        const cities = [...new Set(rawData.ltm.map(p => p.city))].sort();
+        const cityFilter = document.getElementById('areaCityFilter');
+        const prev = cityFilter.value;
+        cityFilter.innerHTML = cities.map(c => `<option value="${c}">${c}</option>`).join('');
+        if (cities.includes(prev)) cityFilter.value = prev;
+    }
+
+    function renderCharts(ltm, c2L, c2A, c2M, aL, aA, aM, sL, sMap) {
         Object.values(charts).forEach(c => c.destroy());
-        const conf1 = getChartConfig(document.getElementById('type1').value);
-        charts.c1 = new Chart(document.getElementById('chart1'), {
-            type: conf1.type,
-            data: { labels: trend.map(d => d.date), datasets: [{ label: 'Attendance', data: trend.map(d => d.total), backgroundColor: '#1a73e8', borderColor: '#1a73e8', fill: false, tension: 0.3 }] },
-            options: { indexAxis: conf1.indexAxis, responsive: true, maintainAspectRatio: false }
-        });
-        const conf2 = getChartConfig(document.getElementById('type2').value);
-        charts.c2 = new Chart(document.getElementById('chart2'), {
-            type: conf2.type,
-            data: { labels: ['Active', 'Missing'], datasets: [{ data: [active.length, missing.length], backgroundColor: ['#34a853', '#d93025'] }] },
-            options: { indexAxis: conf2.indexAxis, responsive: true, maintainAspectRatio: false }
-        });
-        const conf3 = getChartConfig(document.getElementById('type3').value);
-        charts.c3 = new Chart(document.getElementById('chart3'), {
-            type: conf3.type,
-            data: { labels: aLabels, datasets: [{ label: 'Active', data: aLabels.map(l => aActive[l] || 0), backgroundColor: '#34a853' }, { label: 'Missing', data: aLabels.map(l => aMissing[l] || 0), backgroundColor: '#d93025' }] },
-            options: { indexAxis: conf3.indexAxis, responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true }, y: { stacked: true } } }
-        });
-        const conf4 = getChartConfig(document.getElementById('type4').value);
-        charts.c4 = new Chart(document.getElementById('chart4'), {
-            type: conf4.type,
-            data: { labels: sLabels, datasets: [{ label: 'Active', data: sLabels.map(l => sActive[l]), backgroundColor: '#1a73e8' }] },
-            options: { indexAxis: conf4.indexAxis, responsive: true, maintainAspectRatio: false }
-        });
+        const ctx1 = document.getElementById('chart1'), ctx2 = document.getElementById('chart2'), ctx3 = document.getElementById('chart3'), ctx4 = document.getElementById('chart4');
+        
+        charts.c1 = new Chart(ctx1, { type: document.getElementById('type1').value, data: { labels: ltm.map(d=>d.date), datasets: [{label:'Attendance', data:ltm.map(d=>d.total), borderColor:'#1a73e8', backgroundColor:'#1a73e833', fill:true}] }, options: { maintainAspectRatio:false }});
+        charts.c2 = new Chart(ctx2, { type: document.getElementById('type2').value, data: { labels: c2L, datasets: [{label:'Active', data:c2A, backgroundColor:'#34a853'},{label:'Missing', data:c2M, backgroundColor:'#d93025'}] }, options: { maintainAspectRatio:false }});
+        charts.c3 = new Chart(ctx3, { type: 'bar', data: { labels: aL, datasets: [{label:'Active', data:aL.map(l=>aA[l]||0), backgroundColor:'#34a853'}] }, options: { indexAxis: 'y', maintainAspectRatio:false }});
+        charts.c4 = new Chart(ctx4, { type: 'bar', data: { labels: sL, datasets: [{label:'People', data:sL.map(l=>sMap[l]), backgroundColor:'#1a73e8'}] }, options: { indexAxis:'y', maintainAspectRatio:false }});
     }
 
-    // Enhanced Modal with Area Filtering
-    function openModal(city, type, area = null) {
-        const monthData = rawData.monthly[document.getElementById('monthSelect').value];
-        let list = (type === 'active' ? monthData.activeNames : monthData.missingNames).filter(p => p.city === city);
-        
-        if (area) {
-            list = list.filter(p => p.area === area);
-            document.getElementById('modalTitle').innerText = `${area} - ${type.toUpperCase()}`;
-        } else {
-            document.getElementById('modalTitle').innerText = `${city} (${type.toUpperCase()})`;
-        }
-        
-        document.getElementById('modalBody').innerHTML = list.map(p => `<tr><td>${p.name}</td><td>${p.area}</td><td>${p.sheperd}</td></tr>`).join('');
+    function openMonthDrill(mIdx, type) {
+        const city = document.getElementById('areaCityFilter').value;
+        const list = type === 'active' ? rawData.monthly[mIdx].activeNames : rawData.monthly[mIdx].missingNames;
+        showModal(`${rawData.monthly[mIdx].month} - ${type.toUpperCase()}`, list.filter(p => p.city === city));
+    }
+
+    function showModal(title, people) {
+        document.getElementById('modalTitle').innerText = title;
+        document.getElementById('modalBody').innerHTML = people.map(p => `<tr><td>${p.name}</td><td>${p.area}</td><td>${p.sheperd || p.shepherd || 'N/A'}</td></tr>`).join('');
         document.getElementById('nameModal').style.display = 'block';
     }
 
