@@ -5,37 +5,336 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Church Analytics - Contextual Trend</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        :root { --primary: #1a73e8; --success: #34a853; --danger: #d93025; --warning: #fbbc04; --bg: #f8f9fa; --card-shadow: 0 2px 10px rgba(0,0,0,0.08); }
-        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); margin: 0; padding: 10px; color: #3c4043; }
-        
-        .top-bar { background: white; padding: 15px; border-radius: 12px; margin-bottom: 15px; box-shadow: var(--card-shadow); display: flex; flex-wrap: wrap; align-items: center; gap: 15px; position: sticky; top: 10px; z-index: 1000; }
-        .filter-group { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 180px; }
-        
-        .grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
-        @media (min-width: 900px) { .grid { grid-template-columns: 1fr 1fr; } }
+<style>
+    :root { 
+        --primary: #1a73e8; 
+        --success: #34a853; 
+        --danger: #d93025; 
+        --warning: #fbbc04; 
+        --bg: #f8f9fa; 
+        --card-shadow: 0 2px 10px rgba(0,0,0,0.08); 
+    }
+    
+    body { 
+        font-family: 'Segoe UI', system-ui, sans-serif; 
+        background: var(--bg); 
+        margin: 0; 
+        padding: 10px; 
+        color: #3c4043; 
+        -webkit-tap-highlight-color: transparent;
+    }
 
-        .card { background: white; border-radius: 16px; padding: 16px; box-shadow: var(--card-shadow); border: 1px solid #e0e0e0; display: flex; flex-direction: column; height: 480px; }
-        .header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-        h3 { font-size: 12px; color: #5f6368; margin: 0; text-transform: uppercase; letter-spacing: 0.5px; }
-        
-        select { padding: 6px; border-radius: 8px; border: 1px solid #dadce0; font-size: 12px; background: #fff; cursor: pointer; }
-        
-        .chart-box { height: 180px; width: 100%; margin-bottom: 10px; }
-        .table-container { flex-grow: 1; overflow-y: auto; border-radius: 8px; border: 1px solid #f1f3f4; }
-        
-        table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        th, td { padding: 8px 10px; border-bottom: 1px solid #f1f3f4; text-align: left; }
-        th { background: #f8f9fa; font-weight: 600; position: sticky; top: 0; z-index: 10; color: #5f6368; }
-        .num { text-align: center; font-weight: bold; width: 50px; }
-        
-        .drill-link { text-decoration: none; cursor: pointer; color: var(--primary); font-weight: 700; }
+    /* Top Bar: Adaptive wrap for mobile */
+    .top-bar { 
+        background: white; 
+        padding: 12px; 
+        border-radius: 12px; 
+        margin-bottom: 15px; 
+        box-shadow: var(--card-shadow); 
+        display: flex; 
+        flex-wrap: wrap; 
+        align-items: center; 
+        gap: 10px; 
+        position: sticky; 
+        top: 10px; 
+        z-index: 1000; 
+    }
 
-        #nameModal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:2000; padding: 10px; }
-        .modal-content { background:white; width: 100%; max-width:500px; margin: 20px auto; border-radius:16px; max-height: 90vh; display:flex; flex-direction:column; overflow: hidden; position: relative; top: 5%; }
-        .modal-header { display: flex; justify-content: space-between; padding: 15px; border-bottom: 1px solid #f1f3f4; align-items: center; }
-        .close-btn { background: #eee; border: none; padding: 5px 15px; border-radius: 5px; cursor: pointer; }
-    </style>
+    /* Filters: Grow to fill space on mobile */
+    .filter-group { 
+        display: flex; 
+        align-items: center; 
+        gap: 8px; 
+        flex: 1 1 140px; /* Base width of 140px, grows to fill */
+    }
+    
+    .filter-group label {
+        font-size: 12px;
+        white-space: nowrap;
+    }
+
+    /* Grid: Single column default, 2 columns on desktop */
+    .grid { 
+        display: grid; 
+        grid-template-columns: 1fr; 
+        gap: 15px; 
+    }
+    @media (min-width: 900px) { 
+        .grid { grid-template-columns: 1fr 1fr; } 
+    }
+
+    /* Cards: Responsive height */
+    .card { 
+        background: white; 
+        border-radius: 16px; 
+        padding: 16px; 
+        box-shadow: var(--card-shadow); 
+        border: 1px solid #e0e0e0; 
+        display: flex; 
+        flex-direction: column; 
+        height: 480px; /* Fixed for desktop */
+        box-sizing: border-box;
+    }
+
+    /* Mobile Card Adjustment */
+    @media (max-width: 600px) {
+        .card { 
+            height: 520px; /* Slightly taller on mobile to accommodate touch targets */
+            padding: 12px;
+        }
+        .top-bar { padding: 10px; gap: 8px; }
+    }
+
+    .header-row { 
+        display: flex; 
+        justify-content: space-between; 
+        align-items: center; 
+        margin-bottom: 12px; 
+    }
+
+    h3 { 
+        font-size: 11px; 
+        color: #5f6368; 
+        margin: 0; 
+        text-transform: uppercase; 
+        letter-spacing: 0.5px; 
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    
+    select { 
+        padding: 6px; 
+        border-radius: 8px; 
+        border: 1px solid #dadce0; 
+        font-size: 12px; 
+        background: #fff; 
+        cursor: pointer;
+        outline: none;
+    }
+    
+    .chart-box { 
+        height: 200px; /* Fixed height for Chart.js */
+        width: 100%; 
+        margin-bottom: 10px; 
+        position: relative;
+    }
+
+    .table-container { 
+        flex-grow: 1; 
+        overflow-y: auto; 
+        border-radius: 8px; 
+        border: 1px solid #f1f3f4; 
+        background: #fff;
+    }
+    
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th, td { padding: 10px 8px; border-bottom: 1px solid #f1f3f4; text-align: left; }
+    th { 
+        background: #f8f9fa; 
+        font-weight: 600; 
+        position: sticky; 
+        top: 0; 
+        z-index: 10; 
+        color: #5f6368; 
+    }
+    
+    .num { text-align: center; font-weight: bold; width: 45px; }
+    
+    .drill-link { 
+        text-decoration: none; 
+        cursor: pointer; 
+        color: var(--primary); 
+        font-weight: 700; 
+        display: inline-block;
+        padding: 2px 4px;
+    }
+
+    /* Modal: Mobile Optimized */
+    #nameModal { 
+        display:none; 
+        position:fixed; 
+        top:0; 
+        left:0; 
+        width:100%; 
+        height:100%; 
+        background:rgba(0,0,0,0.85); 
+        z-index:2000; 
+    }
+    
+    .modal-content { 
+        background:white; 
+        width: 95%; 
+        max-width:500px; 
+        margin: 10px auto; 
+        border-radius:16px; 
+        max-height: 90vh; 
+        display:flex; 
+        flex-direction:column; 
+        overflow: hidden; 
+        position: relative; 
+        top: 5%; 
+    }
+    
+    @media (max-width: 600px) {
+        .modal-content { margin: 5px auto; width: 98%; height: 95vh; top: 2%; }
+    }
+
+    .modal-header { 
+        display: flex; 
+        justify-content: space-between; 
+        padding: 15px; 
+        border-bottom: 1px solid #f1f3f4; 
+        align-items: center; 
+    }
+    
+    .close-btn { 
+        background: #f1f3f4; 
+        border: none; 
+        padding: 8px 16px; 
+        border-radius: 8px; 
+        cursor: pointer; 
+        font-weight: 600;
+        color: #3c4043;
+    }
+
+/* Modal Backdrop */
+#nameModal { 
+    display: none; 
+    position: fixed; 
+    top: 0; 
+    left: 0; 
+    width: 100%; 
+    height: 100%; 
+    background: rgba(0, 0, 0, 0.6); 
+    backdrop-filter: blur(4px); /* Modern blur effect */
+    z-index: 2000; 
+    padding: 15px;
+    box-sizing: border-box;
+}
+
+/* Modal Box */
+.modal-content { 
+    background: white; 
+    width: 100%; 
+    max-width: 550px; 
+    margin: 20px auto; 
+    border-radius: 16px; 
+    max-height: 85vh; 
+    display: flex; 
+    flex-direction: column; 
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+    overflow: hidden; 
+    position: relative;
+    animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+/* Modal Header */
+.modal-header { 
+    display: flex; 
+    justify-content: space-between; 
+    padding: 16px 20px; 
+    border-bottom: 1px solid #eee; 
+    align-items: center;
+    background: #fff;
+}
+
+#modalTitle {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--primary);
+    margin: 0;
+}
+
+.close-btn-header {
+    background: #f8f9fa;
+    border: 1px solid #ddd;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    color: #666;
+}
+
+/* Modal Body (Scrollable Table) */
+.modal-content .table-container { 
+    flex: 1; 
+    overflow-y: auto; 
+    padding: 0; /* Remove padding to let table flush with edges */
+}
+
+.modal-content table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.modal-content th {
+    background: #f8f9fa;
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    border-bottom: 2px solid #eee;
+    padding: 12px 15px;
+}
+
+.modal-content td {
+    padding: 12px 15px;
+    border-bottom: 1px solid #f1f1f1;
+    font-size: 14px;
+}
+
+/* Modal Footer */
+.modal-footer {
+    padding: 15px 20px;
+    border-top: 1px solid #eee;
+    display: flex;
+    justify-content: flex-end;
+    background: #f8f9fa;
+}
+
+.footer-close-btn {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    width: 100%; /* Full width on mobile by default */
+}
+
+@media (min-width: 600px) {
+    .footer-close-btn { width: auto; } /* Normal width on desktop */
+}
+.card { 
+    background: white; 
+    border-radius: 16px; 
+    padding: 16px; 
+    box-shadow: var(--card-shadow); 
+    border: 1px solid #e0e0e0; 
+    display: flex; 
+    flex-direction: column; 
+    /* Change height to min-height */
+    min-height: 480px; 
+    height: auto; 
+    box-sizing: border-box; /* Critical for mobile padding */
+}
+
+/* Ensure the chart-box doesn't collapse */
+.chart-box { 
+    height: 220px; 
+    width: 100%; 
+    margin-bottom: 10px; 
+    position: relative; /* Essential for Chart.js responsiveness */
+}
+
+</style>
 </head>
 <body>
 
@@ -62,7 +361,11 @@
     <div class="card">
         <div class="header-row">
             <h3 id="ltmTitle">Lord's Table Meeting</h3>
-            <select id="type1" onchange="updateUI()"><option value="line">Line</option><option value="bar">Bar</option></select>
+            <select id="type1" onchange="updateUI()">
+                <option value="line">Line</option>
+                <option value="area">Area</option>
+                <option value="bar">V-Bar</option>
+            </select>
         </div>
         <div class="chart-box"><canvas id="chart1"></canvas></div>
         <div class="table-container">
@@ -75,8 +378,12 @@
 
     <div class="card">
         <div class="header-row">
-            <h3 id="statusTitle">Church Life Trend</h3>
-            <select id="type2" onchange="updateUI()"><option value="bar">Bar</option><option value="line">Line</option></select>
+            <h3 id="statusTitle">Church Life Members</h3>
+            <select id="type2" onchange="updateUI()">
+                <option value="bar">V-Bar</option>
+                <option value="line">Line</option>
+                <option value="heat">Heat</option>
+            </select>
         </div>
         <div class="chart-box"><canvas id="chart2"></canvas></div>
         <div class="table-container">
@@ -88,23 +395,37 @@
     </div>
 
     <div class="card">
-        <div class="header-row">
-            <h3 id="areaTitle">Area Distribution</h3>
-            <select id="type3" onchange="updateUI()"><option value="bar">H-Bar</option><option value="pie">Pie</option></select>
-        </div>
-        <div class="chart-box"><canvas id="chart3"></canvas></div>
-        <div class="table-container">
-            <table>
-                <thead><tr><th>Area Name</th><th class="num">Act</th><th class="num">Miss</th></tr></thead>
-                <tbody id="body3"></tbody>
-            </table>
-        </div>
+    <div class="header-row">
+        <h3 id="areaTitle">Area Distribution</h3>
+        <select id="type3" onchange="updateUI()">
+            <option value="hbar">H-Bar</option>
+            <option value="vbar">V-Bar</option>
+            <option value="pie">Pie</option>
+            <option value="doughnut">Donut</option>
+        </select>
     </div>
+    <div class="chart-box"><canvas id="chart3"></canvas></div>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Area Name</th>
+                    <th class="num">Act</th>
+                    <th class="num">Miss</th> </tr>
+            </thead>
+            <tbody id="body3"></tbody>
+        </table>
+    </div>
+</div>
 
     <div class="card">
         <div class="header-row">
-            <h3 id="shepTitle">Shepherd Load</h3>
-            <select id="type4" onchange="updateUI()"><option value="bar">Bar</option></select>
+            <h3 id="shepTitle">Shepherds</h3>
+            <select id="type4" onchange="updateUI()">
+                <option value="hbar">H-Bar</option>
+                <option value="vbar">V-Bar</option>
+                <option value="heat">Heat</option>
+            </select>
         </div>
         <div class="chart-box"><canvas id="chart4"></canvas></div>
         <div class="table-container">
@@ -120,7 +441,7 @@
     <div class="modal-content">
         <div class="modal-header">
             <h2 id="modalTitle" style="font-size:16px; margin:0; color:var(--primary)"></h2>
-            <button class="close-btn" onclick="closeModal()">CLOSE</button>
+            <button class="close-btn-header" onclick="closeModal()">CLOSE</button>
         </div>
         <div class="table-container">
             <table>
@@ -128,12 +449,22 @@
                 <tbody id="modalBody"></tbody>
             </table>
         </div>
+        <div class="modal-footer"><button class="footer-close-btn" onclick="closeModal()">DONE</button></div>
     </div>
 </div>
 
 <script>
     const API = "https://script.google.com/macros/s/AKfycbyWD724YvzDPZXOZjkvTNiV30qE2doD2CrV8cKwELQNB4-h2dlW1x82vMJn0APAkm_C/exec";
     let rawData, charts = {}, groupedPeriods = [];
+// Automatically redraw charts when the window size changes
+let resizeTimer;
+window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+        // Only update UI if we have data
+        if (rawData) updateUI();
+    }, 250); 
+});
 
     // Local Test Data (Falls back to this if fetch fails or for immediate testing)
     const mockData = {
@@ -180,58 +511,93 @@
         return p.length === 3 ? new Date(p[2], p[1] - 1, p[0]) : new Date(dateStr);
     }
 
+function openAreaDrill(areaName, status) {
+    const periodIdx = parseInt(document.getElementById('periodSelect').value);
+    const selectedCity = document.getElementById('areaCityFilter').value;
+    const group = groupedPeriods[periodIdx];
+    
+    let list = [];
+    group.indices.forEach(mIdx => {
+        const monthData = rawData.monthly[mIdx];
+        const source = (status === 'active') ? monthData.activeNames : monthData.missingNames;
+        
+        // Filter by City AND the specific Area clicked
+        const filtered = source.filter(p => p.city === selectedCity && p.area === areaName);
+        list.push(...filtered);
+    });
+
+    // Remove duplicates (same person appearing in multiple months within the period)
+    const uniqueList = Array.from(new Map(list.map(p => [p.name, p])).values())
+                            .sort((a, b) => a.name.localeCompare(b.name));
+
+    showModal(`${status.toUpperCase()} - Area: ${areaName}`, uniqueList);
+}
+
+
     function updateUI() {
-        const periodIdx = parseInt(document.getElementById('periodSelect').value);
-        const selectedCity = document.getElementById('areaCityFilter').value;
-        if (!selectedCity || isNaN(periodIdx) || !groupedPeriods[periodIdx]) return;
+    const periodIdx = parseInt(document.getElementById('periodSelect').value);
+    const selectedCity = document.getElementById('areaCityFilter').value;
+    if (!selectedCity || isNaN(periodIdx) || !groupedPeriods[periodIdx]) return;
 
-        const currentGroup = groupedPeriods[periodIdx];
-        const activeMonthNames = currentGroup.indices.map(i => rawData.monthly[i].month.toLowerCase());
-        
-        // 1. Lord's Table Meeting Filtering
-        const cityLTM = rawData.ltm.filter(d => {
-            if (d.city !== selectedCity) return false;
-            const dateObj = parseSafeDate(d.date);
-            const mYear = dateObj.toLocaleString('en-US', { month: 'long', year: 'numeric' }).toLowerCase();
-            return activeMonthNames.includes(mYear);
-        }).sort((a,b) => parseSafeDate(a.date) - parseSafeDate(b.date));
+    const currentGroup = groupedPeriods[periodIdx];
+    const activeMonthNames = currentGroup.indices.map(i => rawData.monthly[i].month.toLowerCase());
+    
+    // 1. Lord's Table Meeting Filtering
+    const cityLTM = rawData.ltm.filter(d => {
+        if (d.city !== selectedCity) return false;
+        const dateObj = parseSafeDate(d.date);
+        const mYear = dateObj.toLocaleString('en-US', { month: 'long', year: 'numeric' }).toLowerCase();
+        return activeMonthNames.includes(mYear);
+    }).sort((a,b) => parseSafeDate(a.date) - parseSafeDate(b.date));
 
-        document.getElementById('body1').innerHTML = cityLTM.map(d => `<tr><td>LTM</td><td>${d.date}</td><td class="num">${d.total}</td></tr>`).join('') || '<tr><td colspan="3">No data</td></tr>';
+    document.getElementById('body1').innerHTML = cityLTM.map(d => `<tr><td>LTM</td><td>${d.date}</td><td class="num">${d.total}</td></tr>`).join('') || '<tr><td colspan="3">No data</td></tr>';
 
-        // 2. Church Life Trend
-        let c2L = [], c2A = [], c2M = [], b2 = "";
-        currentGroup.indices.forEach(idx => {
-            const m = rawData.monthly[idx];
-            const uA = m.activeNames.filter(p => p.city === selectedCity).length;
-            const uM = m.missingNames.filter(p => p.city === selectedCity).length;
-            c2L.push(m.month); c2A.push(uA); c2M.push(uM);
-            b2 += `<tr><td>${m.month}</td><td class="num"><a class="drill-link" onclick="openMonthDrill(${idx}, 'active')">${uA}</a></td><td class="num"><a class="drill-link" style="color:red" onclick="openMonthDrill(${idx}, 'missing')">${uM}</a></td></tr>`;
-        });
-        document.getElementById('body2').innerHTML = b2;
+    // 2. Church Life members
+    let c2L = [], c2A = [], c2M = [], b2 = "";
+    currentGroup.indices.forEach(idx => {
+        const m = rawData.monthly[idx];
+        const uA = m.activeNames.filter(p => p.city === selectedCity).length;
+        const uM = m.missingNames.filter(p => p.city === selectedCity).length;
+        c2L.push(m.month); c2A.push(uA); c2M.push(uM);
+        b2 += `<tr><td>${m.month}</td><td class="num"><a class="drill-link" onclick="openMonthDrill(${idx}, 'active')">${uA}</a></td><td class="num"><a class="drill-link" style="color:red" onclick="openMonthDrill(${idx}, 'missing')">${uM}</a></td></tr>`;
+    });
+    document.getElementById('body2').innerHTML = b2;
 
-        // 3 & 4. Summary & Shepherds
-        let allA = [], allM = [];
-        currentGroup.indices.forEach(i => {
-            allA.push(...rawData.monthly[i].activeNames.filter(p => p.city === selectedCity));
-            allM.push(...rawData.monthly[i].missingNames.filter(p => p.city === selectedCity));
-        });
-        
-        const uAct = Array.from(new Map(allA.map(p => [p.name, p])).values());
-        const uMiss = Array.from(new Map(allM.map(p => [p.name, p])).values());
+    // 3 & 4. Summary & Shepherds
+    let allA = [], allM = [];
+    currentGroup.indices.forEach(i => {
+        allA.push(...rawData.monthly[i].activeNames.filter(p => p.city === selectedCity));
+        allM.push(...rawData.monthly[i].missingNames.filter(p => p.city === selectedCity));
+    });
+    
+    const uAct = Array.from(new Map(allA.map(p => [p.name, p])).values());
+    const uMiss = Array.from(new Map(allM.map(p => [p.name, p])).values());
 
-        const aA = {}, aM = {};
-        uAct.forEach(p => aA[p.area] = (aA[p.area] || 0) + 1);
-        uMiss.forEach(p => aM[p.area] = (aM[p.area] || 0) + 1);
-        const aL = [...new Set([...Object.keys(aA), ...Object.keys(aM)])].sort();
-        document.getElementById('body3').innerHTML = aL.map(a => `<tr><td>${a}</td><td class="num">${aA[a]||0}</td><td class="num">${aM[a]||0}</td></tr>`).join('');
+    const aA = {}, aM = {};
+    uAct.forEach(p => aA[p.area] = (aA[p.area] || 0) + 1);
+    uMiss.forEach(p => aM[p.area] = (aM[p.area] || 0) + 1);
+    
+    const aL = [...new Set([...Object.keys(aA), ...Object.keys(aM)])].sort();
 
-        const sMap = {};
-        uAct.forEach(p => { const s = p.sheperd || p.shepherd || "None"; sMap[s] = (sMap[s] || 0) + 1; });
-        const sL = Object.keys(sMap).sort((a,b) => sMap[b] - sMap[a]);
-        document.getElementById('body4').innerHTML = sL.map(s => `<tr><td>${s}</td><td class="num">${sMap[s]}</td></tr>`).join('');
+    // UPDATED SECTION: Added clickable drill-links for Area Active and Missing
+    document.getElementById('body3').innerHTML = aL.map(a => `
+        <tr>
+            <td>${a}</td>
+            <td class="num">
+                <a class="drill-link" style="color:var(--success)" onclick="openAreaDrill('${a}', 'active')">${aA[a]||0}</a>
+            </td>
+            <td class="num">
+                <a class="drill-link" style="color:var(--danger)" onclick="openAreaDrill('${a}', 'missing')">${aM[a]||0}</a>
+            </td>
+        </tr>`).join('');
 
-        renderCharts(cityLTM, c2L, c2A, c2M, aL, aA, aM, sL, sMap);
-    }
+    const sMap = {};
+    uAct.forEach(p => { const s = p.sheperd || p.shepherd || "None"; sMap[s] = (sMap[s] || 0) + 1; });
+    const sL = Object.keys(sMap).sort((a,b) => sMap[b] - sMap[a]);
+    document.getElementById('body4').innerHTML = sL.map(s => `<tr><td>${s}</td><td class="num">${sMap[s]}</td></tr>`).join('');
+
+    renderCharts(cityLTM, c2L, c2A, c2M, aL, aA, aM, sL, sMap);
+}
 
     function initCityFilters() {
         const cities = [...new Set(rawData.ltm.map(p => p.city))].sort();
@@ -241,15 +607,104 @@
         if (cities.includes(prev)) cityFilter.value = prev;
     }
 
-    function renderCharts(ltm, c2L, c2A, c2M, aL, aA, aM, sL, sMap) {
-        Object.values(charts).forEach(c => c.destroy());
-        const ctx1 = document.getElementById('chart1'), ctx2 = document.getElementById('chart2'), ctx3 = document.getElementById('chart3'), ctx4 = document.getElementById('chart4');
-        
-        charts.c1 = new Chart(ctx1, { type: document.getElementById('type1').value, data: { labels: ltm.map(d=>d.date), datasets: [{label:'Attendance', data:ltm.map(d=>d.total), borderColor:'#1a73e8', backgroundColor:'#1a73e833', fill:true}] }, options: { maintainAspectRatio:false }});
-        charts.c2 = new Chart(ctx2, { type: document.getElementById('type2').value, data: { labels: c2L, datasets: [{label:'Active', data:c2A, backgroundColor:'#34a853'},{label:'Missing', data:c2M, backgroundColor:'#d93025'}] }, options: { maintainAspectRatio:false }});
-        charts.c3 = new Chart(ctx3, { type: 'bar', data: { labels: aL, datasets: [{label:'Active', data:aL.map(l=>aA[l]||0), backgroundColor:'#34a853'}] }, options: { indexAxis: 'y', maintainAspectRatio:false }});
-        charts.c4 = new Chart(ctx4, { type: 'bar', data: { labels: sL, datasets: [{label:'People', data:sL.map(l=>sMap[l]), backgroundColor:'#1a73e8'}] }, options: { indexAxis:'y', maintainAspectRatio:false }});
-    }
+function renderCharts(ltm, c2L, c2A, c2M, aL, aA, aM, sL, sMap) {
+    // 1. Destroy existing charts to allow re-rendering
+    Object.values(charts).forEach(c => { if(c) c.destroy(); });
+
+    // Helper: Generate Heatmap colors based on value intensity
+    const getHeatColor = (val, max, r, g, b) => {
+        const intensity = max > 0 ? (val / max) : 0;
+        return `rgba(${r}, ${g}, ${b}, ${0.2 + (intensity * 0.8)})`;
+    };
+
+    // --- CARD 1: Lord's Table Meeting ---
+    const t1 = document.getElementById('type1').value; // line, area, bar
+    charts.c1 = new Chart(document.getElementById('chart1'), {
+        type: t1 === 'area' ? 'line' : t1, 
+        data: {
+            labels: ltm.map(d => d.date),
+            datasets: [{
+                label: 'Attendance',
+                data: ltm.map(d => d.total),
+                borderColor: '#1a73e8',
+                backgroundColor: t1 === 'area' ? 'rgba(26, 115, 232, 0.4)' : '#1a73e8',
+                fill: t1 === 'area', // Area effect
+                tension: 0.3
+            }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+    });
+
+    // --- CARD 2: Church Life Trend ---
+    const t2 = document.getElementById('type2').value; // bar, line, heat
+    const maxVal2 = Math.max(...c2A, ...c2M, 1);
+    charts.c2 = new Chart(document.getElementById('chart2'), {
+        type: t2 === 'heat' ? 'bar' : t2,
+        data: {
+            labels: c2L,
+            datasets: [
+                { 
+                    label: 'Act', 
+                    data: c2A, 
+                    backgroundColor: t2 === 'heat' ? c2A.map(v => getHeatColor(v, maxVal2, 52, 168, 83)) : '#34a853' 
+                },
+                { 
+                    label: 'Miss', 
+                    data: c2M, 
+                    backgroundColor: t2 === 'heat' ? c2M.map(v => getHeatColor(v, maxVal2, 217, 48, 37)) : '#d93025' 
+                }
+            ]
+        },
+        options: { 
+            responsive: true, 
+            maintainAspectRatio: false,
+            scales: { x: { stacked: t2 !== 'line' }, y: { stacked: t2 !== 'line' } }
+        }
+    });
+
+    // --- CARD 3: Area Distribution ---
+    const t3 = document.getElementById('type3').value; // hbar, vbar, pie, doughnut
+    const isRound = ['pie', 'doughnut'].includes(t3);
+    charts.c3 = new Chart(document.getElementById('chart3'), {
+        type: isRound ? t3 : 'bar',
+        data: {
+            labels: aL,
+            datasets: [{
+                label: 'Active',
+                data: aL.map(l => aA[l] || 0),
+                backgroundColor: isRound ? ['#4285f4', '#34a853', '#fbbc05', '#ea4335', '#9c27b0'] : '#34a853'
+            }]
+        },
+        options: {
+            indexAxis: t3 === 'hbar' ? 'y' : 'x', // This makes it H-Bar
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: isRound, position: 'bottom' } }
+        }
+    });
+
+    // --- CARD 4: Shepherds ---
+    const t4 = document.getElementById('type4').value; // hbar, vbar, heat
+    const sValues = sL.map(l => sMap[l]);
+    const maxVal4 = Math.max(...sValues, 1);
+    charts.c4 = new Chart(document.getElementById('chart4'), {
+        type: 'bar',
+        data: {
+            labels: sL,
+            datasets: [{ 
+                label: 'Active', 
+                data: sValues, 
+                backgroundColor: t4 === 'heat' ? sValues.map(v => getHeatColor(v, maxVal4, 26, 115, 232)) : '#1a73e8'
+            }]
+        },
+        options: { 
+            indexAxis: t4 === 'hbar' ? 'y' : 'x', 
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } }
+        }
+    });
+}
 
     function openMonthDrill(mIdx, type) {
         const city = document.getElementById('areaCityFilter').value;
