@@ -87,7 +87,7 @@
       <div class="fee-box">
         <label>
           <input type="checkbox" id="new-fee-paid">
-          I paid the registration fee of ₹350 INR
+          I paid the registration fee of ₹350 INR (optional)
         </label>
       </div>
       <button type="submit" class="btn-submit" id="newSubmitBtn" style="background:#16a34a;">Submit New Registration</button>
@@ -126,7 +126,7 @@
     <div class="fee-box">
       <label>
         <input type="checkbox" id="fee-paid">
-        I paid the registration fee of ₹350 INR
+        I paid the registration fee of ₹350 INR (optional)
       </label>
     </div>
     <button type="submit" class="btn-submit" id="submitBtn">Update</button>
@@ -224,22 +224,19 @@
     }
   }
 
-
   document.getElementById('traineeForm').addEventListener('submit', function (e) {
     e.preventDefault();
-    const name = document.getElementById('name').value;
-    const lang = document.getElementById('language').value;
-    const loc  = document.getElementById('location').value;
+    const name    = document.getElementById('name').value;
+    const lang    = document.getElementById('language').value;
+    const loc     = document.getElementById('location').value;
+    const feePaid = document.getElementById('fee-paid').checked;
 
     if (!name) { alert("Please select a trainee."); return; }
     if (!lang) { alert("Please select a language."); return; }
     if (!loc)  { alert("Please select a location."); return; }
-    if (!document.getElementById('fee-paid').checked) {
-      alert("Please confirm the registration fee of ₹350 INR before submitting.");
-      return;
-    }
 
-    if (!confirm(`Confirm details:\n\nTrainee: ${name}\nLanguage: ${lang}\nLocation: ${loc}\nFee: ₹350 INR \n\nSubmit?`)) return;
+    const feeText = feePaid ? "₹350 INR - Paid" : "Not paid yet";
+    if (!confirm(`Confirm details:\n\nTrainee: ${name}\nLanguage: ${lang}\nLocation: ${loc}\nFee: ${feeText}\n\nSubmit?`)) return;
 
     const btn = document.getElementById('submitBtn');
     btn.innerText = "Processing...";
@@ -248,7 +245,7 @@
     fetch(scriptURL, {
       method: 'POST',
       mode: 'no-cors',
-      body: JSON.stringify({ action: "add", rowId: selectedRow, name, language: lang, location: loc })
+      body: JSON.stringify({ action: "add", rowId: selectedRow, name, language: lang, location: loc, feePaid })
     }).then(() => {
       alert("Registration updated successfully!");
       btn.innerText = "Success!";
@@ -276,6 +273,7 @@
     const language = document.getElementById('new-language').value;
     const bs       = document.getElementById('new-bs').value;
     const loc      = document.getElementById('new-location').value;
+    const feePaid  = document.getElementById('new-fee-paid').checked;
 
     if (!name)     { alert("Please enter a name."); return; }
     if (!language) { alert("Please select a language."); return; }
@@ -287,12 +285,8 @@
       return;
     }
 
-    if (!document.getElementById('new-fee-paid').checked) {
-      alert("Please confirm the registration fee of ₹350 INR before submitting.");
-      return;
-    }
-
-    if (!confirm(`Confirm new registration:\n\nName: ${name}\nLanguage: ${language}\nB/S: ${bs}\nLocation: ${loc}\nFee: ₹350 INR agreed\n\nSubmit?`)) return;
+    const feeText = feePaid ? "₹350 INR - Paid" : "Not paid yet";
+    if (!confirm(`Confirm new registration:\n\nName: ${name}\nLanguage: ${language}\nB/S: ${bs}\nLocation: ${loc}\nFee: ${feeText}\n\nSubmit?`)) return;
 
     const btn = document.getElementById('newSubmitBtn');
     btn.innerText = "Submitting...";
@@ -301,7 +295,7 @@
     fetch(scriptURL, {
       method: 'POST',
       mode: 'no-cors',
-      body: JSON.stringify({ action: "addNew", name, language, bs, location: loc, type: "", ftMessages: "" })
+      body: JSON.stringify({ action: "addNew", name, language, bs, location: loc, type: "", ftMessages: "", feePaid })
     }).then(() => {
       alert(`${name} registered successfully!`);
       btn.innerText = "Registered!";
