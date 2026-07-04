@@ -18,12 +18,6 @@
     label { display: block; font-size: 14px; font-weight: 600; color: #475569; margin-bottom: 6px; }
     select, input { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; }
     input:read-only { background: #f1f5f9; }
-    #pt-container { display: none; background: #f1f5f9; padding: 10px; border-radius: 12px; margin-top: 15px; border: 2px solid #cbd5e1; }
-    .counter-badge { font-weight: bold; margin-bottom: 10px; color: var(--primary); font-size: 14px; }
-    .date-row { display: grid; grid-template-columns: 70px 1fr 1fr 1fr; align-items: center; padding: 8px; background: white; margin-bottom: 6px; border-radius: 8px; border-left: 4px solid var(--primary); gap: 5px; }
-    .date-label { font-weight: 700; font-size: 12px; color: #334155; }
-    .check-item { display: flex; align-items: center; font-size: 11px; cursor: pointer; white-space: nowrap; }
-    .check-item input { width: 16px; height: 16px; margin-right: 4px; flex-shrink: 0; }
     .error-msg { color: var(--error); font-size: 13px; font-weight: bold; display: none; margin-top: 10px; }
     .btn-submit { width: 100%; background: var(--primary); color: white; padding: 16px; border: none; border-radius: 8px; font-weight: bold; font-size: 16px; margin-top: 15px; cursor: pointer; }
     .btn-submit:disabled { background: #94a3b8; cursor: not-allowed; }
@@ -40,9 +34,8 @@
 <body>
 <div class="form-card">
   <h2>Video Training Registration</h2>
-<!--<div class="usage-note">This link is intended only for registered saints to view or update their own details. Do not forward.</div> -->
-<div class="usage-note">This link is intended for saints to complete their video training registration on or before 6th July 2026.</div>
 
+  <div class="usage-note">This link is intended for saints to complete their video training registration on or before 6th July 2026.</div>
 
   <!-- ── PROGRESS BAR ── -->
   <div style="margin-bottom: 20px; text-align: center; background: #f1f5f9; padding: 15px; border-radius: 12px;">
@@ -54,19 +47,14 @@
     </div>
   </div>
 
-  
-
-
   <!-- ── NEW TRAINEE FORM ── -->
   <div id="newTraineeSection" class="new-form-section">
     <h3>New Trainee Registration</h3>
     <form id="newTraineeForm">
-
       <div class="form-group">
         <label>Full Name <span style="color:var(--error)">*</span></label>
         <input type="text" id="new-name" placeholder="Enter full name" required>
       </div>
-
       <div class="three-col">
         <div class="form-group">
           <label>Language <span style="color:var(--error)">*</span></label>
@@ -75,7 +63,7 @@
             <option value="English">English</option>
             <option value="Tamil">Tamil</option>
             <option value="Kannada">Kannada</option>
-           </select>
+          </select>
         </div>
         <div class="form-group">
           <label>B/S <span style="color:var(--error)">*</span></label>
@@ -94,18 +82,15 @@
           </select>
         </div>
       </div>
-
+      <!--
       <div class="form-group">
         <label>Training Type <span style="color:var(--error)">*</span></label>
-        <select id="new-type" required onchange="toggleNewSessions()">
+        <select id="new-type" required>
           <option value="">-- Choose Type --</option>
           <option value="FT">Full Time - FT</option>
           <option value="PT">Part Time - PT</option>
         </select>
-      </div>
-
-      <div id="new-pt-container" style="display:none;"></div>
-      <p id="error-new-pt" class="error-msg" style="display:none !important;">Part-Time (PT) requires at least 6 sessions.</p>
+      </div> -->
       <button type="submit" class="btn-submit" id="newSubmitBtn" style="background:#16a34a;">Submit New Registration</button>
     </form>
   </div>
@@ -120,7 +105,6 @@
         <option value="">Fetching names...</option>
       </select>
     </div>
-
     <div class="two-col">
       <div class="form-group">
         <label>Language</label>
@@ -135,50 +119,12 @@
         </select>
       </div>
     </div>
-
-    <div class="form-group">
-      <label>Training Type</label>
-      <select id="trainingType" required onchange="toggleSessions()">
-        <option value="">-- Choose Type --</option>
-        <option value="FT">Full Time - FT</option>
-        <option value="PT">Part Time - PT</option>
-      </select>
-    </div>
-
-    <div id="pt-container">
-      <div class="counter-badge">Sessions: <span id="count-val">0</span> / 6 Min</div>
-      <div class="date-row">
-        <span class="date-label">Jan 24</span>
-        <label class="check-item"><input type="checkbox" name="msg" value="1" onchange="updateCounter()"> Msg 1</label>
-        <label class="check-item"><input type="checkbox" name="msg" value="2" onchange="updateCounter()"> Msg 2</label>
-        <label class="check-item"><input type="checkbox" name="msg" value="3" onchange="updateCounter()"> Msg 3</label>
-      </div>
-      <div class="date-row">
-        <span class="date-label">Jan 25</span>
-        <label class="check-item"><input type="checkbox" name="msg" value="4" onchange="updateCounter()"> Msg 4</label>
-        <label class="check-item"><input type="checkbox" name="msg" value="5" onchange="updateCounter()"> Msg 5</label>
-        <label class="check-item"><input type="checkbox" name="msg" value="6" onchange="updateCounter()"> Msg 6</label>
-      </div>
-      <div class="date-row">
-        <span class="date-label">Jan 26</span>
-        <label class="check-item"><input type="checkbox" name="msg" value="7" onchange="updateCounter()"> Msg 7</label>
-        <label class="check-item"><input type="checkbox" name="msg" value="8" onchange="updateCounter()"> Msg 8</label>
-        <label class="check-item"><input type="checkbox" name="msg" value="9" onchange="updateCounter()"> Msg 9</label>
-      </div>
-      <div class="date-row">
-        <span class="date-label">Feb 01</span>
-        <label class="check-item"><input type="checkbox" name="msg" value="10" onchange="updateCounter()"> Msg 10</label>
-        <label class="check-item"><input type="checkbox" name="msg" value="11" onchange="updateCounter()"> Msg 11</label>
-        <label class="check-item"><input type="checkbox" name="msg" value="12" onchange="updateCounter()"> Msg 12</label>
-      </div>
-    </div>
-
-    <p id="error-pt" class="error-msg" style="display:none !important;">Part-Time (PT) requires at least 6 sessions.</p>
     <button type="submit" class="btn-submit" id="submitBtn">Update</button>
   </form>
+
   <!-- ── NOT IN LIST BANNER ── -->
   <div class="new-trainee-banner">
-    <span>If your name is not in the list below, click to register.</span>
+    <span>If your name is not in the list above, click to register.</span>
     <button class="btn-new" onclick="toggleNewForm()">+ New Registration</button>
   </div>
 
@@ -217,7 +163,7 @@
   function calculateStats() {
     const trainees = Object.values(traineeData);
     const total = trainees.length;
-    const filled = trainees.filter(t => t.type && t.type.toString().trim() !== "").length;
+    const filled = trainees.filter(t => t.location && t.location.toString().trim() !== "").length;
     const pct = total > 0 ? Math.round((filled / total) * 100) : 0;
     document.getElementById('reg-percent').innerText = pct;
     document.getElementById('reg-count').innerText = filled;
@@ -253,48 +199,23 @@
   // ── EXISTING FORM ───────────────────────────────────────────────────────
   function handleNameChange() {
     const name = document.getElementById('name').value;
-    const typeBox = document.getElementById('trainingType');
-    const checkboxes = document.querySelectorAll('input[name="msg"]');
-    typeBox.disabled = false;
-    checkboxes.forEach(cb => cb.checked = false);
-    document.getElementById('pt-container').style.display = 'none';
     if (name && traineeData[name]) {
       const t = traineeData[name];
       selectedRow = t.rowNum;
       document.getElementById('language').value = t.language || "";
       document.getElementById('location').value = t.location || "";
-      if (t.type && (t.type.trim() === "FT" || t.type.trim() === "PT")) {
-        typeBox.value = t.type.trim();
-        typeBox.disabled = true;
-      } else {
-        typeBox.value = "";
-      }
-      if (t.ftMessages && t.type && t.type.trim() === "PT") {
-        const saved = t.ftMessages.toString().split(',').map(s => s.trim());
-        checkboxes.forEach(cb => { if (saved.includes(cb.value)) cb.checked = true; });
-      }
-      toggleSessions();
     }
-  }
-
-  function toggleSessions() {
-    document.getElementById('pt-container').style.display = 'none';
-    updateCounter();
-  }
-
-  function updateCounter() {
-    const count = document.querySelectorAll('input[name="msg"]:checked').length;
-    document.getElementById('count-val').innerText = count;
   }
 
   document.getElementById('traineeForm').addEventListener('submit', function (e) {
     e.preventDefault();
-    const name     = document.getElementById('name').value;
-    const loc      = document.getElementById('location').value;
-    const type     = document.getElementById('trainingType').value;
-    const sessions = type === 'FT' ? "All (1-12)" : "";
+    const name = document.getElementById('name').value;
+    const loc  = document.getElementById('location').value;
 
-    if (!confirm(`Confirm details:\n\nTrainee: ${name}\nLocation: ${loc}\nType: ${type}\nSessions: ${sessions}\n\nSubmit?`)) return;
+    if (!name) { alert("Please select a trainee."); return; }
+    if (!loc)  { alert("Please select a location."); return; }
+
+    if (!confirm(`Confirm details:\n\nTrainee: ${name}\nLocation: ${loc}\n\nSubmit?`)) return;
 
     const btn = document.getElementById('submitBtn');
     btn.innerText = "Processing...";
@@ -303,7 +224,7 @@
     fetch(scriptURL, {
       method: 'POST',
       mode: 'no-cors',
-      body: JSON.stringify({ action: "add", rowId: selectedRow, name, location: loc, type, ftMessages: sessions })
+      body: JSON.stringify({ action: "add", rowId: selectedRow, name, location: loc })
     }).then(() => {
       alert("Registration updated successfully!");
       btn.innerText = "Success!";
@@ -325,27 +246,28 @@
     section.style.display = isHidden ? 'block' : 'none';
   }
 
-  function toggleNewSessions() {
-    document.getElementById('new-pt-container').style.display = 'none';
-  }
-
   document.getElementById('newTraineeForm').addEventListener('submit', function (e) {
     e.preventDefault();
     const name     = document.getElementById('new-name').value.trim();
     const language = document.getElementById('new-language').value;
     const bs       = document.getElementById('new-bs').value;
     const loc      = document.getElementById('new-location').value;
-    const type     = document.getElementById('new-type').value;
-    const sessions = type === 'FT' ? "All (1-12)" : "";
+    //const type     = document.getElementById('new-type').value;
+   // const sessions = type === 'FT' ? "All (1-12)" : "";
+    const type     = "";
+    const sessions = "";
 
     if (!name) { alert("Please enter a name."); return; }
 
     if (traineeData[name]) {
-      alert(`"${name}" already exists in the list. Please use the Update form below.`);
+      alert(`"${name}" already exists in the list. Please use the Update form above.`);
       return;
     }
 
-    if (!confirm(`Confirm new registration:\n\nName: ${name}\nLanguage: ${language}\nB/S: ${bs}\nLocation: ${loc}\nType: ${type}\nSessions: ${sessions}\n\nSubmit?`)) return;
+    //if (!confirm(`Confirm new registration:\n\nName: ${name}\nLanguage: ${language}\nB/S: ${bs}\nLocation: ${loc}\nType: ${type}\n\nSubmit?`)) return;
+
+    if (!confirm(`Confirm new registration:\n\nName: ${name}\nLanguage: ${language}\nB/S: ${bs}\nLocation: ${loc}\n\nSubmit?`)) return;
+
 
     const btn = document.getElementById('newSubmitBtn');
     btn.innerText = "Submitting...";
