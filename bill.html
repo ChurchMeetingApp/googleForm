@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tax Invoice - Shine Pest Control</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: Arial, sans-serif; font-size: 13px; color: #000; background: #f0f0f0; padding: 20px; }
+    .invoice-wrapper { max-width: 950px; margin: 0 auto; border: 2px solid #000; background: #fff; }
+
+    .header { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; border-bottom: 2px solid #000; padding: 10px; }
+    .header-left { font-size: 11px; line-height: 1.8; }
+    .header-center { text-align: center; padding: 0 20px; }
+    .header-center h1 { font-size: 22px; font-weight: 900; color: #1a237e; letter-spacing: 1px; }
+    .header-center .tagline { font-size: 11px; color: #555; margin-top: 3px; }
+    .header-center address { font-size: 11px; font-style: normal; margin-top: 5px; line-height: 1.6; }
+    .header-right { font-size: 11px; line-height: 1.8; text-align: right; }
+
+    .invoice-title { text-align: center; background: #1a237e; color: white; padding: 6px; font-size: 15px; font-weight: bold; letter-spacing: 2px; border-bottom: 2px solid #000; }
+
+    .invoice-meta { display: grid; grid-template-columns: 1fr 1fr; border-bottom: 1px solid #000; }
+    .invoice-meta .to-section { padding: 10px; border-right: 1px solid #000; }
+    .invoice-meta .info-section { padding: 10px; }
+    .invoice-meta label { font-weight: bold; font-size: 11px; color: #555; }
+    .field { border-bottom: 1px dashed #aaa; min-height: 20px; margin: 3px 0 8px 0; padding: 2px 4px; font-size: 13px; }
+    .inline { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+    .services-table { width: 100%; border-collapse: collapse; }
+    .services-table th { background: #1a237e; color: white; padding: 7px 6px; text-align: center; font-size: 12px; border: 1px solid #000; }
+    .services-table td { border: 1px solid #000; padding: 5px; font-size: 12px; vertical-align: middle; }
+    .services-table td.center { text-align: center; }
+    .services-table select { width: 100%; padding: 5px; border: 1px solid #ccc; border-radius: 4px; font-size: 12px; background: #f9f9ff; }
+    .services-table input[type="number"] { width: 100%; padding: 5px; border: 1px solid #ccc; border-radius: 4px; font-size: 12px; text-align: right; }
+    .add-row-btn { background: #1a237e; color: white; border: none; padding: 6px 16px; border-radius: 4px; cursor: pointer; font-size: 12px; margin: 8px; }
+    .del-row-btn { background: #dc2626; color: white; border: none; padding: 3px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; }
+
+    .totals-section { display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid #000; }
+    .totals-left { padding: 10px; border-right: 1px solid #000; font-size: 12px; }
+    .totals-right { padding: 0; }
+    .tax-row { display: grid; grid-template-columns: 1fr auto; border-bottom: 1px solid #000; padding: 6px 10px; font-size: 12px; align-items: center; }
+    .tax-row.grand { background: #1a237e; color: white; font-weight: bold; font-size: 14px; border-bottom: none; }
+    .tax-row input { width: 100px; text-align: right; padding: 3px 5px; border: 1px solid #ccc; border-radius: 4px; font-size: 12px; }
+    .tax-row.grand input { background: #1a237e; color: white; border: 1px solid #fff; font-weight: bold; font-size: 14px; }
+
+    .bank-section { border-top: 1px solid #000; padding: 8px 10px; font-size: 11px; line-height: 2; }
+    .bank-section strong { color: #1a237e; }
+
+    .signature-section { display: grid; grid-template-columns: 1fr 1fr 1fr; border-top: 2px solid #000; }
+    .sig-box { padding: 10px; text-align: center; font-size: 11px; }
+    .sig-box:not(:last-child) { border-right: 1px solid #000; }
+    .sig-line { border-top: 1px solid #000; margin-top: 50px; padding-top: 5px; }
+
+    .no-print { text-align: center; margin-bottom: 15px; }
+    .no-print button { background: #1a237e; color: white; padding: 10px 30px; border: none; border-radius: 6px; font-size: 14px; cursor: pointer; }
+
+    @media print {
+      body { background: #fff; padding: 0; }
+      .no-print { display: none; }
+      .services-table select,
+      .services-table input[type="number"],
+      .tax-row input { border: none; background: transparent; -webkit-appearance: none; appearance: none; }
+      .add-row-btn, .del-row-btn { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="no-print">
+  <button onclick="window.print()">&#128424; Print / Save as PDF</button>
+</div>
+
+<div class="invoice-wrapper">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-left">
+      <strong>GSTIN :</strong> 33CQNPR7050J1ZE<br>
+      <strong>Cell :</strong> 9023392
+    </div>
+    <div class="header-center">
+      <h1>SHINE PEST CONTROL</h1>
+      <div class="tagline">Professional Pest Management Services</div>
+      <address>12/2, My Street, VS Bag, Vin, Pune - 642001</address>
+    </div>
+    <div class="header-right">
+      <strong>GSTIN :</strong> 33AF237107L1ZL
+    </div>
+  </div>
+
+  <!-- TITLE -->
+  <div class="invoice-title">TAX INVOICE</div>
+
+  <!-- INVOICE META -->
+  <div class="invoice-meta">
+    <div class="to-section">
+      <label>To M/S.</label>
+      <div class="field" contenteditable="true">&nbsp;</div>
+      <label>Address</label>
+      <div class="field" contenteditable="true" style="min-height:40px;">&nbsp;</div>
+      <label>GSTIN</label>
+      <div class="field" contenteditable="true">&nbsp;</div>
+      <label>Despatched by</label>
+      <div class="field" contenteditable="true">&nbsp;</div>
+    </div>
+    <div class="info-section">
+      <div class="inline">
+        <div>
+          <label>Invoice No.</label>
+          <div class="field" contenteditable="true">239</div>
+        </div>
+        <div>
+          <label>Date</label>
+          <div class="field" contenteditable="true" id="inv-date">&nbsp;</div>
+        </div>
+      </div>
+      <label>Nature of Services</label>
+      <div class="field" contenteditable="true" style="min-height:30px;">&nbsp;</div>
+      <label>Premises to be Treated</label>
+      <div class="field" contenteditable="true" style="min-height:30px;">&nbsp;</div>
+    </div>
+  </div>
+
+  <!-- SERVICES TABLE -->
+  <table class="services-table" id="servicesTable">
+    <thead>
+      <tr>
+        <th style="width:40px;">S.No</th>
+        <th style="width:150px;">INSECTS</th>
+        <th style="width:160px;">PLACES</th>
+        <th>SERVICE / DESCRIPTION</th>
+        <th style="width:110px;">AMOUNT (Rs.)</th>
+        <th style="width:110px;">CHARGES (Rs.)</th>
+        <th style="width:40px;" class="no-print">DEL</th>
+      </tr>
+    </thead>
+    <tbody id="serviceRows"></tbody>
+    <tfoot>
+      <tr>
+        <td colspan="4" style="text-align:right; font-weight:bold; padding-right:10px; border:1px solid #000;">Total</td>
+        <td style="border:1px solid #000; text-align:right; font-weight:bold; padding:6px;" id="totalAmount">0.00</td>
+        <td style="border:1px solid #000; text-align:right; font-weight:bold; padding:6px;" id="totalCharges">0.00</td>
+        <td style="border:1px solid #000;" class="no-print"></td>
+      </tr>
+    </tfoot>
+  </table>
+
+  <div class="no-print" style="text-align:left;">
+    <button class="add-row-btn" onclick="addRow()">+ Add Row</button>
+  </div>
+
+  <!-- TOTALS -->
+  <div class="totals-section">
+    <div class="totals-left">
+      <label style="font-weight:bold; font-size:11px; color:#555;">Invoice Amount in Words :</label>
+      <div class="field" contenteditable="true" id="amountWords" style="min-height:24px; margin-top:6px;">&nbsp;</div>
+    </div>
+    <div class="totals-right">
+      <div class="tax-row">
+        <span>CGST @ 9%</span>
+        <input type="number" id="cgst" placeholder="0.00" step="0.01" min="0" oninput="calcGrandTotal()">
+      </div>
+      <div class="tax-row">
+        <span>SGST @ 9%</span>
+        <input type="number" id="sgst" placeholder="0.00" step="0.01" min="0" oninput="calcGrandTotal()">
+      </div>
+      <div class="tax-row">
+        <span>IGST @ 18%</span>
+        <input type="number" id="igst" placeholder="0.00" step="0.01" min="0" oninput="calcGrandTotal()">
+      </div>
+      <div class="tax-row grand">
+        <span>Grand Total</span>
+        <input type="text" id="grandTotal" readonly value="0.00">
+      </div>
+    </div>
+  </div>
+
+  <!-- BANK DETAILS -->
+  <div class="bank-section">
+    <strong>Bank A/C No :</strong> 023701050948 &nbsp;&nbsp;
+    <strong>Bank Branch :</strong> POLLACHI &nbsp;&nbsp;
+    <strong>IFSC :</strong> UBIN0274
+  </div>
+
+  <!-- SIGNATURES -->
+  <div class="signature-section">
+    <div class="sig-box">
+      <div class="sig-line">Customer Seal &amp; Signature</div>
+    </div>
+    <div class="sig-box">
+      <div class="sig-line">Staff / Manager Signature</div>
+    </div>
+    <div class="sig-box">
+      <div class="sig-line">For SHINE PEST CONTROL<br><strong>Authorised Signatory</strong></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const INSECTS = [
+    "", "COCKROACH", "RODENT", "MOSQUITOES", "BED BUGS",
+    "TERMITE", "ANT", "ALL INSECTS"
+  ];
+
+  const PLACES = [
+    "", "HOTEL", "RESTAURANT", "BAKERY", "LODGE", "BAR",
+    "FUNCTION HALL", "FACTORY", "OFFICE", "HOSPITAL",
+    "ALL BUILDINGS", "PAZHAMUDIR", "DEPARTMENT STORE", "OTHERS"
+  ];
+
+  let rowCount = 0;
+
+  function addRow() {
+    rowCount++;
+    const tbody = document.getElementById('serviceRows');
+    const tr = document.createElement('tr');
+
+    // S.No
+    const tdSno = document.createElement('td');
+    tdSno.className = 'center';
+    tdSno.innerText = rowCount;
+
+    // Insects dropdown
+    const tdInsects = document.createElement('td');
+    const selInsects = document.createElement('select');
+    INSECTS.forEach(function(i) {
+      const opt = document.createElement('option');
+      opt.value = i;
+      opt.text = i || '-- Select --';
+      selInsects.appendChild(opt);
+    });
+    tdInsects.appendChild(selInsects);
+
+    // Places dropdown
+    const tdPlaces = document.createElement('td');
+    const selPlaces = document.createElement('select');
+    PLACES.forEach(function(p) {
+      const opt = document.createElement('option');
+      opt.value = p;
+      opt.text = p || '-- Select --';
+      selPlaces.appendChild(opt);
+    });
+    tdPlaces.appendChild(selPlaces);
+
+    // Service description
+    const tdService = document.createElement('td');
+    tdService.contentEditable = 'true';
+    tdService.innerHTML = '&nbsp;';
+
+    // Amount
+    const tdAmount = document.createElement('td');
+    const inpAmount = document.createElement('input');
+    inpAmount.type = 'number';
+    inpAmount.placeholder = '0.00';
+    inpAmount.step = '0.01';
+    inpAmount.min = '0';
+    inpAmount.oninput = calcTotals;
+    tdAmount.appendChild(inpAmount);
+
+    // Charges
+    const tdCharges = document.createElement('td');
+    const inpCharges = document.createElement('input');
+    inpCharges.type = 'number';
+    inpCharges.placeholder = '0.00';
+    inpCharges.step = '0.01';
+    inpCharges.min = '0';
+    inpCharges.oninput = calcTotals;
+    tdCharges.appendChild(inpCharges);
+
+    // Delete button
+    const tdDel = document.createElement('td');
+    tdDel.className = 'center no-print';
+    const delBtn = document.createElement('button');
+    delBtn.className = 'del-row-btn';
+    delBtn.innerText = '\u2715';
+    delBtn.onclick = function() {
+      tr.remove();
+      renumberRows();
+      calcTotals();
+    };
+    tdDel.appendChild(delBtn);
+
+    tr.append(tdSno, tdInsects, tdPlaces, tdService, tdAmount, tdCharges, tdDel);
+    tbody.appendChild(tr);
+  }
+
+  function renumberRows() {
+    const rows = document.querySelectorAll('#serviceRows tr');
+    rows.forEach(function(r, i) {
+      r.cells[0].innerText = i + 1;
+    });
+    rowCount = rows.length;
+  }
+
+  function calcTotals() {
+    let totalAmt = 0;
+    let totalChg = 0;
+    document.querySelectorAll('#serviceRows tr').forEach(function(row) {
+      const amtInput = row.cells[4].querySelector('input');
+      const chgInput = row.cells[5].querySelector('input');
+      totalAmt += parseFloat(amtInput.value) || 0;
+      totalChg += parseFloat(chgInput.value) || 0;
+    });
+    document.getElementById('totalAmount').innerText = totalAmt.toFixed(2);
+    document.getElementById('totalCharges').innerText = totalChg.toFixed(2);
+    calcGrandTotal();
+  }
+
+  function calcGrandTotal() {
+    const totalChg = parseFloat(document.getElementById('totalCharges').innerText) || 0;
+    const cgst  = parseFloat(document.getElementById('cgst').value)  || 0;
+    const sgst  = parseFloat(document.getElementById('sgst').value)  || 0;
+    const igst  = parseFloat(document.getElementById('igst').value)  || 0;
+    const grand = totalChg + cgst + sgst + igst;
+    document.getElementById('grandTotal').value = grand.toFixed(2);
+  }
+
+  // Auto-fill today's date
+  const today = new Date();
+  const dd   = String(today.getDate()).padStart(2, '0');
+  const mm   = String(today.getMonth() + 1).padStart(2, '0');
+  const yyyy = today.getFullYear();
+  document.getElementById('inv-date').innerText = dd + '/' + mm + '/' + yyyy;
+
+  // Start with 3 rows
+  addRow();
+  addRow();
+  addRow();
+</script>
+
+</body>
+</html>
