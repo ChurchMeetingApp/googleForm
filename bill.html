@@ -6,35 +6,51 @@
   <title>Tax Invoice - Shine Pest Control</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: Arial, sans-serif; font-size: 13px; color: #000; background: #f0f0f0; padding: 20px; }
+    body { font-family: Arial, sans-serif; font-size: 13px; color: #000; background: #f0f0f0; padding: 10px; }
     .invoice-wrapper { max-width: 950px; margin: 0 auto; border: 2px solid #000; background: #fff; }
 
-    .header { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; border-bottom: 2px solid #000; padding: 10px; }
-    .header-left { font-size: 11px; line-height: 1.8; }
-    .header-center { text-align: center; padding: 0 20px; }
-    .header-center h1 { font-size: 22px; font-weight: 900; color: #1a237e; letter-spacing: 1px; }
+    /* ── HEADER ── */
+    .header { display: flex; flex-wrap: wrap; align-items: center; border-bottom: 2px solid #000; padding: 10px; gap: 8px; }
+    .header-left  { font-size: 11px; line-height: 1.8; flex: 1 1 140px; }
+    .header-center { text-align: center; flex: 2 1 200px; padding: 0 10px; }
+    .header-center h1 { font-size: clamp(16px, 4vw, 22px); font-weight: 900; color: #1a237e; letter-spacing: 1px; }
     .header-center .tagline { font-size: 11px; color: #555; margin-top: 3px; }
     .header-center address { font-size: 11px; font-style: normal; margin-top: 5px; line-height: 1.6; }
-    .header-right { font-size: 11px; line-height: 1.8; text-align: right; }
+    .header-right { font-size: 11px; line-height: 1.8; text-align: right; flex: 1 1 140px; }
 
     .invoice-title { text-align: center; background: #1a237e; color: white; padding: 6px; font-size: 15px; font-weight: bold; letter-spacing: 2px; border-bottom: 2px solid #000; }
 
+    /* ── INVOICE META ── */
     .invoice-meta { display: grid; grid-template-columns: 1fr 1fr; border-bottom: 1px solid #000; }
-    .invoice-meta .to-section { padding: 10px; border-right: 1px solid #000; }
-    .invoice-meta .info-section { padding: 10px; }
-    .invoice-meta label { font-weight: bold; font-size: 11px; color: #555; }
-    .field { border-bottom: 1px dashed #aaa; min-height: 20px; margin: 3px 0 8px 0; padding: 2px 4px; font-size: 13px; }
+    .to-section  { padding: 10px; border-right: 1px solid #000; }
+    .info-section { padding: 10px; }
+    .invoice-meta label { font-weight: bold; font-size: 11px; color: #555; display: block; margin-top: 6px; }
+    .field { border-bottom: 1px dashed #aaa; min-height: 20px; margin: 3px 0 6px 0; padding: 2px 4px; font-size: 13px; outline: none; }
     .inline { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
+    /* ── SERVICES TABLE (desktop) ── */
     .services-table { width: 100%; border-collapse: collapse; }
     .services-table th { background: #1a237e; color: white; padding: 7px 6px; text-align: center; font-size: 12px; border: 1px solid #000; }
     .services-table td { border: 1px solid #000; padding: 5px; font-size: 12px; vertical-align: middle; }
     .services-table td.center { text-align: center; }
-    .services-table select { width: 100%; padding: 5px; border: 1px solid #ccc; border-radius: 4px; font-size: 12px; background: #f9f9ff; }
-    .services-table input[type="number"] { width: 100%; padding: 5px; border: 1px solid #ccc; border-radius: 4px; font-size: 12px; text-align: right; }
-    .add-row-btn { background: #1a237e; color: white; border: none; padding: 6px 16px; border-radius: 4px; cursor: pointer; font-size: 12px; margin: 8px; }
+    .services-table select,
+    .services-table input[type="number"] { width: 100%; padding: 5px; border: 1px solid #ccc; border-radius: 4px; font-size: 12px; background: #f9f9ff; }
+    .services-table input[type="number"] { text-align: right; }
+
+    /* ── MOBILE CARD ROWS ── */
+    .service-card { display: none; border: 1px solid #ccc; border-radius: 8px; margin: 8px; padding: 10px; background: #f9f9ff; position: relative; }
+    .service-card .card-sno { font-weight: bold; color: #1a237e; margin-bottom: 8px; font-size: 13px; }
+    .service-card label { font-size: 11px; font-weight: bold; color: #555; display: block; margin-top: 8px; margin-bottom: 3px; }
+    .service-card select,
+    .service-card input { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 6px; font-size: 13px; background: #fff; }
+    .service-card .card-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .service-card .del-btn { position: absolute; top: 10px; right: 10px; background: #dc2626; color: white; border: none; border-radius: 4px; padding: 3px 8px; font-size: 11px; cursor: pointer; }
+    .card-totals { display: flex; justify-content: space-between; background: #e8eaf6; border-top: 1px solid #000; padding: 8px 12px; font-weight: bold; font-size: 13px; }
+
+    .add-row-btn { background: #1a237e; color: white; border: none; padding: 8px 20px; border-radius: 6px; cursor: pointer; font-size: 13px; margin: 8px; display: block; }
     .del-row-btn { background: #dc2626; color: white; border: none; padding: 3px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; }
 
+    /* ── TOTALS ── */
     .totals-section { display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid #000; }
     .totals-left { padding: 10px; border-right: 1px solid #000; font-size: 12px; }
     .totals-right { padding: 0; }
@@ -51,12 +67,39 @@
     .sig-box:not(:last-child) { border-right: 1px solid #000; }
     .sig-line { border-top: 1px solid #000; margin-top: 50px; padding-top: 5px; }
 
-    .no-print { text-align: center; margin-bottom: 15px; }
-    .no-print button { background: #1a237e; color: white; padding: 10px 30px; border: none; border-radius: 6px; font-size: 14px; cursor: pointer; }
+    .no-print { text-align: center; margin-bottom: 12px; }
+    .no-print button { background: #1a237e; color: white; padding: 10px 28px; border: none; border-radius: 6px; font-size: 14px; cursor: pointer; }
+
+    /* ── MOBILE BREAKPOINT ── */
+    @media (max-width: 600px) {
+      body { padding: 6px; }
+
+      .header { flex-direction: column; text-align: center; }
+      .header-left, .header-right { text-align: center; flex: unset; width: 100%; }
+      .header-right { border-top: 1px dashed #ccc; padding-top: 4px; }
+
+      .invoice-meta { grid-template-columns: 1fr; }
+      .to-section { border-right: none; border-bottom: 1px solid #000; }
+      .inline { grid-template-columns: 1fr 1fr; }
+
+      /* Hide desktop table, show cards */
+      .services-table { display: none; }
+      .service-card { display: block; }
+
+      .totals-section { grid-template-columns: 1fr; }
+      .totals-left { border-right: none; border-bottom: 1px solid #000; }
+      .tax-row input { width: 90px; }
+
+      .signature-section { grid-template-columns: 1fr; }
+      .sig-box { border-right: none !important; border-bottom: 1px solid #ccc; }
+      .sig-line { margin-top: 30px; }
+    }
 
     @media print {
       body { background: #fff; padding: 0; }
       .no-print { display: none; }
+      .service-card { display: none !important; }
+      .services-table { display: table !important; }
       .services-table select,
       .services-table input[type="number"],
       .tax-row input { border: none; background: transparent; -webkit-appearance: none; appearance: none; }
@@ -121,7 +164,7 @@
     </div>
   </div>
 
-  <!-- SERVICES TABLE -->
+  <!-- SERVICES TABLE (desktop) -->
   <table class="services-table" id="servicesTable">
     <thead>
       <tr>
@@ -145,15 +188,24 @@
     </tfoot>
   </table>
 
-  <div class="no-print" style="text-align:left;">
-    <button class="add-row-btn" onclick="addRow()">+ Add Row</button>
+  <!-- SERVICE CARDS (mobile) -->
+  <div id="serviceCards"></div>
+
+  <!-- Mobile totals summary -->
+  <div class="card-totals" id="cardTotals" style="display:none;">
+    <span>Total Amount: <strong id="mTotalAmount">0.00</strong></span>
+    <span>Total Charges: <strong id="mTotalCharges">0.00</strong></span>
+  </div>
+
+  <div class="no-print">
+    <button class="add-row-btn" onclick="addRow()">+ Add Service Row</button>
   </div>
 
   <!-- TOTALS -->
   <div class="totals-section">
     <div class="totals-left">
       <label style="font-weight:bold; font-size:11px; color:#555;">Invoice Amount in Words :</label>
-      <div class="field" contenteditable="true" id="amountWords" style="min-height:24px; margin-top:6px;">&nbsp;</div>
+      <div class="field" contenteditable="true" style="min-height:24px; margin-top:6px;">&nbsp;</div>
     </div>
     <div class="totals-right">
       <div class="tax-row">
@@ -198,112 +250,184 @@
 </div>
 
 <script>
-  const INSECTS = [
-    "", "COCKROACH", "RODENT", "MOSQUITOES", "BED BUGS",
-    "TERMITE", "ANT", "ALL INSECTS"
-  ];
-
-  const PLACES = [
-    "", "HOTEL", "RESTAURANT", "BAKERY", "LODGE", "BAR",
-    "FUNCTION HALL", "FACTORY", "OFFICE", "HOSPITAL",
-    "ALL BUILDINGS", "PAZHAMUDIR", "DEPARTMENT STORE", "OTHERS"
-  ];
+  const INSECTS = ["", "COCKROACH", "RODENT", "MOSQUITOES", "BED BUGS", "TERMITE", "ANT", "ALL INSECTS"];
+  const PLACES  = ["", "HOTEL", "RESTAURANT", "BAKERY", "LODGE", "BAR", "FUNCTION HALL", "FACTORY", "OFFICE", "HOSPITAL", "ALL BUILDINGS", "PAZHAMUDIR", "DEPARTMENT STORE", "OTHERS"];
 
   let rowCount = 0;
+  const rows = []; // shared data store
+
+  function isMobile() {
+    return window.innerWidth <= 600;
+  }
+
+  function makeSelect(list) {
+    const sel = document.createElement('select');
+    list.forEach(function(v) {
+      const opt = document.createElement('option');
+      opt.value = v; opt.text = v || '-- Select --';
+      sel.appendChild(opt);
+    });
+    return sel;
+  }
 
   function addRow() {
     rowCount++;
-    const tbody = document.getElementById('serviceRows');
-    const tr = document.createElement('tr');
+    const idx = rowCount - 1;
 
-    // S.No
+    // shared data object
+    const rowData = { insects: '', places: '', service: '', amount: '', charges: '' };
+    rows.push(rowData);
+
+    // ── Desktop table row ──
+    const tr = document.createElement('tr');
+    tr.dataset.idx = idx;
+
     const tdSno = document.createElement('td');
     tdSno.className = 'center';
     tdSno.innerText = rowCount;
 
-    // Insects dropdown
     const tdInsects = document.createElement('td');
-    const selInsects = document.createElement('select');
-    INSECTS.forEach(function(i) {
-      const opt = document.createElement('option');
-      opt.value = i;
-      opt.text = i || '-- Select --';
-      selInsects.appendChild(opt);
-    });
-    tdInsects.appendChild(selInsects);
+    const selI = makeSelect(INSECTS);
+    selI.onchange = function() { rowData.insects = selI.value; syncCard(idx); };
+    tdInsects.appendChild(selI);
 
-    // Places dropdown
     const tdPlaces = document.createElement('td');
-    const selPlaces = document.createElement('select');
-    PLACES.forEach(function(p) {
-      const opt = document.createElement('option');
-      opt.value = p;
-      opt.text = p || '-- Select --';
-      selPlaces.appendChild(opt);
-    });
-    tdPlaces.appendChild(selPlaces);
+    const selP = makeSelect(PLACES);
+    selP.onchange = function() { rowData.places = selP.value; syncCard(idx); };
+    tdPlaces.appendChild(selP);
 
-    // Service description
-    const tdService = document.createElement('td');
-    tdService.contentEditable = 'true';
-    tdService.innerHTML = '&nbsp;';
+    const tdSvc = document.createElement('td');
+    tdSvc.contentEditable = 'true';
+    tdSvc.innerHTML = '&nbsp;';
+    tdSvc.oninput = function() { rowData.service = tdSvc.innerText; syncCard(idx); };
 
-    // Amount
-    const tdAmount = document.createElement('td');
-    const inpAmount = document.createElement('input');
-    inpAmount.type = 'number';
-    inpAmount.placeholder = '0.00';
-    inpAmount.step = '0.01';
-    inpAmount.min = '0';
-    inpAmount.oninput = calcTotals;
-    tdAmount.appendChild(inpAmount);
+    const tdAmt = document.createElement('td');
+    const inpAmt = document.createElement('input');
+    inpAmt.type = 'number'; inpAmt.placeholder = '0.00'; inpAmt.step = '0.01'; inpAmt.min = '0';
+    inpAmt.oninput = function() { rowData.amount = inpAmt.value; syncCard(idx); calcTotals(); };
+    tdAmt.appendChild(inpAmt);
 
-    // Charges
-    const tdCharges = document.createElement('td');
-    const inpCharges = document.createElement('input');
-    inpCharges.type = 'number';
-    inpCharges.placeholder = '0.00';
-    inpCharges.step = '0.01';
-    inpCharges.min = '0';
-    inpCharges.oninput = calcTotals;
-    tdCharges.appendChild(inpCharges);
+    const tdChg = document.createElement('td');
+    const inpChg = document.createElement('input');
+    inpChg.type = 'number'; inpChg.placeholder = '0.00'; inpChg.step = '0.01'; inpChg.min = '0';
+    inpChg.oninput = function() { rowData.charges = inpChg.value; syncCard(idx); calcTotals(); };
+    tdChg.appendChild(inpChg);
 
-    // Delete button
     const tdDel = document.createElement('td');
     tdDel.className = 'center no-print';
     const delBtn = document.createElement('button');
-    delBtn.className = 'del-row-btn';
-    delBtn.innerText = '\u2715';
-    delBtn.onclick = function() {
-      tr.remove();
-      renumberRows();
-      calcTotals();
-    };
+    delBtn.className = 'del-row-btn'; delBtn.innerText = '\u2715';
+    delBtn.onclick = function() { removeRow(idx); };
     tdDel.appendChild(delBtn);
 
-    tr.append(tdSno, tdInsects, tdPlaces, tdService, tdAmount, tdCharges, tdDel);
-    tbody.appendChild(tr);
+    tr.append(tdSno, tdInsects, tdPlaces, tdSvc, tdAmt, tdChg, tdDel);
+    document.getElementById('serviceRows').appendChild(tr);
+
+    // ── Mobile card ──
+    const card = document.createElement('div');
+    card.className = 'service-card';
+    card.dataset.idx = idx;
+
+    const cardSno = document.createElement('div');
+    cardSno.className = 'card-sno';
+    cardSno.innerText = 'Service #' + rowCount;
+
+    const delBtnCard = document.createElement('button');
+    delBtnCard.className = 'del-btn'; delBtnCard.innerText = '\u2715 Remove';
+    delBtnCard.onclick = function() { removeRow(idx); };
+
+    const lblI = document.createElement('label'); lblI.innerText = 'INSECTS';
+    const cSelI = makeSelect(INSECTS);
+    cSelI.onchange = function() { rowData.insects = cSelI.value; syncTable(idx); };
+
+    const lblP = document.createElement('label'); lblP.innerText = 'PLACES';
+    const cSelP = makeSelect(PLACES);
+    cSelP.onchange = function() { rowData.places = cSelP.value; syncTable(idx); };
+
+    const lblS = document.createElement('label'); lblS.innerText = 'SERVICE / DESCRIPTION';
+    const cSvc = document.createElement('input');
+    cSvc.type = 'text'; cSvc.placeholder = 'Enter description';
+    cSvc.oninput = function() { rowData.service = cSvc.value; syncTable(idx); };
+
+    const amtChgRow = document.createElement('div');
+    amtChgRow.className = 'card-row';
+
+    const amtDiv = document.createElement('div');
+    const lblA = document.createElement('label'); lblA.innerText = 'AMOUNT (Rs.)';
+    const cAmt = document.createElement('input');
+    cAmt.type = 'number'; cAmt.placeholder = '0.00'; cAmt.step = '0.01'; cAmt.min = '0';
+    cAmt.oninput = function() { rowData.amount = cAmt.value; syncTable(idx); calcTotals(); };
+    amtDiv.append(lblA, cAmt);
+
+    const chgDiv = document.createElement('div');
+    const lblC = document.createElement('label'); lblC.innerText = 'CHARGES (Rs.)';
+    const cChg = document.createElement('input');
+    cChg.type = 'number'; cChg.placeholder = '0.00'; cChg.step = '0.01'; cChg.min = '0';
+    cChg.oninput = function() { rowData.charges = cChg.value; syncTable(idx); calcTotals(); };
+    chgDiv.append(lblC, cChg);
+
+    amtChgRow.append(amtDiv, chgDiv);
+    card.append(cardSno, delBtnCard, lblI, cSelI, lblP, cSelP, lblS, cSvc, amtChgRow);
+    document.getElementById('serviceCards').appendChild(card);
+
+    // store references for sync
+    rowData._tr = tr; rowData._card = card;
+    rowData._selI = selI; rowData._selP = selP; rowData._tdSvc = tdSvc; rowData._inpAmt = inpAmt; rowData._inpChg = inpChg;
+    rowData._cSelI = cSelI; rowData._cSelP = cSelP; rowData._cSvc = cSvc; rowData._cAmt = cAmt; rowData._cChg = cChg;
+
+    updateCardTotalsVisibility();
+    calcTotals();
+  }
+
+  function syncCard(idx) {
+    const d = rows[idx]; if (!d) return;
+    d._cSelI.value = d.insects;
+    d._cSelP.value = d.places;
+    d._cSvc.value  = d.service;
+    d._cAmt.value  = d.amount;
+    d._cChg.value  = d.charges;
+  }
+
+  function syncTable(idx) {
+    const d = rows[idx]; if (!d) return;
+    d._selI.value = d.insects;
+    d._selP.value = d.places;
+    d._tdSvc.innerText = d.service;
+    d._inpAmt.value = d.amount;
+    d._inpChg.value = d.charges;
+  }
+
+  function removeRow(idx) {
+    const d = rows[idx]; if (!d) return;
+    if (d._tr)   d._tr.remove();
+    if (d._card) d._card.remove();
+    rows[idx] = null;
+    renumberRows();
+    calcTotals();
+    updateCardTotalsVisibility();
   }
 
   function renumberRows() {
-    const rows = document.querySelectorAll('#serviceRows tr');
-    rows.forEach(function(r, i) {
-      r.cells[0].innerText = i + 1;
+    let n = 1;
+    rows.forEach(function(d) {
+      if (!d) return;
+      d._tr.cells[0].innerText = n;
+      d._card.querySelector('.card-sno').innerText = 'Service #' + n;
+      n++;
     });
-    rowCount = rows.length;
   }
 
   function calcTotals() {
-    let totalAmt = 0;
-    let totalChg = 0;
-    document.querySelectorAll('#serviceRows tr').forEach(function(row) {
-      const amtInput = row.cells[4].querySelector('input');
-      const chgInput = row.cells[5].querySelector('input');
-      totalAmt += parseFloat(amtInput.value) || 0;
-      totalChg += parseFloat(chgInput.value) || 0;
+    let totalAmt = 0, totalChg = 0;
+    rows.forEach(function(d) {
+      if (!d) return;
+      totalAmt += parseFloat(d.amount)  || 0;
+      totalChg += parseFloat(d.charges) || 0;
     });
-    document.getElementById('totalAmount').innerText = totalAmt.toFixed(2);
+    document.getElementById('totalAmount').innerText  = totalAmt.toFixed(2);
     document.getElementById('totalCharges').innerText = totalChg.toFixed(2);
+    document.getElementById('mTotalAmount').innerText  = totalAmt.toFixed(2);
+    document.getElementById('mTotalCharges').innerText = totalChg.toFixed(2);
     calcGrandTotal();
   }
 
@@ -312,21 +436,23 @@
     const cgst  = parseFloat(document.getElementById('cgst').value)  || 0;
     const sgst  = parseFloat(document.getElementById('sgst').value)  || 0;
     const igst  = parseFloat(document.getElementById('igst').value)  || 0;
-    const grand = totalChg + cgst + sgst + igst;
-    document.getElementById('grandTotal').value = grand.toFixed(2);
+    document.getElementById('grandTotal').value = (totalChg + cgst + sgst + igst).toFixed(2);
   }
 
-  // Auto-fill today's date
+  function updateCardTotalsVisibility() {
+    const hasRows = rows.some(function(d) { return d !== null; });
+    document.getElementById('cardTotals').style.display = hasRows ? 'flex' : 'none';
+  }
+
+  // Auto-fill date
   const today = new Date();
-  const dd   = String(today.getDate()).padStart(2, '0');
-  const mm   = String(today.getMonth() + 1).padStart(2, '0');
-  const yyyy = today.getFullYear();
-  document.getElementById('inv-date').innerText = dd + '/' + mm + '/' + yyyy;
+  document.getElementById('inv-date').innerText =
+    String(today.getDate()).padStart(2,'0') + '/' +
+    String(today.getMonth()+1).padStart(2,'0') + '/' +
+    today.getFullYear();
 
   // Start with 3 rows
-  addRow();
-  addRow();
-  addRow();
+  addRow(); addRow(); addRow();
 </script>
 
 </body>
