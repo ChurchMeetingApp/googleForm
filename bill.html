@@ -96,22 +96,22 @@
     }
 
     @media print {
-      body { background: #fff; padding: 0; }
-      .no-print { display: none; }
-      .service-card { display: none !important; }
+      * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      body { background: #fff; padding: 0; margin: 0; }
+      .no-print { display: none !important; }
+      .service-card { display: none !important; height: 0 !important; overflow: hidden !important; margin: 0 !important; padding: 0 !important; border: none !important; }
+      #serviceCards { display: none !important; height: 0 !important; }
+      #cardTotals { display: none !important; }
       .services-table { display: table !important; }
       .services-table select,
       .services-table input[type="number"],
       .tax-row input { border: none; background: transparent; -webkit-appearance: none; appearance: none; }
-      .add-row-btn, .del-row-btn { display: none; }
+      .add-row-btn, .del-row-btn { display: none !important; }
+      .invoice-wrapper { border: 2px solid #000; max-width: 100%; }
     }
   </style>
 </head>
 <body>
-
-<div class="no-print">
-  <button onclick="window.print()">&#128424; Print / Save as PDF</button>
-</div>
 
 <div class="invoice-wrapper">
 
@@ -247,6 +247,10 @@
     </div>
   </div>
 
+</div>
+
+<div class="no-print" style="margin-top: 15px;">
+  <button onclick="window.print()">&#128424; Print / Save as PDF</button>
 </div>
 
 <script>
