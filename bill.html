@@ -222,7 +222,7 @@
   <div class="totals-section">
     <div class="totals-left">
       <label style="font-weight:bold; font-size:11px; color:#555;">Invoice Amount in Words :</label>
-      <div class="field" contenteditable="true" style="min-height:24px; margin-top:6px;">&nbsp;</div>
+      <div class="field" id="amountWords" style="min-height:24px; margin-top:6px; background:#f1f5f9; color:#1a237e; font-weight:600;"></div>
     </div>
     <div class="totals-right">
       <div class="tax-row">
@@ -457,7 +457,35 @@
     const cgst  = parseFloat(document.getElementById('cgst').value)  || 0;
     const sgst  = parseFloat(document.getElementById('sgst').value)  || 0;
     const igst  = parseFloat(document.getElementById('igst').value)  || 0;
-    document.getElementById('grandTotal').value = (totalChg + cgst + sgst + igst).toFixed(2);
+    const grand = totalChg + cgst + sgst + igst;
+    document.getElementById('grandTotal').value = grand.toFixed(2);
+    document.getElementById('amountWords').innerText = grand > 0 ? numberToWords(grand) : '';
+  }
+
+  function numberToWords(amount) {
+    const ones = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine',
+                  'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen',
+                  'Seventeen', 'Eighteen', 'Nineteen'];
+    const tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+
+    function convert(n) {
+      if (n === 0) return '';
+      if (n < 20) return ones[n] + ' ';
+      if (n < 100) return tens[Math.floor(n / 10)] + (n % 10 ? ' ' + ones[n % 10] : '') + ' ';
+      if (n < 1000) return ones[Math.floor(n / 100)] + ' Hundred ' + convert(n % 100);
+      if (n < 100000) return convert(Math.floor(n / 1000)) + 'Thousand ' + convert(n % 1000);
+      if (n < 10000000) return convert(Math.floor(n / 100000)) + 'Lakh ' + convert(n % 100000);
+      return convert(Math.floor(n / 10000000)) + 'Crore ' + convert(n % 10000000);
+    }
+
+    const rupees = Math.floor(amount);
+    const paise  = Math.round((amount - rupees) * 100);
+
+    let words = 'Rupees ' + convert(rupees).trim();
+    if (paise > 0) {
+      words += ' and ' + convert(paise).trim() + ' Paise';
+    }
+    return words + ' Only';
   }
 
   function updateCardTotalsVisibility() {
@@ -465,7 +493,57 @@
     document.getElementById('cardTotals').style.display = hasRows ? 'flex' : 'none';
   }
 
-  // Auto-fill date
+  // ── PRINT: convert to plain text and hide empty rows ──────────────────
+  function prepareForPrint() {
+    rows.forEach(function(d) {
+      if (!d) return;
+      const hasData = d.insects || d.places || d.service || d.amount || d.charges;
+
+      // Hide entire row if nothing filled
+      d._tr.style.display = hasData ? '' : 'none';
+
+      // Replace dropdowns with plain text spans
+      replaceWithText(d._tr.cells[1], d.insects);
+      replaceWithText(d._tr.cells[2], d.places);
+      replaceWithText(d._tr.cells[3], d.service);
+      replaceWithText(d._tr.cells[4], d.amount ? parseFloat(d.amount).toFixed(2) : '', 'right');
+      replaceWithText(d._tr.cells[5], d.charges ? parseFloat(d.charges).toFixed(2) : '', 'right');
+    });
+  }
+
+  function replaceWithText(td, value, align) {
+    // Save original content
+    td._originalHTML = td.innerHTML;
+    td.innerHTML = '<span style="font-size:12px; ' + (align ? 'display:block;text-align:right;' : '') + '">' + (value || '') + '</span>';
+    td.contentEditable = 'false';
+  }
+
+  function restoreAfterPrint() {
+    rows.forEach(function(d) {
+      if (!d) return;
+      d._tr.style.display = '';
+      // Restore original inputs/selects
+      restoreCell(d._tr.cells[1], d._selI);
+      restoreCell(d._tr.cells[2], d._selP);
+      restoreCell(d._tr.cells[3], d._tdSvc, true);
+      restoreCell(d._tr.cells[4], d._inpAmt);
+      restoreCell(d._tr.cells[5], d._inpChg);
+    });
+  }
+
+  function restoreCell(td, element, isEditable) {
+    td.innerHTML = '';
+    if (isEditable) {
+      td.contentEditable = 'true';
+      td.innerText = element.innerText || '';
+    } else {
+      td.contentEditable = 'false';
+      td.appendChild(element);
+    }
+  }
+
+  window.addEventListener('beforeprint', prepareForPrint);
+  window.addEventListener('afterprint',  restoreAfterPrint);
   const today = new Date();
   document.getElementById('inv-date').innerText =
     String(today.getDate()).padStart(2,'0') + '/' +
