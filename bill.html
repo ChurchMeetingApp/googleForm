@@ -97,15 +97,32 @@
 
     @media print {
       * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-      body { background: #fff; padding: 0; margin: 0; }
+      body { background: #fff; padding: 0; margin: 0; font-size: 11px; }
       .no-print { display: none !important; }
+
+      /* Force desktop layout when printing from mobile */
+      .invoice-meta { display: grid !important; grid-template-columns: 1fr 1fr !important; }
+      .to-section { border-right: 1px solid #000 !important; border-bottom: none !important; }
+      .totals-section { display: grid !important; grid-template-columns: 1fr 1fr !important; }
+      .totals-left { border-right: 1px solid #000 !important; border-bottom: none !important; }
+      .signature-section { display: grid !important; grid-template-columns: 1fr 1fr 1fr !important; }
+      .sig-box { border-right: 1px solid #000 !important; border-bottom: none !important; }
+      .sig-box:last-child { border-right: none !important; }
+      .sig-line { margin-top: 25px !important; }
+      .header { flex-direction: row !important; text-align: left !important; }
+      .header-left { text-align: left !important; border-top: none !important; padding-top: 0 !important; }
+      .header-right { text-align: right !important; }
+
+      /* Hide mobile cards completely */
       .service-card { display: none !important; height: 0 !important; overflow: hidden !important; margin: 0 !important; padding: 0 !important; border: none !important; }
-      #serviceCards { display: none !important; height: 0 !important; }
+      #serviceCards { display: none !important; height: 0 !important; overflow: hidden !important; }
       #cardTotals { display: none !important; }
-      .services-table { display: table !important; }
+
+      /* Show desktop table */
+      .services-table { display: table !important; width: 100% !important; }
       .services-table select,
       .services-table input[type="number"],
-      .tax-row input { border: none; background: transparent; -webkit-appearance: none; appearance: none; }
+      .tax-row input { border: none !important; background: transparent !important; -webkit-appearance: none !important; appearance: none !important; }
       .add-row-btn, .del-row-btn { display: none !important; }
       .invoice-wrapper { border: 2px solid #000; max-width: 100%; }
     }
