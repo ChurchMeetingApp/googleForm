@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      margin: 0;
+      padding: 16px;
+      background: #f9fafb;
+      color: #1f2937;
+    }
+    h2 {
+      margin: 0 0 12px;
+      font-size: 1.3rem;
+      color: #111827;
+    }
+    .summary-cards {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .card {
+      flex: 1;
+      min-width: 120px;
+      background: #fff;
+      border-radius: 8px;
+      padding: 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+    .card-label {
+      font-size: 0.8rem;
+      color: #6b7280;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .card-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #059669;
+      margin-top: 4px;
+    }
+    .card-value.count {
+      color: #2563eb;
+    }
+    .table-wrapper {
+      overflow-x: auto;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+      min-width: 280px;
+    }
+    th, td {
+      padding: 10px 14px;
+      text-align: left;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    th {
+      background: #f3f4f6;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      color: #374151;
+    }
+    td {
+      font-size: 0.9rem;
+    }
+    .amount {
+      text-align: right;
+      font-weight: 600;
+    }
+    .section-title {
+      font-size: 1rem;
+      font-weight: 600;
+      margin: 16px 0 8px;
+    }
+    #loading {
+      text-align: center;
+      padding: 40px;
+      color: #6b7280;
+    }
+  </style>
+</head>
+<body>
+  <div id="loading">Loading data...</div>
+  <div id="content" style="display:none;">
+    <h2>Offerings Summary for Meeting Hall in Bengaluru</h2>
+ 
+    <div class="summary-cards">
+      <div class="card">
+        <div class="card-label">Total Amount</div>
+        <div class="card-value" id="totalAmount"></div>
+      </div>
+      <div class="card">
+        <div class="card-label">Entries</div>
+        <div class="card-value count" id="rowCount"></div>
+      </div>
+    </div>
+ 
+    <div class="section-title">Location Summary</div>
+    <div class="table-wrapper">
+      <table>
+        <thead><tr><th>Location</th><th class="amount">Amount</th></tr></thead>
+        <tbody id="locationBody"></tbody>
+      </table>
+    </div>
+ 
+    <div class="section-title" style="margin-top:20px;">Monthly Summary</div>
+    <div class="table-wrapper">
+      <table>
+        <thead><tr><th>Month</th><th class="amount">Amount</th></tr></thead>
+        <tbody id="monthlyBody"></tbody>
+      </table>
+    </div>
+ 
+    <div class="section-title" style="margin-top:20px;">All Entries</div>
+    <div class="table-wrapper">
+      <table>
+        <thead><tr><th>Date</th><th>Location</th><th class="amount">Amount</th></tr></thead>
+        <tbody id="detailBody"></tbody>
+      </table>
+    </div>
+  </div>
+ 
+  <script>
+    var API_URL = "https://script.google.com/macros/s/AKfycbwmGuqqajm1nOIR5N-rEVs-gNe98XR1eO1MJOpDVjKdTd1EJpbsB2ChVadi4x2iHqvHOg/exec";
+ 
+    function formatCurrency(num) {
+      return '\u20B9 ' + Number(num).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+ 
+    function handleData(data) {
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('content').style.display = 'block';
+ 
+      document.getElementById('totalAmount').textContent = formatCurrency(data.totalAmount);
+      document.getElementById('rowCount').textContent = data.rowCount;
+ 
+      // Location summary
+      var locationBody = document.getElementById('locationBody');
+      Object.keys(data.locationSummary).forEach(function(loc) {
+        var tr = document.createElement('tr');
+        tr.innerHTML = '<td>' + loc + '</td><td class="amount">' + formatCurrency(data.locationSummary[loc]) + '</td>';
+        locationBody.appendChild(tr);
+      });
+ 
+      // Monthly summary
+      var monthlyBody = document.getElementById('monthlyBody');
+      Object.keys(data.monthlySummary).sort().forEach(function(m) {
+        var tr = document.createElement('tr');
+        tr.innerHTML = '<td>' + m + '</td><td class="amount">' + formatCurrency(data.monthlySummary[m]) + '</td>';
+        monthlyBody.appendChild(tr);
+      });
+ 
+      // Detail rows
+      var detailBody = document.getElementById('detailBody');
+      data.rows.forEach(function(row) {
+        var tr = document.createElement('tr');
+        tr.innerHTML = '<td>' + row.date + '</td><td>' + row.location + '</td><td class="amount">' + formatCurrency(row.amount) + '</td>';
+        detailBody.appendChild(tr);
+      });
+    }
+ 
+    // Load data with cache-busting to always get fresh data
+    function loadData() {
+      var script = document.createElement('script');
+      script.src = API_URL + '?callback=handleData&_=' + new Date().getTime();
+      document.body.appendChild(script);
+    }
+ 
+    loadData();
+  </script>
+  </script>
+</body>
+</html>
