@@ -1,265 +1,319 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
-    <title>Video Training Registration</title>
+    <title>KA Blending in Hubli Aug 8th to 9th Registration</title>
     <style>
-    :root { --primary: #2563eb; --bg: #f8fafc; --border: #cbd5e1; --error: #dc2626; --success: #16a34a; }
-    
-    /* Ensure everything stays inside the box */
-    * { box-sizing: border-box; } 
-
-    body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg); padding: 10px; color: #1e293b; }
-    
-    .form-card { 
-        width: 100%; 
-        max-width: 650px; 
-        margin: 0 auto; 
-        background: white; 
-        padding: 20px; /* Reduced padding for mobile */
-        border-radius: 16px; 
-        box-shadow: 0 10px 25px rgba(0,0,0,0.1); 
-    }
-
-    h2 { color: var(--primary); text-align: center; font-size: 1.5rem; margin-bottom: 20px; }
-
-    /* Responsive Grid for Name/Language/Location */
-    .row-grid { 
-        display: grid; 
-        grid-template-columns: 1fr 1fr; 
-        gap: 15px; 
-    }
-
-    @media (max-width: 480px) {
-        .row-grid { grid-template-columns: 1fr; } /* Stack on small phones */
-    }
-
-    .form-group { margin-bottom: 15px; }
-    label { display: block; font-size: 14px; font-weight: 600; color: #475569; margin-bottom: 6px; }
-    select, input { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; }
-
-    /* SESSION GRID FIX */
-    #pt-container { 
-        display: none; 
-        background: #f1f5f9; 
-        padding: 10px; 
-        border-radius: 12px; 
-        margin-top: 15px; 
-        border: 2px solid #cbd5e1; 
-    }
-
-    .date-row { 
-        display: grid; 
-        /* Label gets 70px, Checkboxes split the rest equally */
-        grid-template-columns: 70px 1fr 1fr 1fr; 
-        align-items: center; 
-        padding: 8px; 
-        background: white; 
-        margin-bottom: 6px; 
-        border-radius: 8px; 
-        border-left: 4px solid var(--primary);
-        gap: 5px; /* Space between items */
-    }
-
-    .date-label { font-weight: 700; font-size: 12px; color: #334155; }
-
-    .check-item { 
-        display: flex; 
-        align-items: center; 
-        font-size: 11px; /* Smaller font for mobile */
-        cursor: pointer; 
-        white-space: nowrap; /* Prevents text from wrapping */
-    }
-
-    .check-item input { 
-        width: 16px; 
-        height: 16px; 
-        margin-right: 4px; 
-        flex-shrink: 0; /* Prevents checkbox from squishing */
-    }
-
-    .btn-submit { width: 100%; background: var(--primary); color: white; padding: 16px; border: none; border-radius: 8px; font-weight: bold; font-size: 16px; margin-top: 15px; }
-</style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f4f7f6;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+        .form-container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            max-width: 500px;
+            width: 100%;
+        }
+        h1 {
+            margin-top: 0;
+            color: #111;
+            font-size: 24px;
+            text-align: center;
+            line-height: 1.3;
+        }
+        h2 {
+            margin-top: 5px;
+            color: #666;
+            font-size: 16px;
+            text-align: center;
+            font-weight: normal;
+            border-bottom: 2px solid #eaeaea;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #555;
+        }
+        input[type="text"], input[type="number"], input[type="datetime-local"], select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 5px;
+        }
+        .checkbox-group input {
+            width: 18px;
+            height: 18px;
+            margin: 0;
+            cursor: pointer;
+        }
+        .checkbox-group label {
+            display: inline;
+            margin: 0;
+            cursor: pointer;
+        }
+        .radio-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 5px;
+        }
+        .conditional-field {
+            display: none;
+            background-color: #f8f9fa;
+            padding: 12px;
+            border-left: 4px solid #007bff;
+            border-radius: 0 4px 4px 0;
+            margin-top: 10px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+            font-weight: bold;
+            margin-top: 15px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #responseMessage {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            text-align: center;
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body>
 
-<div class="form-card">
-    <h2>Video Training Registration</h2>
-    <form id="traineeForm">
-        <div class="form-group">
-            <label>Trainee Name</label>
-            <select id="name" required onchange="handleNameChange()">
-                <option value="">Fetching names...</option>
-            </select>
-        </div>
-
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-            <div class="form-group"><label>Language</label><input type="text" id="language" readonly style="background:#f1f5f9;"></div>
-            <div class="form-group">
-                <label>Location</label>
-                <select id="location" required>
-                    <option value="">Select Location</option>
-                    <option value="Hebbagodi">Hebbagodi</option>
-                    <option value="Indira Nagar">Indira Nagar</option>
-                </select>
-            </div>
-        </div>
-
-        <div class="form-group">
-            <label>Training Type</label>
-            <select id="trainingType" required onchange="toggleSessions()">
-                <option value="">-- Choose Type --</option>
-                <option value="FT">Full Time - FT</option>
-                <option value="PT">Part Time - PT</option>
-            </select>
-        </div>
-
-        <div id="pt-container">
-            <div class="counter-badge">Sessions: <span id="count-val">0</span> / 6 Min</div>
-            
-            <div class="date-row">
-                <span class="date-label">Jan 24</span>
-                <label class="check-item"><input type="checkbox" name="msg" value="1" onchange="updateCounter()"> Msg 1</label>
-                <label class="check-item"><input type="checkbox" name="msg" value="2" onchange="updateCounter()"> Msg 2</label>
-                <label class="check-item"><input type="checkbox" name="msg" value="3" onchange="updateCounter()"> Msg 3</label>
-            </div>
-            <div class="date-row">
-                <span class="date-label">Jan 25</span>
-                <label class="check-item"><input type="checkbox" name="msg" value="4" onchange="updateCounter()"> Msg 4</label>
-                <label class="check-item"><input type="checkbox" name="msg" value="5" onchange="updateCounter()"> Msg 5</label>
-                <label class="check-item"><input type="checkbox" name="msg" value="6" onchange="updateCounter()"> Msg 6</label>
-            </div>
-            <div class="date-row">
-                <span class="date-label">Jan 26</span>
-                <label class="check-item"><input type="checkbox" name="msg" value="7" onchange="updateCounter()"> Msg 7</label>
-                <label class="check-item"><input type="checkbox" name="msg" value="8" onchange="updateCounter()"> Msg 8</label>
-                <label class="check-item"><input type="checkbox" name="msg" value="9" onchange="updateCounter()"> Msg 9</label>
-            </div>
-            <div class="date-row">
-                <span class="date-label">Feb 01</span>
-                <label class="check-item"><input type="checkbox" name="msg" value="10" onchange="updateCounter()"> Msg 10</label>
-                <label class="check-item"><input type="checkbox" name="msg" value="11" onchange="updateCounter()"> Msg 11</label>
-                <label class="check-item"><input type="checkbox" name="msg" value="12" onchange="updateCounter()"> Msg 12</label>
-            </div>
-        </div>
-
-        <p id="error-pt" class="error-msg">⚠️ Part-Time (PT) requires at least 6 sessions.</p>
-        <button type="submit" class="btn-submit" id="submitBtn">Update</button>
-    </form>
-</div>
-<hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 30px 0;">
-
-<div class="contact-section">
-    <p style="font-weight: 700; color: #475569; font-size: 14px; margin-bottom: 12px; text-align: center;">Need Help? Contact Coordinators:</p>
+<div class="form-container">
+    <h1>KA Blending in Hubli</h1>
+    <h2>Aug 8th to 9th Registration</h2>
     
-    <div style="background: #f8fafc; padding: 15px; border-radius: 10px; border: 1px solid #e2e8f0; text-align: center;">
-        <p style="margin: 0; font-weight: 700; font-size: 15px; color: #1e293b;">Jayaseelan</p>
-        <p style="margin: 8px 0 0 0; font-weight: 700; font-size: 15px; color: #1e293b;">Babu</p>
-    </div>
+    <form id="registrationForm">
+        
+        <!-- 1. Name -->
+        <div class="form-group">
+            <label for="name">Name:</label>
+            <input type="text" id="name" required placeholder="Enter full name">
+        </div>
+
+        <!-- 2. Locality -->
+        <div class="form-group">
+            <label for="locality">Locality:</label>
+            <select id="locality" required>
+                <option value="" disabled selected>Select Locality</option>
+                <option value="Bangalore">Bangalore</option>
+                <option value="KGF">KGF</option>
+                <option value="Hubli">Hubli</option>
+                <option value="Belgaum">Belgaum</option>
+                <option value="Bidar">Bidar</option>
+                <option value="Nayakanahatti">Nayakanahatti</option>
+                <option value="Chitradurga">Chitradurga</option>
+                <option value="Mysore">Mysore</option>
+            </select>
+        </div>
+
+        <!-- 3. Age -->
+        <div class="form-group">
+            <label for="age">Age:</label>
+            <input type="number" id="age" required min="0" max="120" placeholder="Enter age">
+        </div>
+
+        <!-- 4. Br/Sis -->
+        <div class="form-group">
+            <label for="brSis">Brother / Sister:</label>
+            <select id="brSis" required>
+                <option value="" disabled selected>Select option</option>
+                <option value="Brother">Brother</option>
+                <option value="Sister">Sister</option>
+            </select>
+        </div>
+
+        <!-- 5. Adult/Children -->
+        <div class="form-group">
+            <label>Attendee Type:</label>
+            <div class="radio-group">
+                <label><input type="radio" name="attendeeType" value="Adult" checked> Adult</label>
+                <label><input type="radio" name="attendeeType" value="Child"> Children</label>
+            </div>
+        </div>
+
+        <!-- 5b. Needs Accommodation Wrapper (Visible for Adults) -->
+        <div class="form-group checkbox-group" id="accommodationWrapper">
+            <input type="checkbox" id="needsAccommodation">
+            <label for="needsAccommodation">I require accommodation facilities</label>
+        </div>
+
+        <!-- 5c. Needs Separate Bed Wrapper (Visible for Children) -->
+        <div id="separateBedContainer" class="conditional-field">
+            <div class="checkbox-group">
+                <input type="checkbox" id="needsSeparateBed">
+                <label for="needsSeparateBed">I require a separate bed</label>
+            </div>
+        </div>
+
+        <!-- 6. Language -->
+        <div class="form-group">
+            <label for="language">Language Preference:</label>
+            <select id="language" required>
+                <option value="" disabled selected>Select Language</option>
+                <option value="English">English</option>
+                <option value="Kannada">Kannada</option>
+            </select>
+        </div>
+
+        <!-- 7. Date & Time of Arrival -->
+        <div class="form-group">
+            <label for="arrivalDateTime">Date & Time of Arrival:</label>
+            <input type="datetime-local" id="arrivalDateTime" required>
+        </div>
+
+        <!-- 8. Date & Time of Departure -->
+        <div class="form-group">
+            <label for="departureDateTime">Date & Time of Departure:</label>
+            <input type="datetime-local" id="departureDateTime" required>
+        </div>
+
+        <!-- 9. Place of Arrival -->
+        <div class="form-group">
+            <label for="arrivalPlace">Place of Arrival:</label>
+            <select id="arrivalPlace" required>
+                <option value="" disabled selected>Select Place</option>
+                <option value="Hubli">Hubli</option>
+                <option value="Dharwad">Dharwad</option>
+            </select>
+        </div>
+
+        <button type="submit" id="submitBtn">Submit Registration</button>
+    </form>
+
+    <div id="responseMessage"></div>
 </div>
+
 <script>
-    const scriptURL = "https://script.google.com/macros/s/AKfycbxp7er51qMlu9caFsHVN8jZa2M1MSiLJj3P6KD1yNTylFVck8hz_Q2ArAnaEQV6qTGtdg/exec";
-    let traineeData = {};
-    let selectedRow = null;
+    // Your active Google Apps Script web app endpoint link
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbze2WwlgtjrhmwxPXH-0OpTN1utwzgHnytN_r9oJ90DPmfnE_raYI3Wb8bCvTZEv6wP/exec';
 
-    window.onload = () => {
-        const s = document.createElement('script');
-        s.src = `${scriptURL}?action=getDropdowns&callback=setup`;
-        document.body.appendChild(s);
-    };
+    const accommodationWrapper = document.getElementById('accommodationWrapper');
+    const accommodationCheckbox = document.getElementById('needsAccommodation');
+    const separateBedContainer = document.getElementById('separateBedContainer');
+    const separateBedCheckbox = document.getElementById('needsSeparateBed');
+    const attendeeRadioButtons = document.getElementsByName('attendeeType');
 
-    window.setup = (data) => {
-        traineeData = data.trainees;
-        const sel = document.getElementById('name');
-        sel.innerHTML = '<option value="">-- Select Trainee --</option>';
-        Object.keys(traineeData).sort().forEach(n => sel.innerHTML += `<option value="${n}">${n}</option>`);
-    };
+    // Manages form presentation states according to standard attendee configurations
+    function handleFormLogic() {
+        const selectedAttendee = document.querySelector('input[name="attendeeType"]:checked').value;
 
-    function handleNameChange() {
-        const name = document.getElementById('name').value;
-        const typeBox = document.getElementById('trainingType');
-        const checkboxes = document.querySelectorAll('input[name="msg"]');
-        
-        typeBox.disabled = false;
-        checkboxes.forEach(cb => cb.checked = false);
-        
-        if (name && traineeData[name]) {
-            const t = traineeData[name];
-            selectedRow = t.rowNum;
-            document.getElementById('language').value = t.language || "";
-            document.getElementById('location').value = t.location || "";
-            
-            // Logic: If t.type exists as FT or PT, select and disable
-            if (t.type && (t.type.trim() === "FT" || t.type.trim() === "PT")) {
-                typeBox.value = t.type.trim();
-                typeBox.disabled = true;
-            } else {
-                typeBox.value = "";
-            }
-
-            // Load existing sessions if PT
-            if (t.ftMessages && t.type === "PT") {
-                const saved = t.ftMessages.split(',').map(s => s.trim());
-                checkboxes.forEach(cb => { if(saved.includes(cb.value)) cb.checked = true; });
-            }
-
-            toggleSessions();
+        if (selectedAttendee === 'Child') {
+            accommodationWrapper.style.display = 'none';
+            separateBedContainer.style.display = 'block';
+        } else {
+            accommodationWrapper.style.display = 'flex';
+            separateBedContainer.style.display = 'none';
         }
     }
 
-    function toggleSessions() {
-        const type = document.getElementById('trainingType').value;
-        document.getElementById('pt-container').style.display = (type === 'PT') ? 'block' : 'none';
-        updateCounter();
-    }
+    attendeeRadioButtons.forEach(radio => radio.addEventListener('change', handleFormLogic));
 
-    function updateCounter() {
-        const count = document.querySelectorAll('input[name="msg"]:checked').length;
-        document.getElementById('count-val').innerText = count;
-        document.getElementById('error-pt').style.display = 'none';
-    }
+    // Initialize UI constraints right away
+    handleFormLogic();
 
-    document.getElementById('traineeForm').addEventListener('submit', function(e) {
+    document.getElementById('registrationForm').addEventListener('submit', function(e) {
         e.preventDefault();
-        const type = document.getElementById('trainingType').value; // Sends "FT" or "PT"
-        const selected = Array.from(document.querySelectorAll('input[name="msg"]:checked')).map(c => c.value);
+        
+        const submitBtn = document.getElementById('submitBtn');
+        const responseMessage = document.getElementById('responseMessage');
+        
+        submitBtn.disabled = true;
+        submitBtn.innerText = 'Submitting...';
+        responseMessage.style.display = 'none';
 
-        if (type === 'PT' && selected.length < 6) {
-            document.getElementById('error-pt').style.display = 'block';
-            return;
+        const selectedAttendee = document.querySelector('input[name="attendeeType"]:checked').value;
+        
+        let accommodationValue = 'No';
+        let separateBedValue = 'No';
+
+        if (selectedAttendee === 'Child') {
+            accommodationValue = 'Yes';
+            separateBedValue = separateBedCheckbox.checked ? 'Yes' : 'No';
+        } else {
+            accommodationValue = accommodationCheckbox.checked ? 'Yes' : 'No';
+            separateBedValue = 'Yes';
         }
 
-        const btn = document.getElementById('submitBtn');
-        btn.innerText = "Processing...";
-        btn.disabled = true;
+        // Assembled structured JavaScript payload mapping to script properties
+        const payloadData = {
+            name: document.getElementById('name').value,
+            locality: document.getElementById('locality').value,
+            age: document.getElementById('age').value,
+            brSis: document.getElementById('brSis').value,
+            attendeeType: selectedAttendee,
+            language: document.getElementById('language').value,
+            arrivalDateTime: document.getElementById('arrivalDateTime').value,
+            departureDateTime: document.getElementById('departureDateTime').value,
+            arrivalPlace: document.getElementById('arrivalPlace').value,
+            needsAccommodation: accommodationValue,
+            needsSeparateBed: separateBedValue
+        };
 
-        const name = document.getElementById('name').value;
-        const lang = document.getElementById('language').value;
-        const loc = document.getElementById('location').value;
-        const sessions = type === 'FT' ? "All (1-12)" : selected.join(', ');
-
-        fetch(scriptURL, { 
-            method: 'POST', 
+        // Fire text/plain json layout string to clear 302 jumps without header degradation
+        fetch(SCRIPT_URL, {
+            method: 'POST',
             mode: 'no-cors', 
-            body: JSON.stringify({ action: "add", rowId: selectedRow, name, location: loc, ftMessages: sessions, type: type }) 
+            cache: 'no-cache',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payloadData)
         })
-        .then(() => {
-            const msg = `${name} - ${lang} - ${loc} - ${type} - ${sessions}`;
-            //window.open(`https://wa.me/?text=${msg}`, '_blank');
-            btn.innerText = "Success!";
-            setTimeout(() => { btn.disabled = false; btn.innerText = "Update"; }, 3000);
+        .then(response => {
+            responseMessage.style.display = 'block';
+            responseMessage.style.backgroundColor = '#d4edda';
+            responseMessage.style.color = '#155724';
+            responseMessage.innerText = 'Registration successfully submitted!';
+            
+            document.getElementById('registrationForm').reset();
+            handleFormLogic();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            responseMessage.style.display = 'block';
+            responseMessage.style.backgroundColor = '#f8d7da';
+            responseMessage.style.color = '#721c24';
+            responseMessage.innerText = 'Something went wrong. Please try again.';
+        })
+        .finally(() => {
+            submitBtn.disabled = false;
+            submitBtn.innerText = 'Submit Registration';
         });
     });
 </script>
+
 </body>
 </html>
-
-
-
-
-
