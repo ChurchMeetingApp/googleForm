@@ -54,6 +54,16 @@
             border-radius: 4px;
             box-sizing: border-box;
         }
+        .info-text {
+            font-size: 13px;
+            color: #666;
+            line-height: 1.4;
+            margin-bottom: 8px;
+            background-color: #f8f9fa;
+            padding: 8px 12px;
+            border-radius: 4px;
+            border-left: 3px solid #6c757d;
+        }
         .checkbox-group {
             display: flex;
             align-items: center;
@@ -164,17 +174,22 @@
             </div>
         </div>
 
-        <!-- 5b. Needs Accommodation Wrapper (Visible for Adults) -->
-        <div class="form-group checkbox-group" id="accommodationWrapper">
-            <input type="checkbox" id="needsAccommodation">
-            <label for="needsAccommodation">I require accommodation facilities</label>
+        <!-- Dynamic Container for Accommodation / Hotel Booking -->
+        <div id="accommodationContainer" class="form-group">
+            <div class="info-text">
+                Accommodation is available for all in the dormitory. If you need a hotel room, select the option below.
+            </div>
+            <div class="checkbox-group" id="accommodationWrapper">
+                <input type="checkbox" id="needsAccommodation">
+                <label for="needsAccommodation">Book hotel room with additional Rs 250?</label>
+            </div>
         </div>
 
         <!-- 5c. Needs Separate Bed Wrapper (Visible for Children) -->
         <div id="separateBedContainer" class="conditional-field">
             <div class="checkbox-group">
                 <input type="checkbox" id="needsSeparateBed">
-                <label for="needsSeparateBed">I require a separate bed</label>
+                <label for="needsSeparateBed">Child requires a separate bed</label>
             </div>
         </div>
 
@@ -185,29 +200,20 @@
                 <option value="" disabled selected>Select Language</option>
                 <option value="English">English</option>
                 <option value="Kannada">Kannada</option>
+                <option value="Tamil">Tamil</option>
             </select>
         </div>
 
         <!-- 7. Date & Time of Arrival -->
         <div class="form-group">
             <label for="arrivalDateTime">Date & Time of Arrival:</label>
-            <input type="datetime-local" id="arrivalDateTime" required>
+            <input type="datetime-local" id="arrivalDateTime" value="2026-08-08T07:00" required>
         </div>
 
         <!-- 8. Date & Time of Departure -->
         <div class="form-group">
             <label for="departureDateTime">Date & Time of Departure:</label>
-            <input type="datetime-local" id="departureDateTime" required>
-        </div>
-
-        <!-- 9. Place of Arrival -->
-        <div class="form-group">
-            <label for="arrivalPlace">Place of Arrival:</label>
-            <select id="arrivalPlace" required>
-                <option value="" disabled selected>Select Place</option>
-                <option value="Hubli">Hubli</option>
-                <option value="Dharwad">Dharwad</option>
-            </select>
+            <input type="datetime-local" id="departureDateTime" value="2026-08-09T17:00" required>
         </div>
 
         <button type="submit" id="submitBtn">Submit Registration</button>
@@ -217,31 +223,32 @@
 </div>
 
 <script>
-    // Your active Google Apps Script web app endpoint link
     const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbze2WwlgtjrhmwxPXH-0OpTN1utwzgHnytN_r9oJ90DPmfnE_raYI3Wb8bCvTZEv6wP/exec';
 
-    const accommodationWrapper = document.getElementById('accommodationWrapper');
+    const accommodationContainer = document.getElementById('accommodationContainer');
     const accommodationCheckbox = document.getElementById('needsAccommodation');
     const separateBedContainer = document.getElementById('separateBedContainer');
     const separateBedCheckbox = document.getElementById('needsSeparateBed');
     const attendeeRadioButtons = document.getElementsByName('attendeeType');
 
-    // Manages form presentation states according to standard attendee configurations
+    function resetDefaultDates() {
+        document.getElementById('arrivalDateTime').value = "2026-08-08T09:00";
+        document.getElementById('departureDateTime').value = "2026-08-09T17:00";
+    }
+
     function handleFormLogic() {
         const selectedAttendee = document.querySelector('input[name="attendeeType"]:checked').value;
 
         if (selectedAttendee === 'Child') {
-            accommodationWrapper.style.display = 'none';
+            accommodationContainer.style.display = 'none';
             separateBedContainer.style.display = 'block';
         } else {
-            accommodationWrapper.style.display = 'flex';
+            accommodationContainer.style.display = 'block';
             separateBedContainer.style.display = 'none';
         }
     }
 
     attendeeRadioButtons.forEach(radio => radio.addEventListener('change', handleFormLogic));
-
-    // Initialize UI constraints right away
     handleFormLogic();
 
     document.getElementById('registrationForm').addEventListener('submit', function(e) {
@@ -260,14 +267,13 @@
         let separateBedValue = 'No';
 
         if (selectedAttendee === 'Child') {
-            accommodationValue = 'Yes';
+            accommodationValue = 'NA'; // Always NA for children
             separateBedValue = separateBedCheckbox.checked ? 'Yes' : 'No';
         } else {
             accommodationValue = accommodationCheckbox.checked ? 'Yes' : 'No';
-            separateBedValue = 'Yes';
+            separateBedValue = (accommodationValue === 'Yes') ? 'Yes' : 'NA';
         }
 
-        // Assembled structured JavaScript payload mapping to script properties
         const payloadData = {
             name: document.getElementById('name').value,
             locality: document.getElementById('locality').value,
@@ -277,12 +283,11 @@
             language: document.getElementById('language').value,
             arrivalDateTime: document.getElementById('arrivalDateTime').value,
             departureDateTime: document.getElementById('departureDateTime').value,
-            arrivalPlace: document.getElementById('arrivalPlace').value,
+            arrivalPlace: "Hubli",
             needsAccommodation: accommodationValue,
             needsSeparateBed: separateBedValue
         };
 
-        // Fire text/plain json layout string to clear 302 jumps without header degradation
         fetch(SCRIPT_URL, {
             method: 'POST',
             mode: 'no-cors', 
@@ -299,6 +304,7 @@
             responseMessage.innerText = 'Registration successfully submitted!';
             
             document.getElementById('registrationForm').reset();
+            resetDefaultDates(); // Re-apply date defaults after reset
             handleFormLogic();
         })
         .catch(error => {
