@@ -47,6 +47,10 @@
             font-weight: 600;
             color: #555;
         }
+        .required-asterisk {
+            color: #dc3545;
+            margin-left: 2px;
+        }
         input[type="text"], input[type="number"], input[type="datetime-local"], select {
             width: 100%;
             padding: 10px;
@@ -80,6 +84,7 @@
             display: inline;
             margin: 0;
             cursor: pointer;
+            font-weight: normal;
         }
         .radio-group {
             display: flex;
@@ -129,35 +134,37 @@
         
         <!-- 1. Name -->
         <div class="form-group">
-            <label for="name">Name:</label>
+            <label for="name">Name<span class="required-asterisk">*</span>:</label>
             <input type="text" id="name" required placeholder="Enter full name">
         </div>
 
         <!-- 2. Locality -->
         <div class="form-group">
-            <label for="locality">Locality:</label>
+            <label for="locality">Locality<span class="required-asterisk">*</span>:</label>
             <select id="locality" required>
                 <option value="" disabled selected>Select Locality</option>
                 <option value="Bangalore">Bangalore</option>
-                <option value="KGF">KGF</option>
-                <option value="Hubli">Hubli</option>
-                <option value="Belgaum">Belgaum</option>
+		<option value="Belgaum">Belgaum</option>
                 <option value="Bidar">Bidar</option>
-                <option value="Nayakanahatti">Nayakanahatti</option>
                 <option value="Chitradurga">Chitradurga</option>
-                <option value="Mysore">Mysore</option>
+ 		<option value="Hubli">Hubli</option>
+                <option value="KGF">KGF</option>  
+		<option value="Mysore">Mysore</option>            
+                <option value="Nayakanahatti">Nayakanahatti</option>             
+		<option value="Tayakanahalli">Tayakanahalli</option>
+                
             </select>
         </div>
 
         <!-- 3. Age -->
         <div class="form-group">
-            <label for="age">Age:</label>
+            <label for="age">Age<span class="required-asterisk">*</span>:</label>
             <input type="number" id="age" required min="0" max="120" placeholder="Enter age">
         </div>
 
         <!-- 4. Br/Sis -->
         <div class="form-group">
-            <label for="brSis">Brother / Sister:</label>
+            <label for="brSis">Brother / Sister<span class="required-asterisk">*</span>:</label>
             <select id="brSis" required>
                 <option value="" disabled selected>Select option</option>
                 <option value="Brother">Brother</option>
@@ -167,9 +174,9 @@
 
         <!-- 5. Adult/Children -->
         <div class="form-group">
-            <label>Attendee Type:</label>
+            <label>Attendee Type<span class="required-asterisk">*</span>:</label>
             <div class="radio-group">
-                <label><input type="radio" name="attendeeType" value="Adult" checked> Adult</label>
+                <label><input type="radio" name="attendeeType" value="Adult" checked> Adult/Teenager</label>
                 <label><input type="radio" name="attendeeType" value="Child"> Children</label>
             </div>
         </div>
@@ -177,11 +184,15 @@
         <!-- Dynamic Container for Accommodation / Hotel Booking -->
         <div id="accommodationContainer" class="form-group">
             <div class="info-text">
-                Accommodation is available for all in the dormitory. If you need a hotel room, select the option below.
+                Dormitory accommodation is included in your registration fee of Rs 1100. If you prefer family hotel room instead, please check the option below.
             </div>
             <div class="checkbox-group" id="accommodationWrapper">
                 <input type="checkbox" id="needsAccommodation">
-                <label for="needsAccommodation">Book hotel room with additional Rs 250?</label>
+                <label for="needsAccommodation">
+                    <strong>Family Hotel Room</strong> (2–3 members per room)<br/>
+                    • Room Rate: Rs 1,100 per room<br/>
+                    • Registration Fee: Rs 700 per member
+                </label>
             </div>
         </div>
 
@@ -195,7 +206,7 @@
 
         <!-- 6. Language -->
         <div class="form-group">
-            <label for="language">Language Preference:</label>
+            <label for="language">Language Preference<span class="required-asterisk">*</span>:</label>
             <select id="language" required>
                 <option value="" disabled selected>Select Language</option>
                 <option value="English">English</option>
@@ -206,13 +217,13 @@
 
         <!-- 7. Date & Time of Arrival -->
         <div class="form-group">
-            <label for="arrivalDateTime">Date & Time of Arrival:</label>
+            <label for="arrivalDateTime">Date & Time of Arrival<span class="required-asterisk">*</span>:</label>
             <input type="datetime-local" id="arrivalDateTime" value="2026-08-08T07:00" required>
         </div>
 
         <!-- 8. Date & Time of Departure -->
         <div class="form-group">
-            <label for="departureDateTime">Date & Time of Departure:</label>
+            <label for="departureDateTime">Date & Time of Departure<span class="required-asterisk">*</span>:</label>
             <input type="datetime-local" id="departureDateTime" value="2026-08-09T17:00" required>
         </div>
 
@@ -267,11 +278,11 @@
         let separateBedValue = 'No';
 
         if (selectedAttendee === 'Child') {
-            accommodationValue = 'NA'; // Always NA for children
+            accommodationValue = 'NA'; 
             separateBedValue = separateBedCheckbox.checked ? 'Yes' : 'No';
         } else {
             accommodationValue = accommodationCheckbox.checked ? 'Yes' : 'No';
-            separateBedValue = (accommodationValue === 'Yes') ? 'Yes' : 'NA';
+            separateBedValue ='NA'
         }
 
         const payloadData = {
@@ -304,7 +315,7 @@
             responseMessage.innerText = 'Registration successfully submitted!';
             
             document.getElementById('registrationForm').reset();
-            resetDefaultDates(); // Re-apply date defaults after reset
+            resetDefaultDates(); 
             handleFormLogic();
         })
         .catch(error => {
