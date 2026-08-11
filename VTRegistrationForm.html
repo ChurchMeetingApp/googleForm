@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>Video Training Registration</title>
+  <style>
+    :root { --primary: #2563eb; --bg: #f8fafc; --border: #cbd5e1; --error: #dc2626; --success: #16a34a; --warning-bg: #fffbeb; --warning-text: #92400e; }
+    * { box-sizing: border-box; }
+    body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg); padding: 10px; color: #1e293b; }
+    .form-card { width: 100%; max-width: 650px; margin: 0 auto; background: white; padding: 20px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+    h2 { color: var(--primary); text-align: center; font-size: 1.5rem; margin-bottom: 20px; }
+    .usage-note { background-color: var(--warning-bg); color: var(--warning-text); padding: 12px; border-radius: 8px; font-size: 13px; line-height: 1.5; margin-bottom: 20px; border: 1px solid #fde68a; text-align: center; font-weight: 500; }
+    .form-group { margin-bottom: 15px; }
+    label { display: block; font-size: 14px; font-weight: 600; color: #475569; margin-bottom: 6px; }
+    select, input { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; }
+    .error-msg { color: var(--error); font-size: 13px; font-weight: bold; display: none; margin-top: 10px; }
+    .btn-submit { width: 100%; background: var(--primary); color: white; padding: 16px; border: none; border-radius: 8px; font-weight: bold; font-size: 16px; margin-top: 15px; cursor: pointer; }
+    .btn-submit:disabled { background: #94a3b8; cursor: not-allowed; }
+    .fee-box { background: #f0fdf4; padding: 12px; border-radius: 8px; border: 1px solid #86efac; margin-top: 15px; }
+    .fee-box label { display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 600; color: #15803d; margin-bottom: 0; }
+    .fee-box input[type="checkbox"] { width: 18px; height: 18px; flex-shrink: 0; }
+    .new-trainee-banner { margin-bottom: 20px; padding: 12px 16px; background: #eff6ff; border: 1px dashed #93c5fd; border-radius: 10px; display: flex; align-items: center; justify-content: space-between; font-size: 13px; color: #1e40af; font-weight: 500; }
+    .btn-new { background: #2563eb; color: white; border: none; padding: 8px 14px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+    .new-form-section { display: none; margin-bottom: 20px; padding: 20px; background: #f0fdf4; border: 2px solid #86efac; border-radius: 12px; }
+    .new-form-section h3 { color: #16a34a; margin: 0 0 15px 0; font-size: 16px; }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+    .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; }
+    .four-col { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 15px; }
+    .divider { border: 0; border-top: 2px dashed #e2e8f0; margin: 20px 0; }
+    .contact-section { margin-top: 20px; }
+  </style>
+</head>
+<body>
+<div class="form-card">
+  <h2>Video Training Registration</h2>
+ 
+  <div class="usage-note">This link is provided for saints to update their video training registration details.</div>
+ 
+  <!-- ── PROGRESS BAR ── -->
+  <div style="margin-bottom: 20px; text-align: center; background: #f1f5f9; padding: 15px; border-radius: 12px;">
+    <div style="font-size: 13px; font-weight: 600; color: #64748b; margin-bottom: 5px;">
+      Registration Progress: <span id="reg-percent">0</span>% (<span id="reg-count">0</span>/<span id="total-count">0</span>)
+    </div>
+    <div style="background: #e2e8f0; height: 8px; border-radius: 4px; overflow: hidden; width: 100%;">
+      <div id="progress-fill" style="background: #16a34a; height: 100%; width: 0%; transition: width 0.8s ease-in-out;"></div>
+    </div>
+  </div>
+ 
+  <!-- ── NEW TRAINEE FORM ── -->
+  <div id="newTraineeSection" class="new-form-section">
+    <h3>New Trainee Registration</h3>
+    <form id="newTraineeForm">
+      <div class="form-group">
+        <label>Full Name <span style="color:var(--error)">*</span></label>
+        <input type="text" id="new-name" placeholder="Enter full name" required>
+      </div>
+      <div class="three-col">
+        <div class="form-group">
+          <label>Language <span style="color:var(--error)">*</span></label>
+          <select id="new-language" required>
+            <option value="">Select</option>
+            <option value="English">English</option>
+            <option value="Tamil">Tamil</option>
+            <option value="Kannada">Kannada</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>B/S <span style="color:var(--error)">*</span></label>
+          <select id="new-bs" required>
+            <option value="">Select</option>
+            <option value="B">B - Brother</option>
+            <option value="S">S - Sister</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Location <span style="color:var(--error)">*</span></label>
+          <select id="new-location" required>
+            <option value="">Select Location</option>
+            <option value="Hebbagodi">Hebbagodi</option>
+            <option value="Indira Nagar">Indira Nagar</option>
+          </select>
+        </div>
+      </div>
+     <div class="fee-box" >
+        <label>
+          <input type="checkbox" id="new-fee-paid">
+          I paid the registration fee of ₹350 INR (optional)
+        </label>
+      </div>
+      <button type="submit" class="btn-submit" id="newSubmitBtn" style="background:#16a34a;">Submit New Registration</button>
+    </form>
+  </div>
+ 
+  <hr class="divider">
+ 
+  <!-- ── EXISTING TRAINEE FORM ── -->
+  <form id="traineeForm">
+    <div class="form-group">
+      <label>Trainee Name</label>
+      <select id="name" required onchange="handleNameChange()">
+        <option value="">Fetching names...</option>
+      </select>
+    </div>
+    <div class="four-col">
+      <div class="form-group">
+        <label>Language</label>
+        <select id="language">
+          <option value="">Select</option>
+          <option value="English">English</option>
+          <option value="Tamil">Tamil</option>
+          <option value="Kannada">Kannada</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>B/S</label>
+        <select id="bs" required>
+          <option value="">Select</option>
+          <option value="B">B - Brother</option>
+          <option value="S">S - Sister</option>
+        </select>
+      </div>
+      <div class="form-group" style="display:none">
+        <label>Location</label>
+        <select id="location" required>
+          <option value="">Select Location</option>
+          <option value="Hebbagodi">Hebbagodi</option>
+          <option value="Indira Nagar">Indira Nagar</option>
+        </select>
+      </div>
+      <div class="form-group">
+            <label>Training Type</label>
+            <select id="type" required onchange="toggleSessions()">
+                <option value="">Select Training Type</option>
+                <option value="FT">Full Time - FT</option>
+                <option value="PT">Part Time - PT</option>
+            </select>
+        </div>
+    </div>
+ 
+    <!-- FT Indicator -->
+    <div id="ft-indicator" style="display:none; background:#f0fdf4; padding:10px 14px; border-radius:8px; margin-bottom:10px; border:1px solid #86efac; text-align:center; font-size:13px; font-weight:600; color:#16a34a;">
+      ✅ All sessions (1-12) will be included
+    </div>
+ 
+    <!-- PT Session Checkboxes -->
+    <div id="pt-container" style="display:none; background:#f1f5f9; padding:10px; border-radius:12px; margin-bottom:10px; border:1px solid #cbd5e1;">
+      <div style="font-size:12px; font-weight:600; color:#475569; margin-bottom:8px;">Sessions: <span id="count-val">0</span> / 6 Min</div>
+      <div style="display:grid; grid-template-columns:60px 1fr 1fr 1fr; align-items:center; padding:6px 8px; background:white; margin-bottom:4px; border-radius:6px; border-left:3px solid var(--primary); gap:4px;">
+        <span style="font-weight:700; font-size:11px; color:#334155;">Aug 15 Sat</span>
+        <label style="display:flex; align-items:center; font-size:11px; cursor:pointer; white-space:nowrap;"><input type="checkbox" name="msg" value="1" onchange="updateCounter()" style="width:15px;height:15px;margin-right:3px;"> Msg 1</label>
+        <label style="display:flex; align-items:center; font-size:11px; cursor:pointer; white-space:nowrap;"><input type="checkbox" name="msg" value="2" onchange="updateCounter()" style="width:15px;height:15px;margin-right:3px;"> Msg 2</label>
+        <label style="display:flex; align-items:center; font-size:11px; cursor:pointer; white-space:nowrap;"><input type="checkbox" name="msg" value="3" onchange="updateCounter()" style="width:15px;height:15px;margin-right:3px;"> Msg 3</label>
+      </div>
+      <div style="display:grid; grid-template-columns:60px 1fr 1fr 1fr; align-items:center; padding:6px 8px; background:white; margin-bottom:4px; border-radius:6px; border-left:3px solid var(--primary); gap:4px;">
+        <span style="font-weight:700; font-size:11px; color:#334155;">Aug 16 LD</span>
+        <label style="display:flex; align-items:center; font-size:11px; cursor:pointer; white-space:nowrap;"><input type="checkbox" name="msg" value="4" onchange="updateCounter()" style="width:15px;height:15px;margin-right:3px;"> Msg 4</label>
+        <label style="display:flex; align-items:center; font-size:11px; cursor:pointer; white-space:nowrap;"><input type="checkbox" name="msg" value="5" onchange="updateCounter()" style="width:15px;height:15px;margin-right:3px;"> Msg 5</label>
+        <label style="display:flex; align-items:center; font-size:11px; cursor:pointer; white-space:nowrap;"><input type="checkbox" name="msg" value="6" onchange="updateCounter()" style="width:15px;height:15px;margin-right:3px;"> Msg 6</label>
+      </div>
+      <div style="display:grid; grid-template-columns:60px 1fr 1fr 1fr; align-items:center; padding:6px 8px; background:white; margin-bottom:4px; border-radius:6px; border-left:3px solid var(--primary); gap:4px;">
+        <span style="font-weight:700; font-size:11px; color:#334155;">Aug 30 LD</span>
+        <label style="display:flex; align-items:center; font-size:11px; cursor:pointer; white-space:nowrap;"><input type="checkbox" name="msg" value="7" onchange="updateCounter()" style="width:15px;height:15px;margin-right:3px;"> Msg 7</label>
+        <label style="display:flex; align-items:center; font-size:11px; cursor:pointer; white-space:nowrap;"><input type="checkbox" name="msg" value="8" onchange="updateCounter()" style="width:15px;height:15px;margin-right:3px;"> Msg 8</label>
+        <label style="display:flex; align-items:center; font-size:11px; cursor:pointer; white-space:nowrap;"><input type="checkbox" name="msg" value="9" onchange="updateCounter()" style="width:15px;height:15px;margin-right:3px;"> Msg 9</label>
+      </div>
+      <div style="display:grid; grid-template-columns:60px 1fr 1fr 1fr; align-items:center; padding:6px 8px; background:white; margin-bottom:4px; border-radius:6px; border-left:3px solid var(--primary); gap:4px;">
+        <span style="font-weight:700; font-size:11px; color:#334155;">Sep 06 LD</span>
+        <label style="display:flex; align-items:center; font-size:11px; cursor:pointer; white-space:nowrap;"><input type="checkbox" name="msg" value="10" onchange="updateCounter()" style="width:15px;height:15px;margin-right:3px;"> Msg 10</label>
+        <label style="display:flex; align-items:center; font-size:11px; cursor:pointer; white-space:nowrap;"><input type="checkbox" name="msg" value="11" onchange="updateCounter()" style="width:15px;height:15px;margin-right:3px;"> Msg 11</label>
+        <label style="display:flex; align-items:center; font-size:11px; cursor:pointer; white-space:nowrap;"><input type="checkbox" name="msg" value="12" onchange="updateCounter()" style="width:15px;height:15px;margin-right:3px;"> Msg 12</label>
+      </div>
+      <p id="error-pt" style="color:var(--error); font-size:12px; font-weight:bold; display:none; margin:8px 0 0 0;">⚠️ Part-Time requires at least 6 sessions.</p>
+    </div>
+ 
+    <div class="fee-box"  style="display:none">
+      <label>
+        <input type="checkbox" id="fee-paid">
+        I paid the registration fee of ₹350 INR (optional)
+      </label>
+    </div>
+    <button type="submit" class="btn-submit" id="submitBtn">Update</button>
+  </form>
+ 
+  <!-- ── NOT IN LIST BANNER (hidden) ── -->
+  <div class="new-trainee-banner" style="margin-top:20px; display:none;">
+    <span>If your name is not in the list above, click to register.</span>
+    <button class="btn-new" onclick="toggleNewForm()">+ New Registration</button>
+  </div>
+ 
+</div>
+ 
+<hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 30px 0;">
+<div class="contact-section">
+  <p style="font-weight: 700; color: #475569; font-size: 14px; margin-bottom: 12px; text-align: center;">Need Help? </p>
+  <div style="background: #f8fafc; padding: 15px; border-radius: 10px; border: 1px solid #e2e8f0; text-align: center; max-width: 650px; margin: 0 auto;">
+    <p style="margin: 0; font-weight: 700; font-size: 15px; color: #1e293b;">Training Coordinator: Br. Babu</p>
+    <p style="margin: 8px 0 0 0; font-weight: 700; font-size: 15px; color: #1e293b;">Technical issues : Br Prakash</p>
+  </div>
+</div>
+ 
+<script>
+  const scriptURL = "https://script.google.com/macros/s/AKfycbyfKmVxslXo3mQttEIfbXPIkPH9nPAiqEqoihuu_tIQa7xGQih-jgBkJqZywB8UXxM37A/exec";
+  let traineeData = {};
+  let selectedRow = null;
+ 
+  // ── LOAD ────────────────────────────────────────────────────────────────
+  window.onload = () => {
+    const s = document.createElement('script');
+    s.src = `${scriptURL}?action=getDropdowns&callback=setup`;
+    document.body.appendChild(s);
+  };
+ 
+  window.setup = (data) => {
+    traineeData = data.trainees;
+    const sel = document.getElementById('name');
+    sel.innerHTML = '<option value="">-- Select Trainee --</option>';
+    Object.keys(traineeData).sort().forEach(n => sel.innerHTML += `<option value="${n}">${n}</option>`);
+    calculateStats();
+  };
+ 
+  // ── PROGRESS ────────────────────────────────────────────────────────────
+  function calculateStats() {
+    const trainees = Object.values(traineeData);
+    const total = trainees.length;
+    const filled = trainees.filter(t => t.type && t.type.toString().trim() !== "").length;
+    const pct = total > 0 ? Math.round((filled / total) * 100) : 0;
+    document.getElementById('reg-percent').innerText = pct;
+    document.getElementById('reg-count').innerText = filled;
+    document.getElementById('total-count').innerText = total;
+    document.getElementById('progress-fill').style.width = pct + "%";
+  }
+ 
+  // ── REFRESH DATA ────────────────────────────────────────────────────────
+  function refreshData(reSelectName, callback) {
+    const cbName = 'refreshCallback_' + Date.now();
+    window[cbName] = function(data) {
+      delete window[cbName];
+      traineeData = data.trainees;
+      const sel = document.getElementById('name');
+      const currentScroll = window.scrollY;
+      sel.innerHTML = '<option value="">-- Select Trainee --</option>';
+      Object.keys(traineeData).sort().forEach(n => {
+        sel.innerHTML += `<option value="${n}">${n}</option>`;
+      });
+      if (reSelectName && traineeData[reSelectName]) {
+        sel.value = reSelectName;
+        handleNameChange();
+      }
+      calculateStats();
+      window.scrollTo(0, currentScroll);
+      if (callback) callback();
+    };
+    const script = document.createElement('script');
+    script.src = `${scriptURL}?action=getDropdowns&callback=${cbName}`;
+    document.body.appendChild(script);
+  }
+ 
+  // ── EXISTING FORM ───────────────────────────────────────────────────────
+  function getTraineeBs(t, name) {
+    const rawBs = (t.bs || t.BS || t.bS || t["B/S"] || t.gender || "").toString().trim();
+    if (rawBs.toUpperCase() === "B" || rawBs.toLowerCase().includes("brother")) return "B";
+    if (rawBs.toUpperCase() === "S" || rawBs.toLowerCase().includes("sister")) return "S";
+
+    const cleanName = (name || "").toString().trim().toLowerCase();
+    if (cleanName.startsWith("br.") || cleanName.startsWith("brother ") || cleanName.startsWith("b ")) return "B";
+    if (cleanName.startsWith("sr.") || cleanName.startsWith("sis.") || cleanName.startsWith("sister ") || cleanName.startsWith("s ")) return "S";
+    return "";
+  }
+
+  function handleNameChange() {
+    const name = document.getElementById('name').value;
+    const typeBox = document.getElementById('type');
+    const checkboxes = document.querySelectorAll('input[name="msg"]');
+    typeBox.disabled = false;
+    checkboxes.forEach(cb => cb.checked = false);
+ 
+    if (name && traineeData[name]) {
+      const t = traineeData[name];
+      selectedRow = t.rowNum;
+      document.getElementById('language').value = t.language || "";
+      document.getElementById('bs').value = getTraineeBs(t, name);
+      document.getElementById('location').value = t.location || "";
+      document.getElementById('fee-paid').checked = t.feePaid && t.feePaid.toString().trim() !== "";
+ 
+      // If type already set, lock it
+      if (t.type && (t.type.trim() === "FT" || t.type.trim() === "PT")) {
+        typeBox.value = t.type.trim();
+        typeBox.disabled = true;
+      } else {
+        typeBox.value = "";
+      }
+ 
+      // Load existing sessions if PT
+      if (t.ftMessages && t.type && t.type.trim() === "PT") {
+        const saved = t.ftMessages.split(',').map(s => s.trim());
+        checkboxes.forEach(cb => { if (saved.includes(cb.value)) cb.checked = true; });
+      }
+ 
+      toggleSessions();
+    } else {
+      document.getElementById('language').value = "";
+      document.getElementById('bs').value = "";
+      document.getElementById('location').value = "";
+      document.getElementById('fee-paid').checked = false;
+      typeBox.value = "";
+      selectedRow = null;
+      toggleSessions();
+    }
+  }
+ 
+  function toggleSessions() {
+    const type = document.getElementById('type').value;
+    document.getElementById('pt-container').style.display = (type === 'PT') ? 'block' : 'none';
+    document.getElementById('ft-indicator').style.display = (type === 'FT') ? 'block' : 'none';
+    updateCounter();
+  }
+ 
+  function updateCounter() {
+    const count = document.querySelectorAll('input[name="msg"]:checked').length;
+    document.getElementById('count-val').innerText = count;
+    document.getElementById('error-pt').style.display = 'none';
+  }
+ 
+  document.getElementById('traineeForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    const name    = document.getElementById('name').value;
+    const lang    = document.getElementById('language').value;
+    const bs      = document.getElementById('bs').value;
+    const loc     = document.getElementById('location').value;
+    const type    = document.getElementById('type').value;
+    const feePaid = document.getElementById('fee-paid').checked;
+    const selected = Array.from(document.querySelectorAll('input[name="msg"]:checked')).map(c => c.value);
+ 
+    if (!name) { alert("Please select a trainee."); return; }
+    if (!lang) { alert("Please select a language."); return; }
+    if (!bs)   { alert("Please select B/S."); return; }
+    if (!loc)  { alert("Please select a location."); return; }
+    if (!type) { alert("Please select a Training Type."); return; }
+ 
+    if (type === 'PT' && selected.length < 6) {
+      document.getElementById('error-pt').style.display = 'block';
+      return;
+    }
+ 
+    const sessions = type === 'FT' ? "All (1-12)" : selected.join(', ');
+    const feeText = feePaid ? "₹350 INR - Paid" : "Not paid yet";
+    if (!confirm(`Confirm details:\n\nTrainee: ${name}\nLanguage: ${lang}\nB/S: ${bs}\nType: ${type}\nSessions: ${sessions}\nFee: ${feeText}\n\nSubmit?`)) return;
+ 
+    const btn = document.getElementById('submitBtn');
+    btn.innerText = "Processing...";
+    btn.disabled = true;
+ 
+    fetch(scriptURL, {
+      method: 'POST',
+      mode: 'no-cors',
+      body: JSON.stringify({ action: "add", rowId: selectedRow, name, language: lang, bs, location: loc, type: type, ftMessages: sessions, feePaid })
+    }).then(() => {
+      alert(`Registration updated successfully!\n\nTrainee: ${name}\nLanguage: ${lang}\nB/S: ${bs}\nLocation: ${loc}\nType: ${type}\nSessions: ${sessions}\nFee: ${feeText}`);
+      btn.innerText = "Success!";
+      refreshData(name, function() {
+        btn.disabled = false;
+        btn.innerText = "Update";
+      });
+    }).catch(() => {
+      alert("An error occurred. Please try again.");
+      btn.innerText = "Update";
+      btn.disabled = false;
+    });
+  });
+ 
+  // ── NEW TRAINEE FORM ────────────────────────────────────────────────────
+  function toggleNewForm() {
+    const section = document.getElementById('newTraineeSection');
+    const isHidden = section.style.display === 'none' || section.style.display === '';
+    section.style.display = isHidden ? 'block' : 'none';
+  }
+ 
+  document.getElementById('newTraineeForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    const name     = document.getElementById('new-name').value.trim();
+    const language = document.getElementById('new-language').value;
+    const bs       = document.getElementById('new-bs').value;
+    const loc      = document.getElementById('new-location').value;
+    const feePaid  = document.getElementById('new-fee-paid').checked;
+ 
+    if (!name)     { alert("Please enter a name."); return; }
+    if (!language) { alert("Please select a language."); return; }
+    if (!bs)       { alert("Please select B/S."); return; }
+    if (!loc)      { alert("Please select a location."); return; }
+ 
+    if (traineeData[name]) {
+      alert(`"${name}" already exists in the list. Please use the Update form above.`);
+      return;
+    }
+ 
+    const feeText = feePaid ? "₹350 INR - Paid" : "Not paid yet";
+    if (!confirm(`Confirm new registration:\n\nName: ${name}\nLanguage: ${language}\nB/S: ${bs}\nLocation: ${loc}\nFee: ${feeText}\n\nSubmit?`)) return;
+ 
+    const btn = document.getElementById('newSubmitBtn');
+    btn.innerText = "Submitting...";
+    btn.disabled = true;
+ 
+    fetch(scriptURL, {
+      method: 'POST',
+      mode: 'no-cors',
+      body: JSON.stringify({ action: "addNew", name, language, bs, location: loc, type: "", ftMessages: "", feePaid })
+    }).then(() => {
+      alert(`${name} registered successfully!`);
+      btn.innerText = "Registered!";
+      document.getElementById('newTraineeForm').reset();
+      document.getElementById('newTraineeSection').style.display = 'none';
+      refreshData(name, function() {
+        btn.disabled = false;
+        btn.innerText = "Submit New Registration";
+      });
+    }).catch(() => {
+      alert("An error occurred. Please try again.");
+      btn.innerText = "Submit New Registration";
+      btn.disabled = false;
+    });
+  });
+</script>
+</body>
+</html>
